@@ -1,0 +1,34 @@
+{
+  "name": "vscpworksplus",
+  "version": "0.0.1",
+  "description": "Second generation vscpworks application",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grodansparadis/vscpworksplus.git"
+  },
+  "keywords": [
+    "vscp",
+    "vscpworks",
+    "iot",
+    "automation",
+    "sensors"
+  ],
+  "author": "Ake Hedman Grodans Paradis AB, akhe@grodansparadis.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/grodansparadis/vscpworksplus/issues"
+  },
+  "homepage": "https://github.com/grodansparadis/vscpworksplus#readme",
+  "devDependencies": {
+    "electron": "^4.1.3"
+  },
+  "dependencies": {
+    "knex": "^0.16.3",
+    "socketcan": "^2.4.0",
+    "xml2js": "^0.4.19"
+  }
+}
