@@ -2,9 +2,13 @@
   "name": "vscpworksplus",
   "version": "0.0.1",
   "description": "Second generation vscpworks application",
-  "main": "main.js",
+  "main": "./js/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "watch": "tsc -w",
+    "lint": "tslint -c tslint.json -p tsconfig.json",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm run build && electron ./dist/main.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +28,8 @@
   },
   "homepage": "https://github.com/grodansparadis/vscpworksplus#readme",
   "devDependencies": {
-    "electron": "^4.1.3"
+    "electron": "^4.1.3",
+    "lite-server": "^2.4.0"
   },
   "dependencies": {
     "aes-js": "^3.1.2",
