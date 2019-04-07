@@ -32,15 +32,19 @@
     "electron-reload": "^1.4.0"
   },
   "dependencies": {
+    "@types/jquery": "^3.3.29",
     "aes-js": "^3.1.2",
     "bootstrap": "^4.3.1",
+    "bootstrap-table": "^1.14.2",
     "braces": "^2.3.2",
+    "datatables.net": "^1.10.19",
+    "datatables.net-dt": "^1.10.19",
     "jquery": "^3.3.1",
     "knex": "^0.16.3",
     "lite-server": "^2.4.0",
+    "mime": "^2.4.1",
     "popper.js": "^1.15.0",
     "sqlite3": "^4.0.6",
-    "xel": "0.0.198",
     "xml2js": "^0.4.19"
   }
 }
