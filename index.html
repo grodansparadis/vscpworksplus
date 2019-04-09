@@ -17,67 +17,73 @@
 
         <div class="row">
 
-            <nav class="navbar fixed-top navbar-expand-sm bg-dark navbar-dark">
-                <a class="navbar-brand" href="#">
-                    <img src="./assets/logo/logo_100.png" alt="Logo" style="width:30px;">
-                </a>
-                <ul class="navbar-nav">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="#">Registers</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Variables</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Decision Matrix</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Wizards</a>
-                    </li>
-                    <!-- Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
-                            Dropdown link
-                        </a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#">Page 1</a>
-                            <a class="dropdown-item" href="#">Page 2</a>
-                            <a class="dropdown-item" href="#">Page 3</a>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Disabled</a>
-                    </li>
-                </ul>
+            <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;"">
+
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="#">VSCP  <span class="badge badge-warning">settings</span></a>
+                    </div>
+                    <ul class="navbar-nav">
+                        <!-- Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
+                                Registers
+                            </a>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" href="#">Page 0</a>
+                                <a class="dropdown-item" href="#">Page 1</a>
+                                <a class="dropdown-item" href="#">Page 2</a>
+                                <a class="dropdown-item" href="#">Page 3</a>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Variables</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Decision Matrix</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">Wizards</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link disabled" href="#">Info</a>
+                        </li>
+                    </ul>
+
             </nav>
 
         </div>
-        <div class="row" style="padding-bottom: 5px;">
-                <div class="buttons-toolbar"></div>
-                <div class="toolbar">
-                    <button class="btn btn-secondary">update</button>
-                  </div>
+
+        <div id="lblModuleName" class="row" style="padding-bottom: 5px;">
+            <h1>Kelvin NTC10K</h1>
         </div>
-        <div class="row"></div>
-            <table id="tblRegisters"
-                    data-toggle="table"
-                    data-height="460"
-                    data-search="true"
-                    data-click-to-select="true"
-                    data-toolbar-align="right"
-                   data-show-columns="true" data-buttons-toolbar=".buttons-toolbar"
-                   class="table table-sm table-hover table-bordered">
+
+        <div class="row" style="padding-bottom: 5px;">
+            <div class="buttons-toolbar"></div>
+            <div class="toolbar">
+                <input type="checkbox" class="btn"> Full update </input>
+                <input type="checkbox" class="btn btn-sm btn-primary"> Local MDF </input>
+                <button type="button" class="btn btn-sm btn-primary">update</button>
+                <button type="button" class="btn btn-sm btn-primary">defaults</button>
+                <button type="button" class="btn btn-sm btn-primary">wizard</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <table id="tblRegisters" data-toggle="table" data-height="460" data-search="true"
+                data-click-to-select="true"
+                data-buttons-toolbar=".buttons-toolbar" data-buttons-class="light"
+                class="table table-sm table-hover table-bordered">
                 <thead class="thead-dark">
                     <tr>
-                        <th data-field="state" data-checkbox="true"></th>
-                        <th data-field="register" data-sortable="true" scope="col">Register</th>
-                        <th data-field="access" scope="col">rw</th>
-                        <th data-field="content" scope="col">Content</th>
-                        <th data-field="description" scope="col">Description</th>
+                        <th style="width: 20px%" data-field="state" data-checkbox="true"></th>
+                        <th style="width: 50px" data-field="register" data-sortable="true" > Register&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                        <th style="width: 5%" data-field="access" >rw</th>
+                        <th style="width: 8%" data-field="content" >Content</th>
+                        <th style="width: 8%" data-field="description" >Description</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <caption>Registers</caption>
+
                     <tr>
                         <td></td>
                         <td>0001:0</td>
@@ -289,10 +295,16 @@
                         <td>0x43</td>
                         <td>poppe for module</td>
                     </tr>
-                    </tbody>
+                </tbody>
             </table>
         </div>
-        <div class="row"> Another row</div>
+
+        <div class="row">
+            <div class="panel panel-primary">
+                <div class="panel-heading">Panel with panel-primary class</div>
+                <div class="panel-body">Panel Content</div>
+            </div>
+        </div>
 
     </div>
 
@@ -302,7 +314,6 @@
     <script>require('popper.js');</script>
     <script>require('bootstrap');</script>
     <script>require('bootstrap-table');</script>
-
 </body>
 
 <script>

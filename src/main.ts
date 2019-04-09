@@ -1,20 +1,31 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import * as path from "path";
 
 let mainWindow: Electron.BrowserWindow;
 
 function createWindow() {
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    height: 600,
-    width: 800,
+    show: false,
+    height: 400,
+    width: 700,
   });
 
   // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, "../index.html"));
+  mainWindow.loadFile( path.join( __dirname, "../main.html" ) );
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
+
+  // Show main window when it's ready to be displayed
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+
+    //console.log(dialog.showOpenDialog({
+    //  properties: ['openFile', 'openDirectory', 'multiSelections']
+    //}));
+  });
 
   // Emitted when the window is closed.
   mainWindow.on("closed", () => {
@@ -23,7 +34,27 @@ function createWindow() {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
+
+
 }
+
+ipcMain.on('asynchronous-message', (event: any, arg: any) => {
+  console.log("async " + arg) // prints "ping"
+  event.sender.send('asynchronous-reply', 'pong')
+})
+
+ipcMain.on('synchronous-message', (event: any, arg: any) => {
+  console.log("sync " + arg) // prints "ping"
+  event.returnValue = 'pong'
+})
+
+ipcMain.on('open-second-window', (event: any, arg: any) => {
+  //secondWindow.show()
+})
+
+ipcMain.on('close-second-window', (event: any, arg: any) => {
+  //secondWindow.hide()
+})
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -49,3 +80,9 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+function ttt() {
+  let child = new BrowserWindow({ parent: mainWindow });
+  mainWindow.loadFile(path.join(__dirname, "../index.html"));
+  child.show();
+}

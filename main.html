@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
+
+    <meta charset="UTF-8">
+    <title>VSCP Works +</title>
+</head>
+
+<body style="padding-top: 80px;">
+    <div class="container">
+
+        <div class="row">
+
+            <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;"">
+
+                    <div class=" navbar-header">
+                <a class="navbar-brand" href="#">VSCP <span class="badge badge-warning">main</span></a>
+        </div>
+        <ul class="navbar-nav">
+            <!-- Dropdown -->
+            <li class="nav-item">
+                <a class="nav-link" href="#">Session</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Configuration</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Scan</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Bootloader</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#">Info</a>
+            </li>
+        </ul>
+
+        </nav>
+
+    </div>
+
+    <div class="row">
+        <table id="main-table-id" data-toggle="table" data-height="460" data-search="true" data-click-to-select="true"
+            data-buttons-toolbar=".buttons-toolbar" data-buttons-class="light"
+            class="table table-sm table-hover table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th style="width: 10px" data-field="name" data-sortable="true">Name&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                    <th style="width: 5%" data-field="type" data-sortable="true">Type&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                    <th style="width: 5%" data-field="level" data-sortable="true">Level&nbsp;&nbsp;&nbsp;&nbsp;</th>
+                    <th data-field="description">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                <tr style="cursor: pointer">
+                    <td>1</td>
+                    <td>tcp/ip</td>
+                    <td>2</td>
+                    <td  onclick="console.log('You are clicking on the cell EXAMPLE')">Raspberry Pi 4</td>
+                </tr>
+                <tr style="cursor: pointer">
+                    <td>Kalle</td>
+                    <td>canal</td>
+                    <td>1</td>
+                    <td>Local CANUSB adapter</td>
+                </tr>
+                <tr style="cursor: pointer" class="table-row">
+                    <td>Olle</td>
+                    <td>websocket</td>
+                    <td>1</td>
+                    <td>Websocket interface  on 192.168.1.6</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Panel with panel-primary class</div>
+            <div class="panel-body">Panel Content</div>
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = jQuery = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
+</body>
+
+<script>
+    // You can also require other files to run in this process
+    require('./dist/renderer_main.js')
+</script>
+
+</html>

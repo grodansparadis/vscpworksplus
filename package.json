@@ -4,6 +4,7 @@
   "description": "Second generation vscpworks application",
   "main": "./js/main.js",
   "scripts": {
+    "install": "prebuild-install || node-gyp rebuild",
     "build": "tsc",
     "watch": "tsc -w",
     "lint": "tslint -c tslint.json -p tsconfig.json",
@@ -45,6 +46,7 @@
     "mime": "^2.4.1",
     "popper.js": "^1.15.0",
     "sqlite3": "^4.0.6",
-    "xml2js": "^0.4.19"
+    "xml2js": "^0.4.19",
+    "vscphelper": "latest"
   }
 }
