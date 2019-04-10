@@ -4,6 +4,7 @@
 <head>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
 
     <meta charset="UTF-8">
     <title>VSCP Works +</title>
@@ -17,24 +18,24 @@
             <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;"">
 
                     <div class=" navbar-header">
-                <a class="navbar-brand" href="#">VSCP <span class="badge badge-warning">main</span></a>
+                <a class="navbar-brand animated bounce delay-2s" href="#">VSCP <span class="badge badge-warning">works+</span></a>
         </div>
-        <ul class="navbar-nav">
+        <ul id="myTab" class="nav nav-tabs">
             <!-- Dropdown -->
-            <li class="nav-item">
-                <a class="nav-link" href="#">Session</a>
+            <li id="main-session-id" class="nav-item active">
+                <a class="nav-link" href="#session" >Session</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Configuration</a>
+                <a class="nav-link" href="#configuration" >Configuration</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Scan</a>
+                <a class="nav-link" href="#scan" >Scan</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Bootloader</a>
+                <a class="nav-link" href="#bootlosder" >Bootloader</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link disabled" href="#">Info</a>
+                <a class="nav-link disabled" href="#" >Info</a>
             </li>
         </ul>
 

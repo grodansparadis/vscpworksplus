@@ -7,6 +7,8 @@ electron_1.ipcRenderer.on('asynchronous-reply', function (event, arg) {
     console.log(arg); // prints "pong"
 });
 electron_1.ipcRenderer.send('asynchronous-message', 'ping');
+//$(window).load(function(){
+//});
 $('#main-table-id > tbody > tr').on('click', function () {
     var values = [];
     var count = 0;
@@ -24,6 +26,16 @@ $(document).ready(function ($) {
     $(".table-row").click(function () {
         console.log("new-click");
     });
+});
+$(function () {
+    $(".nav-link").on("click", "li", function (event) {
+        console.log("You clicked the drop downs", event);
+    });
+});
+$('#myTab a').click(function (e) {
+    e.preventDefault();
+    $(this).tab('show');
+    console.log("tab-click");
 });
 console.log("renderer main - end");
 //# sourceMappingURL=renderer_main.js.map
