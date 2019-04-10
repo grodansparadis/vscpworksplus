@@ -4,305 +4,368 @@
 <head>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
+    <style>
+        table.scroll {
+            /*width: 100%;*/
+            /* Optional */
+            /*border-collapse: collapse;*/
+            border-spacing: 0;
+            border: 1px solid black;
+        }
 
-    <!-- Bootstrap-table CSS -->
-    <link rel="stylesheet" href="./contents/bootstrap-table/bootstrap-table.min.css" />
+        table.scroll tbody,
+        table.scroll thead {
+            display: block;
+        }
 
+        thead tr th {
+            height: 30px;
+            line-height: 30px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.scroll tbody {
+            height: 400px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        table.scroll td.ctext {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody {
+            border-top: 1px solid black;
+        }
+
+        tbody td,
+        thead th {
+            /* width: 20%; */
+            /* Optional */
+            border-right: 2px solid black;
+            /* white-space: nowrap; */
+        }
+
+        tbody td:last-child,
+        thead th:last-child {
+            border-right: none;
+        }
+    </style>
     <meta charset="UTF-8">
     <title>VSCP Works +</title>
 </head>
 
-<body style="padding-top: 80px;">
-    <div class="container">
+<body style="padding-top: 70px;">
+    <div class="container-fluid">
 
-        <div class="row">
-
-            <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;"">
-
-                    <div class="navbar-header">
-                        <a class="navbar-brand" href="#">VSCP  <span class="badge badge-warning">settings</span></a>
-                    </div>
-                    <ul class="navbar-nav">
-                        <!-- Dropdown -->
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbardrop" data-toggle="dropdown">
-                                Registers
-                            </a>
-                            <div class="dropdown-menu">
-                                <a class="dropdown-item" href="#">Page 0</a>
-                                <a class="dropdown-item" href="#">Page 1</a>
-                                <a class="dropdown-item" href="#">Page 2</a>
-                                <a class="dropdown-item" href="#">Page 3</a>
-                            </div>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Variables</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Decision Matrix</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Wizards</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link disabled" href="#">Info</a>
-                        </li>
-                    </ul>
-
-            </nav>
-
-        </div>
-
-        <div id="lblModuleName" class="row" style="padding-bottom: 5px;">
+        <div class="row" id="lblModuleName" style="padding-left: 15px;">
             <h1>Kelvin NTC10K</h1>
         </div>
 
-        <div class="row" style="padding-bottom: 5px;">
-            <div class="buttons-toolbar"></div>
-            <div class="toolbar">
-                <input type="checkbox" class="btn"> Full update </input>
-                <input type="checkbox" class="btn btn-sm btn-primary"> Local MDF </input>
-                <button type="button" class="btn btn-sm btn-primary">update</button>
-                <button type="button" class="btn btn-sm btn-primary">defaults</button>
-                <button type="button" class="btn btn-sm btn-primary">wizard</button>
+        <div class="row">
+            <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;">
+                <div class=" navbar-header">
+                    <a class="navbar-brand  animated bounce delay-2s" href="#">VSCP <span
+                            class="badge badge-warning">registers</span></a>
+            </nav>
+        </div>
+
+        <div class="row">
+            <div class="col-3">
+                <div class="nav flex-column nav-pills" id="page-tab" role="tablist" aria-orientation="vertical">
+
+                    <a class="nav-link active" id="register-tab" data-toggle="pill" href="#registers" role="tab"
+                        aria-controls="registers" aria-selected="true">Registers</a>
+
+                    <a class="nav-link" id="abstraction-tab" data-toggle="pill" href="#abstractions" role="tab"
+                        aria-controls="abstractions" aria-selected="false">Abstractions</a>
+
+                    <a class="nav-link" id="dm-tab" data-toggle="pill" href="#dm" role="tab" aria-controls="dm"
+                        aria-selected="false">Decision Matrix</a>
+
+                    <a class="nav-link" id="wizard-tab" data-toggle="pill" href="#wizard" role="tab"
+                        aria-controls="wizard" aria-selected="false">Wizards</a>
+
+                    <a class="nav-link" id="info-tab" data-toggle="pill" href="#info" role="tab" aria-controls="info"
+                        aria-selected="false">Info</a>
+                </div>
             </div>
-        </div>
+            <div class="col-9 vh-10">
 
-        <div class="row">
-            <table id="tblRegisters" data-toggle="table" data-height="460" data-search="true"
-                data-click-to-select="true"
-                data-buttons-toolbar=".buttons-toolbar" data-buttons-class="light"
-                class="table table-sm table-hover table-bordered">
-                <thead class="thead-dark">
-                    <tr>
-                        <th style="width: 20px%" data-field="state" data-checkbox="true"></th>
-                        <th style="width: 50px" data-field="register" data-sortable="true" > Register&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                        <th style="width: 5%" data-field="access" >rw</th>
-                        <th style="width: 8%" data-field="content" >Content</th>
-                        <th style="width: 8%" data-field="description" >Description</th>
-                    </tr>
-                </thead>
-                <tbody>
+                <div class="tab-content" id="pages-tabContent">
 
-                    <tr>
-                        <td></td>
-                        <td>0001:0</td>
-                        <td>rw</td>
-                        <td>45</td>
-                        <td>Zone for module hghg ghhghg ghghg ghghg ghg <b>tokfrans persson</b> hgh gg hgghghghgghghgh g
-                            hgtghghghg hggh g ghgh hghghhg</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>3</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr class="table-primary">
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>2</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>Subzone for module</td>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td>200</td>
-                        <td>r-</td>
-                        <td>0x43</td>
-                        <td>poppe for module</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+                    <div class="tab-pane fade show active " id="registers" role="tabpanel"
+                        aria-labelledby="registers-tab">
 
-        <div class="row">
-            <div class="panel panel-primary">
-                <div class="panel-heading">Panel with panel-primary class</div>
-                <div class="panel-body">Panel Content</div>
+                        <table id="tblRegisters"
+                            class="table scroll table-sm table-responsive-md table-hover table-bordered ">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th width="10%" style="text-align:center">Register</th>
+                                    <th width="10%" style="text-align:center">rw</th>
+                                    <th width="20%" style="text-align:center">Content</th>
+                                    <th width="60%">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr style="cursor: pointer">
+
+                                    <td class="ctext">0001:0000</td>
+                                    <td class="ctext">rw</td>
+                                    <td class="ctext" style="cursor: pointer">45 (0x2d)</td>
+                                    <td>Zone for module hghg ghhghg ghghg ghghg ghg <b>tokfrans persson</b> hgh gg<br>
+                                        Ny rad: hgghghghgghghgh g<br>
+                                        hgtghghghg hggh g ghgh hghghhg</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td style="cursor: pointer">0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0003:0000</td>
+                                    <td>r-</td>
+                                    <td style="cursor: pointer">0x43</td>
+                                    <td>Subzone for module with some text that is longer then the other texts on the block</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td style="cursor: pointer">0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0002:0000</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>Subzone for module</td>
+                                </tr>
+                                <tr>
+
+                                    <td>0200:00ff</td>
+                                    <td>r-</td>
+                                    <td>0x43</td>
+                                    <td>poppe for module</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+
+                    <div class="tab-pane fade" id="abstractions" role="tabpanel" aria-labelledby="abstractions-tab">
+                            <table id="tblAbstractions" class="table scroll table-sm  table-hover table-bordered ">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width:200">Name</th>
+                                        <th>Type</th>
+                                        <th style="text-align:center">rw</th>
+                                        <th style="text-align:center">Content</th>
+                                        <th>Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    <tr style="cursor: pointer">
+                                        <td style="width:200">Temperature</td>
+                                        <td>Floating point</td>
+                                        <td class="ctext">rw</td>
+                                        <td class="ctext">19.2</td>
+                                        <td>Temp</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                    </div>
+
+                    <div class="tab-pane fade" id="dm" role="tabpanel" aria-labelledby="dm-tab">
+                        <h1>Decision Matrix</h1>
+                    </div>
+
+                    <div class="tab-pane fade" id="wizard" role="tabpanel" aria-labelledby="wizard-tab">
+                        <h1>Wizards</h1>
+                    </div>
+
+                    <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
+                        <h1>Info</h1>
+                    </div>
+
+                </div>
+
             </div>
         </div>
 
@@ -313,7 +376,7 @@
     <script>let $ = jQuery = require('jquery');</script>
     <script>require('popper.js');</script>
     <script>require('bootstrap');</script>
-    <script>require('bootstrap-table');</script>
+
 </body>
 
 <script>

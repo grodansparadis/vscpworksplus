@@ -22,7 +22,7 @@
     "automation",
     "sensors"
   ],
-  "author": "Ake Hedman Grodans Paradis AB, akhe@grodansparadis.com",
+  "author": "Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/grodansparadis/vscpworksplus/issues"
@@ -37,17 +37,13 @@
     "aes-js": "^3.1.2",
     "animate.css": "^3.7.0",
     "bootstrap": "^4.3.1",
-    "bootstrap-table": "^1.14.2",
     "braces": "^2.3.2",
-    "datatables.net": "^1.10.19",
-    "datatables.net-dt": "^1.10.19",
     "jquery": "^3.3.1",
     "knex": "^0.16.3",
     "lite-server": "^2.4.0",
     "mime": "^2.4.1",
     "popper.js": "^1.15.0",
     "sqlite3": "^4.0.6",
-    "vscphelper": "latest",
     "xml2js": "^0.4.19"
   }
 }

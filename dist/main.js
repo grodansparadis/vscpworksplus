@@ -75,7 +75,9 @@ electron_1.app.on("activate", function () {
 // code. You can also put them in separate files and require them here.
 function ttt() {
     var child = new electron_1.BrowserWindow({
-        show: false
+        show: false,
+        height: 600,
+        width: 1024,
     });
     child.loadFile(path.join(__dirname, "../index.html"));
     child.show();

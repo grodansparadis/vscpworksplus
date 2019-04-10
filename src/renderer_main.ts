@@ -9,6 +9,7 @@ ipcRenderer.on('asynchronous-reply', (event: any, arg: any) => {
 
 ipcRenderer.send('asynchronous-message', 'ping');
 
+
 //$(window).load(function(){
 
 //});

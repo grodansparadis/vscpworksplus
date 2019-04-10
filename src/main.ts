@@ -85,7 +85,9 @@ app.on("activate", () => {
 
 function ttt() {
   let child = new BrowserWindow({
-    show: false
+    show: false,
+    height: 600,
+    width: 1024,
    });
   child.loadFile(path.join(__dirname, "../index.html"));
   child.show();
