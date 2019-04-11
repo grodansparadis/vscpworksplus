@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
     <style>
         table.scroll {
-            /*width: 100%;*/
+            width: 100%;
             /* Optional */
-            /*border-collapse: collapse;*/
+            /* border-collapse: collapse; */
             border-spacing: 0;
             border: 1px solid black;
         }
@@ -17,6 +17,7 @@
         table.scroll tbody,
         table.scroll thead {
             display: block;
+            width: 100%;
         }
 
         thead tr th {
@@ -27,12 +28,13 @@
         }
 
         table.scroll tbody {
-            height: 400px;
+            height: 390px;
             overflow-y: auto;
             overflow-x: hidden;
         }
 
-        table.scroll td.ctext {
+        table.scroll td.ctext,
+        table.scroll th.ctext {
             text-align: center;
             vertical-align: middle;
         }
@@ -43,9 +45,9 @@
 
         tbody td,
         thead th {
-            /* width: 20%; */
+            width: 20%;
             /* Optional */
-            border-right: 2px solid black;
+            border-right: 1px solid black;
             /* white-space: nowrap; */
         }
 
@@ -54,6 +56,7 @@
             border-right: none;
         }
     </style>
+
     <meta charset="UTF-8">
     <title>VSCP Works +</title>
 </head>
@@ -86,280 +89,95 @@
                     <a class="nav-link" id="dm-tab" data-toggle="pill" href="#dm" role="tab" aria-controls="dm"
                         aria-selected="false">Decision Matrix</a>
 
-                    <a class="nav-link" id="wizard-tab" data-toggle="pill" href="#wizard" role="tab"
-                        aria-controls="wizard" aria-selected="false">Wizards</a>
+                    <a class="nav-link" id="wizard-tab" data-toggle="pill" href="#wizards" role="tab"
+                        aria-controls="wizards" aria-selected="false">Wizards</a>
 
                     <a class="nav-link" id="info-tab" data-toggle="pill" href="#info" role="tab" aria-controls="info"
                         aria-selected="false">Info</a>
                 </div>
             </div>
+
             <div class="col-9 vh-10">
 
                 <div class="tab-content" id="pages-tabContent">
 
-                    <div class="tab-pane fade show active " id="registers" role="tabpanel"
+                    <!-- Registers -->
+                    <div class="tab-pane fade show active" id="registers" role="tabpanel"
                         aria-labelledby="registers-tab">
 
                         <table id="tblRegisters"
                             class="table scroll table-sm table-responsive-md table-hover table-bordered ">
-                            <thead class="thead-light">
+                            <thead class="thead-light" style="width: 100%;">
                                 <tr>
-                                    <th width="10%" style="text-align:center">Register</th>
-                                    <th width="10%" style="text-align:center">rw</th>
-                                    <th width="20%" style="text-align:center">Content</th>
-                                    <th width="60%">Description</th>
+                                    <th id="id-head-reg-register" style="width: 15%; text-align:center;">Register</th>
+                                    <th id="id-head-reg-access" style="width: 10%; text-align:center;">rw</th>
+                                    <th id="id-head-reg-content" style="width: 15%; text-align:center;">Content</th>
+                                    <th id="id-head-reg-description" style="width: 60%;">Description</th>
                                 </tr>
                             </thead>
-                            <tbody>
-
-                                <tr style="cursor: pointer">
-
-                                    <td class="ctext">0001:0000</td>
-                                    <td class="ctext">rw</td>
-                                    <td class="ctext" style="cursor: pointer">45 (0x2d)</td>
-                                    <td>Zone for module hghg ghhghg ghghg ghghg ghg <b>tokfrans persson</b> hgh gg<br>
-                                        Ny rad: hgghghghgghghgh g<br>
-                                        hgtghghghg hggh g ghgh hghghhg</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td style="cursor: pointer">0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0003:0000</td>
-                                    <td>r-</td>
-                                    <td style="cursor: pointer">0x43</td>
-                                    <td>Subzone for module with some text that is longer then the other texts on the block</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td style="cursor: pointer">0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0002:0000</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>Subzone for module</td>
-                                </tr>
-                                <tr>
-
-                                    <td>0200:00ff</td>
-                                    <td>r-</td>
-                                    <td>0x43</td>
-                                    <td>poppe for module</td>
-                                </tr>
-                            </tbody>
+                            <tbody></tbody>
                         </table>
 
                     </div>
 
+                    <!-- Abstractions -->
                     <div class="tab-pane fade" id="abstractions" role="tabpanel" aria-labelledby="abstractions-tab">
-                            <table id="tblAbstractions" class="table scroll table-sm  table-hover table-bordered ">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th style="width:200">Name</th>
-                                        <th>Type</th>
-                                        <th style="text-align:center">rw</th>
-                                        <th style="text-align:center">Content</th>
-                                        <th>Description</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
 
-                                    <tr style="cursor: pointer">
-                                        <td style="width:200">Temperature</td>
-                                        <td>Floating point</td>
-                                        <td class="ctext">rw</td>
-                                        <td class="ctext">19.2</td>
-                                        <td>Temp</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <table id="tblAbstractions"
+                            class="table scroll table-sm table-responsive-md table-hover table-bordered ">
+                            <thead class="thead-light" style="width: 100%;">
+                                <tr>
+                                    <th id="id-head-abs-name" style="width: 30%;">Name</th>
+                                    <th id="id-head-abs-type" style="width: 10%; text-align:center;">Type</th>
+                                    <th id="id-head-abs-access" style="width: 10%; text-align:center;">rw</th>
+                                    <th id="id-head-abs-content" style="width: 10%; text-align:center;">Content</th>
+                                    <th id="id-head-abs-description" style="width: 40%;">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
                     </div>
 
+                    <!-- Decision Matrix -->
                     <div class="tab-pane fade" id="dm" role="tabpanel" aria-labelledby="dm-tab">
-                        <h1>Decision Matrix</h1>
+
+                        <table id="tblDM"
+                            class="table scroll table-sm table-responsive-md table-hover table-bordered  ">
+                            <thead class="thead-light" style="width: 100%;">
+                                <tr>
+                                    <th id="id-head-dm-origin" style="width: 12.5%; text-align:center;">Origin</th>
+                                    <th id="id-head-dm-flags" style="width: 12.5%; text-align:center;">Flags</th>
+                                    <th id="id-head-dm-cmask" style="width: 12.5%; text-align:center;">Class mask</th>
+                                    <th id="id-head-dm-cfilter" style="width: 12.5%; text-align:center;">Class filter</th>
+                                    <th id="id-head-dm-tmask" style="width: 12.5%; text-align:center;">Type mask</th>
+                                    <th id="id-head-dm-tfilter" style="width: 12.5%; text-align:center;">Type filter</th>
+                                    <th id="id-head-dm-action" style="width: 12.5%; text-align:center;">Action</th>
+                                    <th id="id-head-dm-param" style="width: 12.5%; text-align:center;">Param</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
                     </div>
 
-                    <div class="tab-pane fade" id="wizard" role="tabpanel" aria-labelledby="wizard-tab">
-                        <h1>Wizards</h1>
+                    <!-- Wizards -->
+                    <div class="tab-pane fade" id="wizards" role="tabpanel" aria-labelledby="wizard-tab">
+
+                        <table id="tblWizards"
+                            class="table scroll table-sm table-responsive-md table-hover table-bordered  ">
+                            <thead class="thead-light" style="width: 100%;">
+                                <tr>
+                                    <th width="40%">Name</th>
+                                    <th width="60%">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
                     </div>
 
+                    <!-- Info -->
                     <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
                         <h1>Info</h1>
                     </div>

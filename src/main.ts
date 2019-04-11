@@ -7,11 +7,14 @@ let childWindows: any= [];
 function createMainWindow() {
 
   // Create the browser window.
-  mainWindow = new BrowserWindow({
-    show: false,
-    height: 400,
-    width: 700,
-  });
+  mainWindow = new BrowserWindow( {
+      show: false,
+      height: 400,
+      width: 700,
+      webPreferences: {
+        nodeIntegration: true,
+      },
+    });
 
   // and load the index.html of the app.
   mainWindow.loadFile( path.join( __dirname, "../main.html" ) );
@@ -88,6 +91,9 @@ function ttt() {
     show: false,
     height: 600,
     width: 1024,
+    webPreferences: {
+      nodeIntegration: true
+    },
    });
   child.loadFile(path.join(__dirname, "../index.html"));
   child.show();
