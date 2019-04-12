@@ -15,8 +15,8 @@ function createMainWindow() {
     // Create the browser window.
     mainWindow = new electron_1.BrowserWindow({
         show: false,
-        height: 400,
-        width: 700,
+        height: 420,
+        width: 800,
         webPreferences: {
             nodeIntegration: true,
         },
@@ -85,7 +85,7 @@ function ttt() {
             nodeIntegration: true
         },
     });
-    child.loadFile(path.join(__dirname, "../index.html"));
+    child.loadFile(path.join(__dirname, "../register.html"));
     child.show();
 }
 //# sourceMappingURL=main.js.map

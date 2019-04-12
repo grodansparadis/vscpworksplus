@@ -77,7 +77,7 @@ function adjustAbstractionHeader() {
     document.getElementById('id-head-abs-content').style.width = "10%";
     document.getElementById('id-head-abs-description').style.width = "40%";
 }
-// Add an row to the abstraction table
+// Add a row to the abstraction table
 function addAbstractionRow(name, type, access, value, description) {
     var tableRef = tblAbstractions.getElementsByTagName('tbody')[0];
     var row = tableRef.insertRow(-1);
@@ -115,7 +115,7 @@ function adjustDMHeader() {
     document.getElementById('id-head-dm-action').style.width = "12.5%";
     document.getElementById('id-head-dm-param').style.width = "12.5%";
 }
-// Add an row to the DM table
+// Add a row to the DM table
 function addDMRow(origin, flags, cmask, cfilter, tmask, tfilter, action, param) {
     var tableRef = tblDM.getElementsByTagName('tbody')[0];
     var row = tableRef.insertRow(-1);
@@ -158,17 +158,17 @@ function addDMRow(origin, flags, cmask, cfilter, tmask, tfilter, action, param) 
 // HACK!!! Actually don't know why this works (col=0 abs width) but it
 // does
 function adjustWizardHeader() {
-    document.getElementById('id-head-wizard-name').style.width = "40%";
+    document.getElementById('id-head-wizard-name').style.width = "900px";
     document.getElementById('id-head-wizard-description').style.width = "60%";
 }
-// Add an row to the Wizard table
+// Add a row to the Wizard table
 function addWizardRow(name, description) {
     var tableRef = tblWizard.getElementsByTagName('tbody')[0];
     var row = tableRef.insertRow(-1);
     row.style.cursor = "pointer";
     var cellName = row.insertCell(0);
     cellName.innerHTML = name;
-    cellName.style.width = "40%";
+    cellName.style.width = "900px";
     //cellName.classList.add("ctext");
     var cellDescription = row.insertCell(1);
     cellDescription.innerHTML = description;
@@ -198,4 +198,4 @@ $(window).resize(function () {
         $(v).width(colWidth[i]);
     }); */
 }).resize(); // Trigger resize handler
-//# sourceMappingURL=renderer.js.map
+//# sourceMappingURL=register_renderer.js.map

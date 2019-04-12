@@ -7,157 +7,133 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
+    <style>
+        table.scroll {
+            width: 100%;
+            /* Optional */
+            /* border-collapse: collapse; */
+            border-spacing: 0;
+            border: 1px solid black;
+        }
+
+        table.scroll tbody,
+        table.scroll thead {
+            display: block;
+            width: 100%;
+        }
+
+        thead tr th {
+            height: 30px;
+            line-height: 30px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.scroll tbody {
+            height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        table.scroll td.ctext,
+        table.scroll th.ctext {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody {
+            border-top: 1px solid black;
+        }
+
+        tbody td,
+        thead th {
+            width: 20%;
+            /* Optional */
+            border-right: 1px solid black;
+            /* white-space: nowrap; */
+        }
+
+        tbody td:last-child,
+        thead th:last-child {
+            border-right: none;
+        }
+    </style>
 
     <title>VSCP Works +</title>
 </head>
 
-<body style="padding-top: 80px;">
-    <div class="container">
+<body style="padding-top: 70px;">
+    <div class="container-fluid">
 
         <div class="row">
 
-            <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;"">
+            <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;">
 
-                    <div class=" navbar-header">
-                <a class="navbar-brand animated bounce delay-2s" href="#">VSCP <span
-                        class="badge badge-warning">works+</span></a>
+                <div class=" navbar-header">
+                    <a class="navbar-brand animated bounce delay-2s" href="#">VSCP <span
+                            class="badge badge-warning">works+</span></a>
+                </div>
+                <ul id="myTab" class="nav nav-tabs">
+                    <!-- Dropdown -->
+                    <li id="main-session-id" class="nav-item active">
+                        <a class="nav-link" href="#session">Session</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#configuration">Configuration</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#scan">Scan</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#bootlosder">Bootloader</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link disabled" href="#">Info</a>
+                    </li>
+                </ul>
+
+            </nav>
+
         </div>
-        <ul id="myTab" class="nav nav-tabs">
-            <!-- Dropdown -->
-            <li id="main-session-id" class="nav-item active">
-                <a class="nav-link" href="#session">Session</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#configuration">Configuration</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#scan">Scan</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#bootlosder">Bootloader</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#">Info</a>
-            </li>
-        </ul>
 
-        </nav>
+        <div class="row">
+            <div class="col-12 vh-10">
 
-    </div>
+                <div class="tab-content" id="pages-tabContent">
+                    <table id="main-table-id"
+                        class="table scroll table-sm table-responsive-md table-hover table-bordered ">
+                        <thead class="thead-light" style="width: 100%;">
+                            <tr>
+                                <th class="pl-0" style="width: 400px">Name</th>
+                                <th class="pl-0" style="width: 20%">Type</th>
+                                <th class="pl-0" style="width: 5%" >Level</th>
+                                <th class="pl-0" style="width: 65%">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
 
-    <div class="row">
-        <table id="main-table-id" class="table table-sm  table-hover table-bordered">
-            <thead class="thead-light">
-                <tr>
-                    <th style="width: 10px" data-field="name" data-sortable="true">Name&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                    <th style="width: 5%" data-field="type" data-sortable="true">Type&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                    <th style="width: 5%" data-field="level" data-sortable="true">Level&nbsp;&nbsp;&nbsp;&nbsp;</th>
-                    <th data-field="description">Description</th>
-                </tr>
-            </thead>
-            <tbody>
+                            <tr style="cursor: pointer">
+                                <td style="width: 20%">test</td>
+                                <td style="width: 10%">tcp/ip</td>
+                                <td style="width: 5%" >2</td>
+                                <td style="width: 65%">Raspberry Pi 4</td>
+                            </tr>
 
-                <tr style="cursor: pointer">
-                    <td>1</td>
-                    <td>tcp/ip</td>
-                    <td>2</td>
-                    <td onclick="console.log('You are clicking on the cell EXAMPLE')">Raspberry Pi 4</td>
-                </tr>
-                <tr style="cursor: pointer">
-                    <td>Kalle</td>
-                    <td>canal</td>
-                    <td>1</td>
-                    <td>Local CANUSB adapter</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
-                <tr style="cursor: pointer" class="table-row">
-                    <td>Olle</td>
-                    <td>websocket</td>
-                    <td>1</td>
-                    <td>Websocket interface on 192.168.1.6</td>
-                </tr>
 
-            </tbody>
-        </table>
-    </div>
-
-    <div class="row">
-        <div class="panel panel-primary">
-            <div class="panel-heading">Panel with panel-primary class</div>
-            <div class="panel-body">Panel Content</div>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
+
+        <div class="row">
+            <div class="col-12 vh-10">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">Panel with panel-primary class</div>
+                    <div class="panel-body">Panel Content</div>
+                </div>
+            </div>
+        </div>
 
     </div>
 
@@ -170,7 +146,7 @@
 
 <script>
     // You can also require other files to run in this process
-    require('./dist/renderer_main.js')
+    require('./dist/main_renderer.js')
 </script>
 
 </html>

@@ -20,7 +20,9 @@
     "vscpworks",
     "iot",
     "automation",
-    "sensors"
+    "sensors",
+    "canbus",
+    "can"
   ],
   "author": "Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>",
   "license": "MIT",

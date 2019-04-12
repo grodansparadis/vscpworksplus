@@ -11,6 +11,7 @@ console.log(`${value} times 2 equals`, addon.my_function(value));
 let tblRegisters: any = document.getElementById("tblRegisters");
 let tblAbstractions: any = document.getElementById("tblAbstractions");
 let tblDM: any = document.getElementById("tblDM");
+let tblWizard: any = document.getElementById("tblWizard");
 
 // Window is loaded
 $(document).ready(function () {
@@ -25,6 +26,12 @@ $(document).ready(function () {
     addAbstractionRow("Temperature sensor 0", "Signed 16-bit integer", "r-", 19.2, "Main temp. sensor 0");
 
     addDMRow(1,2,3,4,5,6,7,8);
+    addDMRow(1,2,3,4,5,6,7,8);
+    addDMRow(1,2,3,4,5,6,7,8);
+    addDMRow(1,2,3,4,5,6,7,8);
+
+    addWizardRow("Hell","The wizard from hell.");
+    addWizardRow("Ozz","The wizard from ozz.");
 });
 
 
@@ -67,21 +74,21 @@ function addRegisterRow(reg: number,
     let cellRegister = row.insertCell(0);
     cellRegister.innerHTML = sprintf("%04x:%04x", reg, page);
     cellRegister.classList.add("ctext");
-    cellRegister.setAttribute("style", "width: 15%");
+    cellRegister.style.width="15%";
 
     let cellRights: any = row.insertCell(1);
     cellRights.innerHTML = access;
     cellRights.classList.add("ctext");
-    cellRights.setAttribute("style", "width: 10%");
+    cellRights.style.width="10%";
 
     let cellValue: any = row.insertCell(2);
     cellValue.innerHTML = sprintf("%d (0x%02x)", value, value);
     cellValue.classList.add("ctext");
-    cellValue.setAttribute("style", "width: 15%");
+    cellValue.style.width="15%";
 
     let cellDescription: any = row.insertCell(3);
     cellDescription.innerHTML = description;
-    cellDescription.setAttribute("style", "width: 60%");
+    cellDescription.style.width="60%";
 
     adjustRegisterHeader();
 }
@@ -103,7 +110,7 @@ function adjustAbstractionHeader() {
 
 
 
-// Add an row to the abstraction table
+// Add a row to the abstraction table
 function addAbstractionRow(name: string,
     type: string,
     access: string,
@@ -116,26 +123,26 @@ function addAbstractionRow(name: string,
 
     let cellName = row.insertCell(0);
     cellName.innerHTML = name;
-    cellName.setAttribute("style", "width: 30%");
+    cellName.style.width="30%";
 
     let cellType = row.insertCell(1);
     cellType.innerHTML = type;
     cellType.classList.add("ctext");
-    cellType.setAttribute("style", "width: 10%");
+    cellType.style.width="10%";
 
     let cellAccess: any = row.insertCell(2);
     cellAccess.classList.add("ctext");
     cellAccess.innerHTML = access;
-    cellAccess.setAttribute("style", "width: 10%");
+    cellAccess.style.width="10%";
 
     let cellValue: any = row.insertCell(3);
     cellValue.classList.add("ctext");
     cellValue.innerHTML = value;
-    cellValue.setAttribute("style", "width: 10%");
+    cellValue.style.width="10%";
 
     let cellDescription: any = row.insertCell(4);
     cellDescription.innerHTML = description;
-    cellDescription.setAttribute("style", "width: 40%");
+    cellDescription.style.width="40%";
 
     adjustAbstractionHeader();
 }
@@ -147,7 +154,7 @@ function addAbstractionRow(name: string,
 // HACK!!! Actually don't know why this works (col=0 abs width) but it
 // does
 function adjustDMHeader() {
-    document.getElementById('id-head-dm-origin').style.width = "400px";
+    document.getElementById('id-head-dm-origin').style.width = "125px";
     document.getElementById('id-head-dm-flags').style.width = "12.5%";
     document.getElementById('id-head-dm-cmask').style.width = "12.5%";
     document.getElementById('id-head-dm-cfilter').style.width = "12.5%";
@@ -159,7 +166,7 @@ function adjustDMHeader() {
 
 
 
-// Add an row to the DM table
+// Add a row to the DM table
 function addDMRow(origin: number,
     flags: number,
     cmask: number,
@@ -175,22 +182,22 @@ function addDMRow(origin: number,
 
     let cellOrigin = row.insertCell(0);
     cellOrigin.innerHTML = origin;
-    cellOrigin.setAttribute("style", "width: 12.5%");
+    cellOrigin.style.width="225px";
     cellOrigin.classList.add("ctext");
 
     let cellFlag = row.insertCell(1);
     cellFlag.innerHTML = flags;
-    cellFlag.setAttribute("style", "width: 12.5%");
+    cellFlag.style.width="12.5%";
     cellFlag.classList.add("ctext");
 
     let cellCMask = row.insertCell(2);
     cellCMask.innerHTML = cmask;
-    cellCMask.setAttribute("style", "width: 12.5%");
+    cellCMask.style.width="12.5%";
     cellCMask.classList.add("ctext");
 
     let cellCFilter = row.insertCell(3);
     cellCFilter.innerHTML = cfilter;
-    cellCFilter.setAttribute("style", "width: 12.5%");
+    cellCFilter.style.width="12.5%";
     cellCFilter.classList.add("ctext");
 
     let cellTMask = row.insertCell(4);
@@ -217,6 +224,37 @@ function addDMRow(origin: number,
 }
 
 
+// Dynamically adjust register header
+// HACK!!! Actually don't know why this works (col=0 abs width) but it
+// does
+function adjustWizardHeader() {
+    document.getElementById('id-head-wizard-name').style.width = "900px";
+    document.getElementById('id-head-wizard-description').style.width = "60%";
+}
+
+
+
+// Add a row to the Wizard table
+function addWizardRow(name: string, description: string) {
+
+    let tableRef = tblWizard.getElementsByTagName('tbody')[0];
+    let row: any = tableRef.insertRow(-1);
+    row.style.cursor = "pointer";
+
+    let cellName = row.insertCell(0);
+    cellName.innerHTML = name;
+    cellName.style.width="900px";
+    //cellName.classList.add("ctext");
+
+    let cellDescription = row.insertCell(1);
+    cellDescription.innerHTML = description;
+    cellDescription.style.width="60%";
+    //cellDescription.classList.add("ctext");
+
+    adjustWizardHeader();
+}
+
+
 
 //$('body').height(document.documentElement.clientHeight);
 
@@ -231,6 +269,7 @@ $(window).resize(function () {
     adjustRegisterHeader();
     adjustAbstractionHeader();
     adjustDMHeader();
+    adjustWizardHeader();
 
     /* console.log("scroll");
     // Get the tbody columns width array

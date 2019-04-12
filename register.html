@@ -164,12 +164,12 @@
                     <!-- Wizards -->
                     <div class="tab-pane fade" id="wizards" role="tabpanel" aria-labelledby="wizard-tab">
 
-                        <table id="tblWizards"
+                        <table id="tblWizard"
                             class="table scroll table-sm table-responsive-md table-hover table-bordered  ">
                             <thead class="thead-light" style="width: 100%;">
                                 <tr>
-                                    <th width="40%">Name</th>
-                                    <th width="60%">Description</th>
+                                    <th id="id-head-wizard-name" style="width: 40%;">Name</th>
+                                    <th id="id-head-wizard-description" style="width: 60%;">Description</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -199,7 +199,7 @@
 
 <script>
     // You can also require other files to run in this process
-    require('./dist/renderer.js')
+    require('./dist/register_renderer.js')
 </script>
 
 </html>
