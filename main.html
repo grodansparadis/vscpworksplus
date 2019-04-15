@@ -62,7 +62,7 @@
     <title>VSCP Works +</title>
 </head>
 
-<body style="padding-top: 70px;">
+<body class="bg-light" style="padding-top: 70px;">
     <div class="container-fluid">
 
         <div class="row">
@@ -106,7 +106,7 @@
                             <tr>
                                 <th class="pl-0" style="width: 400px">Name</th>
                                 <th class="pl-0" style="width: 20%">Type</th>
-                                <th class="pl-0" style="width: 5%" >Level</th>
+                                <th class="pl-0" style="width: 5%">Level</th>
                                 <th class="pl-0" style="width: 65%">Description</th>
                             </tr>
                         </thead>
@@ -115,10 +115,9 @@
                             <tr style="cursor: pointer">
                                 <td style="width: 20%">test</td>
                                 <td style="width: 10%">tcp/ip</td>
-                                <td style="width: 5%" >2</td>
+                                <td style="width: 5%">2</td>
                                 <td style="width: 65%">Raspberry Pi 4</td>
                             </tr>
-
 
                         </tbody>
                     </table>
@@ -135,6 +134,35 @@
             </div>
         </div>
 
+        <div class="row">
+
+        </div>
+        <form class="form-horizontal" action="/action_page.php">
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="email">Email:</label>
+                <div class="col-sm-10">
+                    <input type="email" class="form-control" id="email" placeholder="Enter email">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-sm-2" for="pwd">Password:</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" id="pwd" placeholder="Enter password">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <div class="checkbox">
+                        <label><input type="checkbox"> Remember me</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button type="submit" class="btn btn-default">Submit</button>
+                </div>
+            </div>
+        </form>
     </div>
 
     <!-- Bootstrap Optional JavaScript -->

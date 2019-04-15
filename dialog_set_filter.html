@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Event Filter</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+
+<body class="bg-light">
+
+    <div class="container">
+
+        <div class="col-sm-12 text-center">
+            <h2>Event Filter</h2>
+        </div>
+
+        <br>
+
+        <form action="/action_page.php" class="needs-validation" novalidate>
+
+            <div class="form-group-sm form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">Filter name:</div>
+                <div class="col-sm-9" >
+                    <input type="text" class="form-input form-control-sm col-sm-6" name="description"
+                        placeholder="Enter filter name"  name="description" />
+                </div>
+            </div>
+
+            <br>
+
+            <!-- Class -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Class filter:
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="class_filter" value="0x0000"/>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Class mask:
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="class_mask" value="0x0000"/>
+                </div>
+            </div>
+
+            <!-- Type -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Type filter:
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="type_filter" value="0x0000"/>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Type mask:</div>
+                <div class="col-sm-3">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="type_mask" value="0x0000"/>
+                </div>
+            </div>
+
+            <!-- Priority -->
+            <div class="form-group form-inline ">
+                <div class="col-sm-3 text-right font-weight-bold text-right">
+                    Priority filter:
+                </div>
+                <div class="col-sm-3 ">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="priority_filter" value="0"/>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Priority mask:
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="priority_mask" value="0"/>
+                </div>
+            </div>
+
+            <!-- Index -->
+            <div class="form-group form-inline ">
+                <div class="col-sm-3  font-weight-bold text-right">
+                    Index filter:
+                </div>
+                <div class="col-sm-3 ">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="index_filter" value="0x00"/>
+                </div>
+                <div class="col-sm-3  font-weight-bold text-right">
+                    Index mask:
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="index_mask" value="0x00"/>
+                </div>
+            </div>
+
+            <!-- Zone -->
+            <div class="form-group form-inline ">
+                <div class="col-sm-3  font-weight-bold text-right">
+                    Zone filter:
+                </div>
+                <div class="col-sm-3 ">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="zone_filter" value="0x00"/>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Zone mask:
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="zone_mask" value="0x00"/>
+                </div>
+            </div>
+
+            <!-- Subzone -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3  font-weight-bold text-right">
+                    Subzone filter:
+                </div>
+                <div class="col-sm-3 ">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="subzone_filter" value="0x00"/>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Zone mask:
+                </div>
+                <div class="col-sm-3">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="subzone_mask" value="0x00"/>
+                </div>
+            </div>
+
+            <!-- GUID filter -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">GUID filter:</div>
+                <div class="col-sm-9">
+                    <input class="form-input form-control-sm col-sm-6" type="text" name="description"
+                        placeholder="Enter GUID filter" name="description" required />
+
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback">There must be a GUID filter defined.</div>
+                </div>
+            </div>
+
+            <!-- GUID mask -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">GUID mask:</div>
+                <div class="col-sm-9">
+                    <input class="form-input form-control-sm col-sm-6 type="text" name="description"
+                        placeholder="Enter GUID mask" name="description" required />
+
+                    <div class="valid-feedback"></div>
+                    <div class="invalid-feedback">There must be a GUID mask defined.</div>
+                </div>
+            </div>
+
+            <div>
+                <hr />
+            </div>
+
+            <div class="col-sm-12 text-center">
+                <button type="button" class="btn-sm btn-warning">Load filter...</button>
+                <button type="button" class="btn-sm btn-warning">Save filter...</button>
+                <button type="button" class="btn-sm btn-warning">GUID filter wizard...</button>
+                <button type="button" class="btn-sm btn-warning">Setup wizard...</button>
+                <button type="button" class="btn-sm btn-warning">Clear</button></div>
+
+            <div>
+                <hr />
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <button type="submit" class="btn-lg btn-default">Cancel</button>
+                    <button type="submit" class="btn-lg btn-default">OK</button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        // Disable form submissions if there are invalid fields
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                // Get the forms we want to add validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+    </script>
+
+</body>
+
+</html>

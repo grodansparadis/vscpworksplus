@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Remote interfaces</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+
+<body class="bg-light">
+
+    <div class="container">
+        <div class="col-sm-12 text-center">
+            <h2>Remote interfaces</h2>
+        </div>
+        <form action="/action_page.php" class="needs-validation" novalidate>
+
+            <div class="form-group">
+                <table class="table table-striped table-hover " id="interface-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>GUID</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="clickable-row">
+                            <td>CAN4VSCP</td>
+                            <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
+                            <td>Type=2 CANAL DRIVER</td>
+                        </tr>
+                        <tr class="clickable-row">
+                            <td>Ethernet</td>
+                            <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
+                            <td>Type=2, Level II driver</td>
+                        </tr>
+                        <tr class="clickable-row">
+                            <td>Dooley</td>
+                            <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
+                            <td>Type=, super driver hghh ghgh hgghg ghhgh ghgh</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="col-sm-12 trxt-center">
+
+                <div>
+                    <hr />
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12" align="center">
+                        <button type="submit" class="btn-lg btn-default">Cancel</button>
+                        <button type="submit" class="btn-lg btn-default">OK</button>
+                    </div>
+                </div>
+        </form>
+
+    </div>
+
+    <script>
+        $('#interface-table').on('click', '.clickable-row', function (event) {
+            $(this).addClass('bg-info').siblings().removeClass('bg-info');
+        });
+    </script>
+
+</body>
+
+</html>
