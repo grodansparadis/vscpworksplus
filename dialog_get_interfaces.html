@@ -29,17 +29,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="clickable-row">
+                        <tr class="clickable-row" style="cursor: pointer">
                             <td>CAN4VSCP</td>
                             <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
                             <td>Type=2 CANAL DRIVER</td>
                         </tr>
-                        <tr class="clickable-row">
+                        <tr class="clickable-row" style="cursor: pointer">
                             <td>Ethernet</td>
                             <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
                             <td>Type=2, Level II driver</td>
                         </tr>
-                        <tr class="clickable-row">
+                        <tr class="clickable-row" style="cursor: pointer">
                             <td>Dooley</td>
                             <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
                             <td>Type=, super driver hghh ghgh hgghg ghhgh ghgh</td>
@@ -65,6 +65,7 @@
     </div>
 
     <script>
+        // Select table row
         $('#interface-table').on('click', '.clickable-row', function (event) {
             $(this).addClass('bg-info').siblings().removeClass('bg-info');
         });

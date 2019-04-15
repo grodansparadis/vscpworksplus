@@ -25,13 +25,13 @@ $(document).ready(function () {
     // Fill sample content in abstraction table
     addAbstractionRow("Temperature sensor 0", "Signed 16-bit integer", "r-", 19.2, "Main temp. sensor 0");
 
-    addDMRow(1,2,3,4,5,6,7,8);
-    addDMRow(1,2,3,4,5,6,7,8);
-    addDMRow(1,2,3,4,5,6,7,8);
-    addDMRow(1,2,3,4,5,6,7,8);
+    addDMRow(1, 2, 3, 4, 5, 6, 7, 8);
+    addDMRow(1, 2, 3, 4, 5, 6, 7, 8);
+    addDMRow(1, 2, 3, 4, 5, 6, 7, 8);
+    addDMRow(1, 2, 3, 4, 5, 6, 7, 8);
 
-    addWizardRow("Hell","The wizard from hell.");
-    addWizardRow("Ozz","The wizard from ozz.");
+    addWizardRow("Hell", "The wizard from hell.");
+    addWizardRow("Ozz", "The wizard from ozz.");
 });
 
 
@@ -45,7 +45,7 @@ function adjustRegisterHeader() {
     document.getElementById('id-head-reg-access').style.width = "10%";
     document.getElementById('id-head-reg-content').style.width = "15%";
     document.getElementById('id-head-reg-description').style.width = "60%";
-    document.getElementById('id-head-reg-description').style.color = "red";
+    //document.getElementById('id-head-reg-description').style.color = "red";
 }
 
 
@@ -74,21 +74,21 @@ function addRegisterRow(reg: number,
     let cellRegister = row.insertCell(0);
     cellRegister.innerHTML = sprintf("%04x:%04x", reg, page);
     cellRegister.classList.add("ctext");
-    cellRegister.style.width="15%";
+    cellRegister.style.width = "15%";
 
     let cellRights: any = row.insertCell(1);
     cellRights.innerHTML = access;
     cellRights.classList.add("ctext");
-    cellRights.style.width="10%";
+    cellRights.style.width = "10%";
 
     let cellValue: any = row.insertCell(2);
     cellValue.innerHTML = sprintf("%d (0x%02x)", value, value);
     cellValue.classList.add("ctext");
-    cellValue.style.width="15%";
+    cellValue.style.width = "15%";
 
     let cellDescription: any = row.insertCell(3);
     cellDescription.innerHTML = description;
-    cellDescription.style.width="60%";
+    cellDescription.style.width = "60%";
 
     adjustRegisterHeader();
 }
@@ -110,6 +110,8 @@ function adjustAbstractionHeader() {
 
 
 
+
+
 // Add a row to the abstraction table
 function addAbstractionRow(name: string,
     type: string,
@@ -123,26 +125,26 @@ function addAbstractionRow(name: string,
 
     let cellName = row.insertCell(0);
     cellName.innerHTML = name;
-    cellName.style.width="30%";
+    cellName.style.width = "30%";
 
     let cellType = row.insertCell(1);
     cellType.innerHTML = type;
     cellType.classList.add("ctext");
-    cellType.style.width="10%";
+    cellType.style.width = "10%";
 
     let cellAccess: any = row.insertCell(2);
     cellAccess.classList.add("ctext");
     cellAccess.innerHTML = access;
-    cellAccess.style.width="10%";
+    cellAccess.style.width = "10%";
 
     let cellValue: any = row.insertCell(3);
     cellValue.classList.add("ctext");
     cellValue.innerHTML = value;
-    cellValue.style.width="10%";
+    cellValue.style.width = "10%";
 
     let cellDescription: any = row.insertCell(4);
     cellDescription.innerHTML = description;
-    cellDescription.style.width="40%";
+    cellDescription.style.width = "40%";
 
     adjustAbstractionHeader();
 }
@@ -182,22 +184,22 @@ function addDMRow(origin: number,
 
     let cellOrigin = row.insertCell(0);
     cellOrigin.innerHTML = origin;
-    cellOrigin.style.width="225px";
+    cellOrigin.style.width = "225px";
     cellOrigin.classList.add("ctext");
 
     let cellFlag = row.insertCell(1);
     cellFlag.innerHTML = flags;
-    cellFlag.style.width="12.5%";
+    cellFlag.style.width = "12.5%";
     cellFlag.classList.add("ctext");
 
     let cellCMask = row.insertCell(2);
     cellCMask.innerHTML = cmask;
-    cellCMask.style.width="12.5%";
+    cellCMask.style.width = "12.5%";
     cellCMask.classList.add("ctext");
 
     let cellCFilter = row.insertCell(3);
     cellCFilter.innerHTML = cfilter;
-    cellCFilter.style.width="12.5%";
+    cellCFilter.style.width = "12.5%";
     cellCFilter.classList.add("ctext");
 
     let cellTMask = row.insertCell(4);
@@ -243,12 +245,12 @@ function addWizardRow(name: string, description: string) {
 
     let cellName = row.insertCell(0);
     cellName.innerHTML = name;
-    cellName.style.width="900px";
+    cellName.style.width = "900px";
     //cellName.classList.add("ctext");
 
     let cellDescription = row.insertCell(1);
     cellDescription.innerHTML = description;
-    cellDescription.style.width="60%";
+    cellDescription.style.width = "60%";
     //cellDescription.classList.add("ctext");
 
     adjustWizardHeader();
@@ -283,3 +285,25 @@ $(window).resize(function () {
     }); */
 
 }).resize(); // Trigger resize handler
+
+
+
+
+$(document).ready(function ($) {
+    console.log("Loaded");
+    /* $(".table-row").click(function () {
+        console.log("new-click");
+    }); */
+    // Select table row
+    $('#tblRegisters > tbody > tr').on('click', function () {
+        var values: any = [];
+        var count = 0;
+        console.log("Row click");
+        $(this).addClass('bg-info').siblings().removeClass('bg-info');
+        $(this).find("td").each(function () {
+            values[count] = $(this).text();
+            count++;
+        });
+        console.log(count, values);
+    });
+});

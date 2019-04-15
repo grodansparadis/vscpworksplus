@@ -9,16 +9,19 @@ electron_1.ipcRenderer.on('asynchronous-reply', function (event, arg) {
 electron_1.ipcRenderer.send('asynchronous-message', 'ping');
 //$(window).load(function(){
 //});
+// Select table row
 $('#main-table-id > tbody > tr').on('click', function () {
     var values = [];
     var count = 0;
     console.log("Row click");
+    $(this).addClass('bg-info').siblings().removeClass('bg-info');
     $(this).find("td").each(function () {
         values[count] = $(this).text();
         count++;
     });
     console.log(count, values);
 });
+// Open table row
 $('#main-table-id > tbody > tr').on('dblclick', function () {
     console.log("Row double-click");
 });

@@ -34,7 +34,7 @@ function adjustRegisterHeader() {
     document.getElementById('id-head-reg-access').style.width = "10%";
     document.getElementById('id-head-reg-content').style.width = "15%";
     document.getElementById('id-head-reg-description').style.width = "60%";
-    document.getElementById('id-head-reg-description').style.color = "red";
+    //document.getElementById('id-head-reg-description').style.color = "red";
 }
 // Add a row to the register table
 /* obj {
@@ -198,4 +198,22 @@ $(window).resize(function () {
         $(v).width(colWidth[i]);
     }); */
 }).resize(); // Trigger resize handler
+$(document).ready(function ($) {
+    console.log("Loaded");
+    /* $(".table-row").click(function () {
+        console.log("new-click");
+    }); */
+    // Select table row
+    $('#tblRegisters > tbody > tr').on('click', function () {
+        var values = [];
+        var count = 0;
+        console.log("Row click");
+        $(this).addClass('bg-info').siblings().removeClass('bg-info');
+        $(this).find("td").each(function () {
+            values[count] = $(this).text();
+            count++;
+        });
+        console.log(count, values);
+    });
+});
 //# sourceMappingURL=register_renderer.js.map
