@@ -10,6 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
+var net = __importStar(require("net"));
 var mainWindow;
 var childWindows = [];
 var path_home = path.join(electron_1.app.getPath('home'), ".vscpworks");
@@ -113,81 +114,34 @@ client.on('data', function(data) {
 client.on('close', function() {
     console.log('Connection closed');
 }); */
-var vscpclient = require('../src/node-vscp-tcpip-client.js');
-/* async function run()  { */
-var state = 0;
-var connection = new vscpclient();
-var params = {
-    host: 'vscp1.vscp.org',
-    port: 9598,
-    timeout: 3000,
-};
-connection.on('ready', function (response) {
-    console.log(connection.cmdResponse);
-    if (0 === state) {
-        connection.docmd("user admin", function (response) {
-            console.log(">>> " + state + " " + response);
-            console.log(connection.cmdResponse);
-            state++;
-        });
+var wrkResponse = '';
+var response = [];
+var bOK = false;
+var client = net.createConnection({ host: '192.168.1.6', port: 9598 }, function () {
+    // 'connect' listener
+    console.log('connected to server!');
+    // client.write('user admin\r\n');
+    // client.write('pass secret\r\n');
+});
+client.on('data', function (chunk) {
+    console.log(chunk.toString());
+    parseData(chunk);
+});
+client.on('end', function () {
+    console.log('disconnected from server');
+});
+// Parse response data
+function parseData(chunk) {
+    wrkResponse += chunk.toString();
+    var idx = wrkResponse.search("\\+OK -|-OK -");
+    // if no +OK found continue to collect data
+    if (idx === -1) {
+        return;
     }
-    else if (1 === state) {
-        connection.docmd("pass secret", function (response) {
-            console.log(">>> " + state + " " + response);
-            console.log(connection.cmdResponse);
-            state++;
-        });
-    }
-    else {
-        console.log("<<< " + state + " ");
-        state++;
-    }
-});
-connection.on('timeout', function () {
-    console.log('socket timeout!');
-    connection.end();
-});
-connection.on('end', function () {
-    console.log('connection end');
-});
-connection.on('close', function () {
-    console.log('connection closed');
-});
-connection.connect(params);
-/* try {
-  await connection.connect(params);
-} catch (error) {
-  // handle the throw (timeout)
-  console.log('Error:' + error);
+    // Make response string array
+    response = wrkResponse.split("\r\n");
+    wrkResponse = '';
+    // remove \r\n ending to get nice table
+    response.pop();
 }
-
-let res: any;
-try {
-  res = await connection.docmd('user admin');
-} catch (error) {
-  // handle the throw (timeout)
-  console.log('Error:' + error);
-}
-
-try {
-  res = await connection.docmd('pass secret');
-} catch (error) {
-  // handle the throw (timeout)
-  console.log('Error:' + error);
-}
-
-try {
-  res = await connection.docmd('quit');
-} catch (error) {
-  // handle the throw (timeout)
-  console.log('Error:' + error);
-}
-
-//console.log('async result:', res);
-
-connection.on('ready', function () {
-  /* console.log('ready'); */
-//}); * /
-//}
-// run()
 //# sourceMappingURL=main.js.map

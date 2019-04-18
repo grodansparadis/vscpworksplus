@@ -126,91 +126,58 @@ client.on('close', function() {
 	console.log('Connection closed');
 }); */
 
-const vscpclient = require('../src/node-vscp-tcpip-client.js')
+let wrkResponse: string = '';
+let response: any = [];
+let bOK: any = false;
 
-/* async function run()  { */
+const client = net.createConnection({ host: '192.168.1.6', port: 9598 }, () => {
+  console.log('connected to server!');
+  // client.write('user admin\r\n');
+  // client.write('pass secret\r\n');
+});
 
-let state = 0;
-let connection = new vscpclient()
+client.on('data', (chunk: any) => {
+  console.log(chunk.toString());
+  parseData(chunk);
+});
+client.on('end', () => {
+  console.log('disconnected from server');
+});
 
-let params = {
-  host: 'vscp1.vscp.org',
-  port: 9598,
-  timeout: 3000,
-}
+// Parse response data
+function parseData(chunk: any) {
 
-connection.on('ready', function (response: any) {
+  wrkResponse += chunk.toString();
+  let idx = wrkResponse.search("\\+OK -|-OK -");
 
-  console.log(connection.cmdResponse);
-
-  if (0 === state) {
-    connection.docmd("user admin", function (response: any) {
-      console.log(`>>> ${state} ` + response);
-      console.log(connection.cmdResponse);
-      state++;
-    });
-  } else if (1 === state) {
-    connection.docmd("pass secret", function (response: any) {
-      console.log(`>>> ${state} ` + response);
-      console.log(connection.cmdResponse);
-      state++;
-    });
+  // if no +OK found continue to collect data
+  if (idx === -1 ) {
+    return;
   }
-  else {
-    console.log(`<<< ${state} `);
-    state++;
+
+  // Make response string array
+  response = wrkResponse.split("\r\n");
+  wrkResponse = '';
+
+  // remove \r\n ending to get nice table
+  response.pop();
+
+}
+
+// Send (do/exec) command
+docmd = function (sock, cmd ) {
+
+  cmd += '\r\n';
+
+  if (sock.writable) {
+
+    sock.write(cmd, function () {
+
+      self.vscptcpState = 'response';
+      self.emit('writedone');
+
+    });
+
   }
-})
 
-connection.on('timeout', function () {
-  console.log('socket timeout!')
-  connection.end()
-})
-
-connection.on('end', function () {
-  console.log('connection end')
-})
-
-connection.on('close', function () {
-  console.log('connection closed')
-})
-
-connection.connect(params);
-
-/* try {
-  await connection.connect(params);
-} catch (error) {
-  // handle the throw (timeout)
-  console.log('Error:' + error);
 }
-
-let res: any;
-try {
-  res = await connection.docmd('user admin');
-} catch (error) {
-  // handle the throw (timeout)
-  console.log('Error:' + error);
-}
-
-try {
-  res = await connection.docmd('pass secret');
-} catch (error) {
-  // handle the throw (timeout)
-  console.log('Error:' + error);
-}
-
-try {
-  res = await connection.docmd('quit');
-} catch (error) {
-  // handle the throw (timeout)
-  console.log('Error:' + error);
-}
-
-//console.log('async result:', res);
-
-connection.on('ready', function () {
-  /* console.log('ready'); */
-  //}); * /
-//}
-
-// run()

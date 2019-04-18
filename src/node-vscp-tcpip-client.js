@@ -15,7 +15,7 @@ send command.
 States
 ======
 start 		      - connected to server
-response 	- waiting for response after command sent
+response 	      - waiting for response after command sent
 sentcmd		      - Positive response received
 
 Events
@@ -55,8 +55,243 @@ vscptcpclient.prototype.connect = function (opts) {
   this.timeout = (typeof opts.timeout !== 'undefined' ? opts.timeout : 500);
   this.username = (typeof opts.username !== 'undefined' ? opts.username : 'admin');
   this.password = (typeof opts.password !== 'undefined' ? opts.password : 'secret');
+  this.onEvent = [];
+  var cmdQueue = [];
   this.response = '';
   this.vscptcpState;
+
+  this._signalEvent = function(vscpEvent) {
+    var index = 0;
+
+    /* Signal event to all event listeners */
+    for (index = 0; index < this.onEvent.length; ++index) {
+        if (("function" === typeof this.onEvent[index]) &&
+            (null !== this.onEvent[index])) {
+            this.onEvent[index](this, vscpEvent);
+        }
+    }
+  };
+
+  /**
+     * Add a event listener.
+     *
+     * @param {function} eventListener - Event listener function
+     */
+    this.addEventListener = function(eventListener) {
+      if ("function" === typeof eventListener) {
+          this.onEvent.push(eventListener);
+      }
+  };
+
+  /**
+     * Remove a event listener.
+     *
+     * @param {function} eventListener - Event listener function
+     */
+    this.removeEventListener = function(eventListener) {
+      var index = 0;
+
+      for (index = 0; index < this.onEvent.length; ++index) {
+          if (this.onEvent[index] === eventListener) {
+              this.onEvent.splice(index, 1);
+          }
+      }
+
+  };
+
+  /** Get the index of a command in the queue.
+     *
+     * @private
+     * @param {string} command - Server command string
+     *
+     * @return {number} Index of command in the queue. If index is < 0, the command was not found.
+     */
+    this._getPendingCommandIndex = function(command) {
+
+      var index = 0;
+
+      for (index = 0; index < cmdQueue.length; ++index) {
+          if (command === cmdQueue[index].command) {
+              break;
+          }
+      }
+
+      if (cmdQueue.length === index) {
+          index = -1;
+      }
+
+      return index;
+  };
+
+  /** Get command from queue with pending commands.
+     *
+     * @private
+     * @param {string} command - Server command string
+     *
+     * @return {Command} Command object
+     */
+    this._getPendingCommand = function(command) {
+
+      var index = this._getPendingCommandIndex(command);
+      var cmd = null;
+
+      if (0 <= index) {
+          cmd = cmdQueue[index];
+          cmdQueue.splice(index, 1);
+
+          return cmd;
+      }
+
+      return null;
+  };
+
+  /**
+     * Signal success of the current asynchronous operation.
+     *
+     * @private
+     * @param {string} command  - Server command string
+     * @param {object} [obj]    - Options for on success callback
+     */
+    this._signalSuccess = function(command, obj) {
+
+      var cmd = this._getPendingCommand(command);
+
+      if (null !== cmd) {
+
+          if (("function" === typeof cmd.onSuccess) && (null !== cmd.onSuccess)) {
+
+              if ("undefined" === typeof obj) {
+                  cmd.onSuccess(this);
+              } else {
+                  cmd.onSuccess(this, obj);
+              }
+          }
+
+          if (("function" === typeof cmd.resolve) && (null !== cmd.resolve)) {
+
+              if ("undefined" === typeof obj) {
+                  if (null !== cmd.resolve) {
+                      cmd.resolve(this);
+                  }
+              } else {
+                  /* eslint-disable no-lonely-if */
+                  if (null !== cmd.resolve) {
+                      cmd.resolve(this, obj);
+                  }
+                  /* eslint-enable no-lonely-if */
+              }
+          }
+      }
+  };
+
+  /**
+   * Signal failed of the current asynchronous operation.
+   *
+   * @private
+   * @param {string} command  - Server command string
+   * @param {object} [obj]    - Options for on error callback
+   */
+  this._signalError = function(command, obj) {
+
+      var cmd = this._getPendingCommand(command);
+
+      if (null !== cmd) {
+
+          if (("function" === typeof cmd.onError) && (null !== cmd.onError)) {
+
+              if ("undefined" === typeof obj) {
+                  cmd.onError(this);
+              } else {
+                  cmd.onError(this, obj);
+              }
+          }
+
+          if (("function" === typeof cmd.reject) && (null !== cmd.reject)) {
+
+              if ("undefined" === typeof obj) {
+                  if (null !== cmd.reject) {
+                      cmd.reject(this);
+                  }
+              } else {
+                  /* eslint-disable no-lonely-if */
+                  if (null !== cmd.reject) {
+                      cmd.reject(this, obj);
+                  }
+                  /* eslint-enable no-lonely-if */
+              }
+          }
+      }
+  };
+
+  /**
+   * Signal a connection error.
+   *
+   * @private
+   */
+  this._signalConnError = function() {
+      if (("function" === typeof this.onConnError) &&
+          (null !== this.onConnError)) {
+          this.onConnError(this);
+      }
+  };
+
+  /**
+     * Signal a received VSCP response message.
+     * If the message is handled by the application, the application will return
+     * true, which means no further actions shall take place in this object.
+     * Otherwise the message is handled by the standard onMessage handler here.
+     *
+     * @private
+     * @param {string} msg - VSCP server response message
+     *
+     * @return {boolean} Message is handled (true) or not (false).
+     */
+    this._signalMessage = function(msg) {
+      var status = false;
+
+      if (("function" === typeof this.onMessage) &&
+          (null !== this.onMessage)) {
+
+          if (true === this.onMessage(this, msg)) {
+              status = true;
+          }
+      }
+
+      return status;
+  };
+
+    /**
+     * Signal a received VSCP event.
+     *
+     * @private
+     * @param {vscp.Event} vscpEvent - VSCP event
+     */
+    this._signalEvent = function(vscpEvent) {
+      var index = 0;
+
+      /* Signal event to all event listeners */
+      for (index = 0; index < this.onEvent.length; ++index) {
+          if (("function" === typeof this.onEvent[index]) &&
+              (null !== this.onEvent[index])) {
+              this.onEvent[index](this, vscpEvent);
+          }
+      }
+  };
+
+  /**
+     * Signal a received table row.
+     *
+     * @private
+     * @param {object} row          - Table row object
+     * @param {string} row.date     - Date and time
+     * @param {string} row.value    - Value
+     */
+    this._signalTableRow = function(row) {
+      if (("function" === typeof this.onTableRow) &&
+          (null !== this.onTableRow)) {
+          this.onTableRow(this, row);
+      }
+  };
 
   this.sock = net.createConnection({
     port: port,
