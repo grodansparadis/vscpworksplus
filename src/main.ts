@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import * as net from "net";
+let VSCPClient = require('../src/vscptcp');
 
 let mainWindow: Electron.BrowserWindow;
 let childWindows: any = [];
@@ -126,58 +127,91 @@ client.on('close', function() {
 	console.log('Connection closed');
 }); */
 
-let wrkResponse: string = '';
-let response: any = [];
-let bOK: any = false;
 
-const client = net.createConnection({ host: '192.168.1.6', port: 9598 }, () => {
-  console.log('connected to server!');
-  // client.write('user admin\r\n');
-  // client.write('pass secret\r\n');
-});
+// ------------------------------------------------------------------
 
-client.on('data', (chunk: any) => {
-  console.log(chunk.toString());
-  parseData(chunk);
-});
-client.on('end', () => {
-  console.log('disconnected from server');
-});
+// let wrkResponse: string = '';
+// let response: any = [];
+// let bOK: any = false;
 
-// Parse response data
-function parseData(chunk: any) {
+// const client = net.createConnection({ host: '192.168.1.6', port: 9598 }, () => {
+//   console.log('connected to server!');
+//   // client.write('user admin\r\n');
+//   // client.write('pass secret\r\n');
+// });
 
-  wrkResponse += chunk.toString();
-  let idx = wrkResponse.search("\\+OK -|-OK -");
+// client.on('data', (chunk: any) => {
+//   console.log(chunk.toString());
+//   parseData(chunk);
+// });
+// client.on('end', () => {
+//   console.log('disconnected from server');
+// });
 
-  // if no +OK found continue to collect data
-  if (idx === -1 ) {
-    return;
-  }
+// // Parse response data
+// function parseData(chunk: any) {
 
-  // Make response string array
-  response = wrkResponse.split("\r\n");
-  wrkResponse = '';
+//   wrkResponse += chunk.toString();
+//   let idx = wrkResponse.search("\\+OK -|-OK -");
 
-  // remove \r\n ending to get nice table
-  response.pop();
+//   // if no +OK found continue to collect data
+//   if (idx === -1 ) {
+//     return;
+//   }
 
-}
+//   // Make response string array
+//   response = wrkResponse.split("\r\n");
+//   wrkResponse = '';
 
-// Send (do/exec) command
-docmd = function (sock, cmd ) {
+//   // remove \r\n ending to get nice table
+//   response.pop();
 
-  cmd += '\r\n';
+// }
 
-  if (sock.writable) {
+// // Send (do/exec) command
+// docmd = function (sock, cmd ) {
 
-    sock.write(cmd, function () {
+//   cmd += '\r\n';
 
-      self.vscptcpState = 'response';
-      self.emit('writedone');
+//   if (sock.writable) {
 
-    });
+//     sock.write(cmd, function () {
 
-  }
+//       self.vscptcpState = 'response';
+//       self.emit('writedone');
 
-}
+//     });
+
+//   }
+
+// }
+
+// ------------------------------------------------------------------
+
+//const axios = require('axios');
+// import axios from 'axios';
+// const xml2js = require('xml2js');
+
+// const parser = new xml2js.Parser();
+
+// axios.get('http://www.eurosource.se/paris_010.xml')
+//   .then((response: any) => {
+//     //console.dir(response);
+//     parser.parseString(response.data, (err: string, result:any) => {
+//       // console.dir('# events: ' + result.vscp.module[0].events[0].event.length);
+//       // console.dir(result.vscp.module[0].events[0].event);
+//       // for (let reg of result.vscp.module[0].registers[0].reg) {
+//       //   console.log(reg.description[0]._);
+//       // }
+//       console.log(result.vscp.module[0].manual[0].$.path);
+//     });
+
+//   })
+//   .catch((err: string) => {
+//     console.log(err);
+//   });
+
+  // ------------------------------------------------------------------
+
+  let t8 = new VSCPClient;
+  t8.connect({});

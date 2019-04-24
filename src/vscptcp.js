@@ -39,14 +39,53 @@ var util = require('util');
 var events = require('events');
 var net = require('net');
 
-/* global aesjs:true */
-
 /** Namespace for all functionality of the VSCP provided libraries.
  * @namespace vscp
  */
 var vscp = vscp || {};
 
 /* ---------------------------------------------------------------------- */
+
+/** Create a general purpose namespace method. This will allow us to create
+ * namespace a bit easier.
+ *
+ * @private
+ * @param {string} namespace Complete namespace, e.g. "a.b.c.d"
+ */
+vscp._createNS = function(namespace) {
+
+    var nsparts = namespace.split(".");
+    var parent = vscp;
+
+    /* We want to be able to include or exclude the root namespace .
+     * So we strip it if it's in the namespace.
+     */
+    if (nsparts[0] === "vscp") {
+        nsparts = nsparts.slice(1);
+    }
+
+    /* Loop through the parts and create a nested namespace if necessary */
+    for (var i = 0; i < nsparts.length; i++) {
+        var partname = nsparts[i];
+
+        /* Check if the current parent already has the namespace declared, if
+         * not create it.
+         */
+        if ("undefined" === typeof parent[partname]) {
+            parent[partname] = {};
+        }
+
+        /* Get a reference to the deepest element in the hierarchy so far */
+        parent = parent[partname];
+    }
+
+    /* The parent is now completely constructed with empty namespaces and can be used. */
+    return parent;
+};
+
+/* global aesjs:true */
+
+
 
 /**
  * VSCP tcp/ip api functions
@@ -290,7 +329,8 @@ vscp.tcp.Client = function () {
      * @param {object} options                  - Options
      * @param {string} options.command          - Command string
      * @param {string} [options.data]           - Data string (default: empty)
-     * @param {boolean} [options.simulate]      - Simulate the command (true/false) (default: false)
+     * @param {boolean} [options.simulate]      - Simulate the command (true/false)
+     *                                              (default: false)
      * @param {function} [options.onSuccess]    - Callback on success (default: null)
      * @param {function} [options.onError]      - Callback on error (default: null)
      * @param {function} [options.resolve]      - Promise resolve function (default: null)
@@ -551,7 +591,8 @@ vscp.tcp.Client = function () {
      * @param {number} variable.id              - Consecutive number
      * @param {string} variable.name            - Variable name
      * @param {string} variable.type            - Variable type
-     * @param {boolean} variable.persistency    - Variable is persistent (true) or not (false)
+     * @param {boolean} variable.persistency    - Variable is persistent (true) or not
+     *                                              (false)
      * @param {string} variable.value           - Variable value
      */
     this._signalVariable = function (variable) {
@@ -1025,7 +1066,7 @@ vscp.tcp.Client.prototype.onConnectionOpen = function () {
     console.info(vscp.utility.getTime() + " Initiate authentication.");
 
     this._sendCommand({
-        command: "USER " + this.userName + "\r\n";
+        command: "USER " + this.userName + "\r\n",
         data: "",
         onSuccess: null,
         onError: null,
@@ -1151,9 +1192,14 @@ vscp.tcp.Client.prototype.onReply = function (msg) {
  * @param {string} options.userName         - User name used for authentication
  * @param {string} options.password         - Password used for authentication
  * @param {string} options.vscpkey          - Secret key used for authentication
- * @param {function} [options.onMessage]    - Function which is called on any received VSCP response message.
- * @param {function} [options.onSuccess]    - Function which is called on a successful connection establishment.
- * @param {function} [options.onError]      - Function which is called on a failed connection establishment or in case the connection is lost during the session.
+ * @param {function} [options.onMessage]    - Function which is called on any received
+ *                                              VSCP response message.
+ * @param {function} [options.onSuccess]    - Function which is called on a successful
+ *                                              connection establishment.
+ * @param {function} [options.onError]      - Function which is called on a
+ *                                              failed connection establishment or in
+ *                                              case the connection is lost during the
+ *                                              session.
  *
  * @return {object} Promise
  */
@@ -1279,7 +1325,7 @@ vscp.tcp.Client.prototype.connect = function (options) {
  *
  * @param {object} options                  - Options
  * @param {function} [options.onSuccess]    - Function which is called on a successful
- *                                            disconnection.
+ *                                              disconnection.
  * @return {object} Promise
  */
 vscp.tcp.Client.prototype.disconnect = function (options) {
@@ -1329,8 +1375,10 @@ vscp.tcp.Client.prototype.disconnect = function (options) {
  * Start rcvloop.
  *
  * @param {object} options                  - Options
- * @param {function} [options.onSuccess]    - Function which is called on a successful operation
- * @param {function} [options.onError]      - Function which is called on a failed operation
+ * @param {function} [options.onSuccess]    - Function which is called on a
+ *                                              successful operation
+ * @param {function} [options.onError]      - Function which is called on a
+ *                                              failed operation
  *
  * @return {object} Promise
  */
@@ -1375,8 +1423,10 @@ vscp.tcp.Client.prototype.start = function (options) {
  * Stop rcvloop.
  *
  * @param {object} options                  - Options
- * @param {function} [options.onSuccess]    - Function which is called on a successful operation
- * @param {function} [options.onError]      - Function which is called on a failed operation
+ * @param {function} [options.onSuccess]    - Function which is called on a
+ *                                              successful operation
+ * @param {function} [options.onError]      - Function which is called on a
+ *                                              failed operation
  *
  * @return {object} Promise
  */
@@ -1421,8 +1471,10 @@ vscp.tcp.Client.prototype.stop = function (options) {
  * Clear the VSCP event queue on the server side.
  *
  * @param {object} options                  - Options
- * @param {function} [options.onSuccess]    - Function which is called on a successful operation
- * @param {function} [options.onError]      - Function which is called on a failed operation
+ * @param {function} [options.onSuccess]    - Function which is called on a
+ *                                              successful operation
+ * @param {function} [options.onError]      - Function which is called on a
+ *                                              failed operation
  *
  * @return {object} Promise
  */
@@ -1468,8 +1520,10 @@ vscp.tcp.Client.prototype.clearQueue = function (options) {
  *
  * @param {object} options                  - Options
  * @param {vscp.Event} options.event        - VSCP event to send
- * @param {function} [options.onSuccess]    - Function which is called on a successful operation
- * @param {function} [options.onError]      - Function which is called on a failed operation
+ * @param {function} [options.onSuccess]    - Function which is called on a
+ *                                              successful operation
+ * @param {function} [options.onError]      - Function which is called on a
+ *                                              failed operation
  *
  * @return {object} Promise
  */
@@ -1536,8 +1590,10 @@ vscp.tcp.Client.prototype.sendEvent = function (options) {
  * @param {number} [options.maskClass]              - Class mask (default: 0xffff)
  * @param {number} [options.maskType]               - Type mask (default: 0xffff)
  * @param {number[]|string} [options.maskGuid]      - GUID mask (default: 0)
- * @param {function} [options.onSuccess]            - Function which is called on a successful operation
- * @param {function} [options.onError]              - Function which is called on a failed operation
+ * @param {function} [options.onSuccess]            - Function which is called on
+ *                                                      a successful operation
+ * @param {function} [options.onError]              - Function which is called on
+ *                                                      a failed operation
  *
  * @return {object} Promise
  */
@@ -1672,8 +1728,10 @@ vscp.tcp.Client.prototype.setFilter = function (options) {
  * @param {boolean} options.persistency         - Variable is persistent (true) or not (false)
  * @param {string} options.value                - Variable Value
  * @param {string} [options.note]               - Variable note (optional)
- * @param {function} [options.onSuccess]        - Function which is called on a successful operation
- * @param {function} [options.onError]          - Function which is called on a failed operation
+ * @param {function} [options.onSuccess]        - Function which is called on
+ *                                                  a successful operation
+ * @param {function} [options.onError]          - Function which is called on
+ *                                                  a failed operation
  *
  * @return {object} Promise
  */
@@ -1774,8 +1832,10 @@ vscp.tcp.Client.prototype.createVar = function (options) {
  *
  * @param {object} options                  - Options
  * @param {string} options.name             - Variable name
- * @param {function} [options.onSuccess]    - Function which is called on a successful operation
- * @param {function} [options.onError]      - Function which is called on a failed operation
+ * @param {function} [options.onSuccess]    - Function which is called on a
+ *                                              successful operation
+ * @param {function} [options.onError]      - Function which is called on a
+ *                                              failed operation
  *
  * @return {object} Promise
  */
@@ -1823,8 +1883,10 @@ vscp.tcp.Client.prototype.readVar = function (options) {
  * @param {string} options.name             - Variable name
  * @param {string} options.value            - Variable value
  * @param {number} options.type             - Variable type
- * @param {function} [options.onSuccess]    - Function which is called on a successful operation
- * @param {function} [options.onError]      - Function which is called on a failed operation
+ * @param {function} [options.onSuccess]    - Function which is called on a
+ *                                              successful operation
+ * @param {function} [options.onError]      - Function which is called on a
+ *                                              failed operation
  *
  * @return {object} Promise
  */
@@ -2218,3 +2280,5 @@ vscp.tcp.Client.prototype.readTable = function (options) {
         });
     }.bind(this));
 };
+
+module.exports.Client;
