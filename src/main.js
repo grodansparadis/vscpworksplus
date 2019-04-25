@@ -1,13 +1,13 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron";
-import * as fs from "fs";
-import * as path from "path";
-import * as net from "net";
-let VSCPClient = require('../src/vscptcp');
+//import * as net from "net";
+const { app, BrowserWindow, ipcMain, dialog} = require("electron");
+const fs = require('fs');
+const path = require('path');
+//const ipcRenderer  = electron.ipcRenderer;
 
-let mainWindow: Electron.BrowserWindow;
-let childWindows: any = [];
+let mainWindow;
+let childWindows = [];
 
-let path_home: string = path.join(app.getPath('home'), ".vscpworks")
+let path_home = path.join(app.getPath('home'), ".vscpworks")
 
 // Create home folder if it does not exist
 if (!fs.existsSync(path_home)) {
@@ -28,16 +28,13 @@ function createMainWindow() {
     },
   });
 
-  // and load the index.html of the app.
-  mainWindow.loadFile(path.join(__dirname, "../main.html"));
-
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
 
   // Show main window when it's ready to be displayed
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-
+    console.log('Window is visible');
     //console.log(dialog.showOpenDialog({
     //  properties: ['openFile', 'openDirectory', 'multiSelections']
     //}));
@@ -51,27 +48,29 @@ function createMainWindow() {
     mainWindow = null;
   });
 
+  // and load the index.html of the app.
+  mainWindow.loadFile(path.join(__dirname, "../main.html"));
 
 }
 
-/* ipcMain.on('asynchronous-message', (event: any, arg: any) => {
-  console.log("async " + arg) // prints "ping"
-  event.sender.send('asynchronous-reply', 'pong')
-})
+// ipcMain.on('asynchronous-message', (event: any, arg: any) => {
+//   console.log("async " + arg) // prints "ping"
+//   event.sender.send('asynchronous-reply', 'pong')
+// })
 
-ipcMain.on('synchronous-message', (event: any, arg: any) => {
-  console.log("sync " + arg) // prints "ping"
-  event.returnValue = 'pong'
-  ttt();
-}) */
+// ipcMain.on('synchronous-message', (event: any, arg: any) => {
+//   console.log("sync " + arg) // prints "ping"
+//   event.returnValue = 'pong'
+//   ttt();
+// })
 
-ipcMain.on('open-second-window', (event: any, arg: any) => {
-  //secondWindow.show()
-})
+// ipcMain.on('open-second-window', (event: any, arg: any) => {
+//   //secondWindow.show()
+// })
 
-ipcMain.on('close-second-window', (event: any, arg: any) => {
-  //secondWindow.hide()
-})
+// ipcMain.on('close-second-window', (event: any, arg: any) => {
+//   //secondWindow.hide()
+// })
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -213,5 +212,20 @@ client.on('close', function() {
 
   // ------------------------------------------------------------------
 
-  let t8 = new VSCPClient;
-  t8.connect({});
+  let vscp_tcp_Client = require('../src/vscptcp');
+  //import vscp_tcp_Client from '../@types/vscptcp'
+  //const mod = require('../src/vscptcp');
+
+  let tttt = function(aaa,bbb) {
+    console.log("tttt ");
+    console.log(bbb);
+  }
+
+  let t8 = new vscp_tcp_Client();
+  t8.connect({
+    host: "127.0.0.1",
+    port: 9598,
+    userName: "admin",
+    password: "secret",
+    onSuccess: tttt
+  });

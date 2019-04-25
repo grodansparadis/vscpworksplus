@@ -6,11 +6,14 @@ var __importStar = (this && this.__importStar) || function (mod) {
     result["default"] = mod;
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var electron_1 = require("electron");
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
-var VSCPClient = require('../src/vscptcp');
+//import * as net from "net";
 var mainWindow;
 var childWindows = [];
 var path_home = path.join(electron_1.app.getPath('home'), ".vscpworks");
@@ -31,13 +34,12 @@ function createMainWindow() {
             nodeIntegration: true,
         },
     });
-    // and load the index.html of the app.
-    mainWindow.loadFile(path.join(__dirname, "../main.html"));
     // Open the DevTools.
     mainWindow.webContents.openDevTools();
     // Show main window when it's ready to be displayed
     mainWindow.once('ready-to-show', function () {
         mainWindow.show();
+        console.log('Window is visible');
         //console.log(dialog.showOpenDialog({
         //  properties: ['openFile', 'openDirectory', 'multiSelections']
         //}));
@@ -49,23 +51,24 @@ function createMainWindow() {
         // when you should delete the corresponding element.
         mainWindow = null;
     });
+    // and load the index.html of the app.
+    mainWindow.loadFile(path.join(__dirname, "../main.html"));
 }
-/* ipcMain.on('asynchronous-message', (event: any, arg: any) => {
-  console.log("async " + arg) // prints "ping"
-  event.sender.send('asynchronous-reply', 'pong')
-})
-
-ipcMain.on('synchronous-message', (event: any, arg: any) => {
-  console.log("sync " + arg) // prints "ping"
-  event.returnValue = 'pong'
-  ttt();
-}) */
-electron_1.ipcMain.on('open-second-window', function (event, arg) {
-    //secondWindow.show()
-});
-electron_1.ipcMain.on('close-second-window', function (event, arg) {
-    //secondWindow.hide()
-});
+// ipcMain.on('asynchronous-message', (event: any, arg: any) => {
+//   console.log("async " + arg) // prints "ping"
+//   event.sender.send('asynchronous-reply', 'pong')
+// })
+// ipcMain.on('synchronous-message', (event: any, arg: any) => {
+//   console.log("sync " + arg) // prints "ping"
+//   event.returnValue = 'pong'
+//   ttt();
+// })
+// ipcMain.on('open-second-window', (event: any, arg: any) => {
+//   //secondWindow.show()
+// })
+// ipcMain.on('close-second-window', (event: any, arg: any) => {
+//   //secondWindow.hide()
+// })
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -175,6 +178,9 @@ client.on('close', function() {
 //     console.log(err);
 //   });
 // ------------------------------------------------------------------
-var t8 = new VSCPClient;
+//let vscp_tcp_Client = require('../src/vscptcp');
+var vscptcp_1 = __importDefault(require("../@types/vscptcp"));
+//const mod = require('../src/vscptcp');
+var t8 = new vscptcp_1.default();
 t8.connect({});
 //# sourceMappingURL=main.js.map
