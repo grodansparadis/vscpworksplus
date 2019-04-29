@@ -1,5 +1,5 @@
 //import * as net from "net";
-const { app, BrowserWindow, ipcMain, dialog} = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const fs = require('fs');
 const path = require('path');
 //const ipcRenderer  = electron.ipcRenderer;
@@ -210,22 +210,57 @@ client.on('close', function() {
 //     console.log(err);
 //   });
 
-  // ------------------------------------------------------------------
+// ------------------------------------------------------------------
 
-  let vscp_tcp_Client = require('../src/vscptcp');
-  //import vscp_tcp_Client from '../@types/vscptcp'
-  //const mod = require('../src/vscptcp');
+let vscp_tcp_Client = require('../src/vscptcp');
+//import vscp_tcp_Client from '../@types/vscptcp'
+//const mod = require('../src/vscptcp');
 
-  let tttt = function(aaa,bbb) {
-    console.log("tttt ");
-    console.log(bbb);
-  }
+let aaaa = function (aaa, bbb) {
+  console.log("interface success ");
+  console.log(bbb);
+}
 
-  let t8 = new vscp_tcp_Client();
-  t8.connect({
+let pppp = function (aaa, bbb) {
+  console.log("quit success ");
+  console.log(bbb);
+}
+
+let tttt = function (aaa, bbb) {
+  console.log("connect success ");
+  console.log(bbb);
+  t8.disconnect(
+    {
+      onSuccess: pppp
+    }
+  );
+}
+
+let t8 = new vscp_tcp_Client();
+t8.connect(
+  {
     host: "127.0.0.1",
     port: 9598,
-    userName: "admin",
-    password: "secret",
-    onSuccess: tttt
-  });
+    onSuccess: null
+  })
+  .then(() => pppp())
+  .then(() => t8.sendCommand(
+    {
+      command: "user",
+      argument: "admin"
+    }))
+  .then(() => t8.sendCommand(
+    {
+      command: "pass",
+      argument: "secret"
+    }))
+  .then(() => t8.sendCommand(
+    {
+      command: "iuuuuunterfacee",
+      argument: "list",
+      onSuccess: aaaa
+    }))
+    .then( (a,b) => {
+      console.log(b);
+    } )
+    .catch(err => console.log("Catch Error"+err) );

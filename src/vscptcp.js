@@ -239,46 +239,19 @@ module.exports = vscp_tcp_Client = function () {
     util.inherits(vscp_tcp_Client, events.EventEmitter);
 
 
-    /** Get the index of a command in the queue.
+    /** Get next command from queue with pending commands.
      *
      * @private
-     * @param {string} command - Server command
-     *
-     * @return {number} Index of command in the queue. If index is < 0,
-     *          the command was not found.
-     */
-    this._getPendingCommandIndex = function (command) {
-
-        var index = 0;
-
-        for (index = 0; index < this.cmdQueue.length; ++index) {
-            if (command === this.cmdQueue[index].command) {
-                break;
-            }
-        }
-
-        if (this.cmdQueue.length === index) {
-            index = -1;
-        }
-
-        return index;
-    };
-
-    /** Get command from queue with pending commands.
-     *
-     * @private
-     * @param {string} command - Server command string
      *
      * @return {Command} Command object
      */
-    this._getPendingCommand = function (command) {
+    this._getPendingCommand = function () {
 
-        var index = this._getPendingCommandIndex(command);
         var cmd = null;
 
-        if (0 <= index) {
-            cmd = this.cmdQueue[index];
-            this.cmdQueue.splice(index, 1);
+        if (0 <= this.cmdQueue.length) {
+            cmd = this.cmdQueue[0];
+            this.cmdQueue.splice(0, 1);
 
             return cmd;
         }
@@ -286,148 +259,18 @@ module.exports = vscp_tcp_Client = function () {
         return null;
     };
 
-    /**
-     * Send command to remote VSCP server and store the command in the internal queue.
-     * In some situation only a virtual command shall be stored, but not sent. In this
-     * case use set the 'simulate' parameter to true.
-     *
-     * @private
-     * @param {object} options                  - Options
-     * @param {string} options.command          - Command string
-     * @param {string} [options.argument]       - Command argument string
-     * @param {boolean} [options.simulate]      - Simulate the command (true/false)
-     *                                              (default: false)
-     * @param {function} [options.onSuccess]    - Callback on success (default: null)
-     * @param {function} [options.onError]      - Callback on error (default: null)
-     * @param {function} [options.resolve]      - Promise resolve function (default: null)
-     * @param {function} [options.reject]       - Promise reject function (default: null)
-     */
-    this._sendCommand = function (options) {
-
-        var cmdObj = null;
-        var cmdStr = "";
-        var cmdArg = "";
-        var simulate = false;
-        var onSuccess = null;
-        var onError = null;
-        var resolve = null;
-        var reject = null;
-
-        if ("undefined" === typeof options) {
-            console.error(vscp.utility.getTime() + " Options are missing.");
-            return;
-        }
-
-        if ("string" !== typeof options.command) {
-            console.error(vscp.utility.getTime() + " Command is missing.");
-            return;
-        } else if (0 === options.command) {
-            console.error(vscp.utility.getTime() + " Command is empty.");
-            return;
-        }
-
-        if ("string" === typeof options.argument) {
-            cmdArg = options.argument;
-        }
-
-        if ("boolean" === typeof options.simulate) {
-            simulate = options.simulate;
-        }
-
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
-
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
-        }
-
-        if ("function" === typeof options.resolve) {
-            resolve = options.resolve;
-        }
-
-        if ("function" === typeof options.reject) {
-            reject = options.reject;
-        }
-
-        console.debug(vscp.utility.getTime() + " _sendCommand: " + options.command);
-
-        /* Put command to queue with pending commands */
-        cmdObj = new Command(options.command, onSuccess, onError, resolve, reject);
-        this.cmdQueue.push(cmdObj);
-
-        if (false === simulate) {
-
-            /* Build command string */
-            cmdStr += options.command;
-
-            if (0 < cmdArg.length) {
-                cmdStr += " " + cmdArg + "\r\n";
-            }
-
-            /* Send command via tcp/ip to the VSCP server */
-            console.debug(vscp.utility.getTime() + " Cmd: " + cmdStr);
-            this.socket.send(cmdStr);
-        }
-    };
-
-    /**
-     * Send event to VSCP server.
-     *
-     * @private
-     * @param {object} options              - Options
-     * @param {string} options.data         - Data string
-     * @param {function} options.onSuccess  - Callback on success
-     * @param {function} options.onError    - Callback on error
-     */
-    this._sendEvent = function (options) {
-
-        var cmdObj = null;
-        var cmdStr = "E;";
-        var onSuccess = null;
-        var onError = null;
-
-        if ("undefined" === typeof options) {
-            console.error(vscp.utility.getTime() + " Options are missing.");
-            return;
-        }
-
-        if ("string" !== typeof options.data) {
-            console.error(vscp.utility.getTime() + " Command data is missing.");
-            return;
-        }
-
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
-
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
-        }
-
-        /* Put command to queue with pending commands */
-        cmdObj = new Command("EVENT", onSuccess, onError);
-        this.cmdQueue.push(cmdObj);
-
-        /* Build command string */
-        cmdStr += options.data;
-
-        /* Send command via tcp/ip to the VSCP server */
-        console.debug(vscp.utility.getTime() + " Cmd: " + cmdStr);
-        this.socket.send(cmdStr);
-    };
 
     /**
      * Signal success of the current asynchronous operation.
      *
      * @private
-     * @param {string} command  - Server command string
      * @param {object} [obj]    - Options for on success callback
      */
-    this._signalSuccess = function (command, obj) {
+    this._signalSuccess = function (obj) {
 
-        console.log("_signalSuccess " + command);
-        var cmd = this._getPendingCommand(command);
+        var cmd = this._getPendingCommand();
+        cmd.result = 'success';
+        console.log(cmd);
 
         if (null !== cmd) {
 
@@ -461,12 +304,13 @@ module.exports = vscp_tcp_Client = function () {
      * Signal failed of the current asynchronous operation.
      *
      * @private
-     * @param {string} command  - Server command string
      * @param {object} [obj]    - Options for on error callback
      */
-    this._signalError = function (command, obj) {
+    this._signalError = function (obj) {
 
-        var cmd = this._getPendingCommand(command);
+        var cmd = this._getPendingCommand();
+        cmd.result = 'error';
+        console.log(cmd);
 
         if (null !== cmd) {
 
@@ -580,23 +424,20 @@ module.exports = vscp_tcp_Client = function () {
 
     };
 
-
+    // -----------------------------------------------------------------------------
 
     /**
      * This function is called by the tcp/ip when the connection is established.
      */
     vscp_tcp_Client.prototype.onConnectionOpen = function () {
-
         console.info(vscp.utility.getTime() + " tcp/ip connection established.");
         this.state = this.states.CONNECTED;
-
     };
 
     /**
      * This function is called by the net sublayer in case that the connection is closed.
      */
     vscp_tcp_Client.prototype.onConnectionClose = function () {
-
         console.info(vscp.utility.getTime() + " tcp/ip connection closed.");
         this.state = this.states.DISCONNECTED;
         this._signalConnError();
@@ -615,9 +456,6 @@ module.exports = vscp_tcp_Client = function () {
         console.debug(vscp.utility.getTime() + " Response: " + chunk);
 
         this.collectedData += chunk.toString();
-        responseList = this.collectedData.split("\r\n");
-        // remove \r\n ending to get nice table
-        responseList.pop();
 
         /* Send message to application. If the application handled the message,
          * nothing more to. Otherwise the message will be handled now.
@@ -629,20 +467,37 @@ module.exports = vscp_tcp_Client = function () {
             if (this.state === this.states.CONNECTED) {
 
                 let pos;
-                let index = 0;
 
-                // Positive response?
+                // Positive response? ("+OK ......\r\n")
                 if (-1 !== (pos = this.collectedData.search("\\+OK"))) {
-                    var lastPart = this.collectedData.subString(pos+3);
-                    // (\r\n|\r|\n)
-                    console.log('Found +OK');
-                    this._signalSuccess("_CONNECT_", {
-                        command: "_CONNECT_",
-                        response: responseList
-                    });
+                    var response = this.collectedData.substring(0, pos + 3);
+                    var lastPart = this.collectedData.substring(pos + 3);
+                    if (-1 !== (pos = lastPart.search("\r\n"))) {
+                        // save remaining part of server response for further processing
+                        this.collectedData = lastPart.substring(pos + 3);
+                        responseList = response.split("\r\n");
+                        console.debug(vscp.utility.getTime() + ' Found +OK');
+                        this._signalSuccess(
+                            {
+                                command: this.cmdQueue[0].command,
+                                response: responseList
+                            });
+                    }
                 } else if (-1 !== (pos = this.collectedData.search("\\-OK"))) {
-                    // Negative response
-                    console.log('Error');
+                    var response = this.collectedData.substring(0, pos + 3);
+                    var lastPart = this.collectedData.substring(pos + 3);
+                    if (-1 !== (pos = lastPart.search("\r\n"))) {
+                        // save remaining part of server response for further processing
+                        this.collectedData = lastPart.substring(pos + 3);
+                        responseList = response.split("\r\n");
+                        // Negative response
+                        console.debug(vscp.utility.getTime() + ' Error');
+                        this._signalError(
+                            {
+                                command: this.cmdQueue[0].command,
+                                response: responseList
+                            });
+                    }
                 }
 
             } else if (this.state === this.states.RCVLOOP) {
@@ -698,8 +553,6 @@ module.exports = vscp_tcp_Client = function () {
             else {
                 console.log('invalid state');
             }
-        } else {
-            console.log('handled');
         }
 
         return;
@@ -766,8 +619,8 @@ module.exports = vscp_tcp_Client = function () {
             }
 
             console.info(vscp.utility.getTime() +
-                " Initiating VSCP tcp/ip client connect to " + this.host + ":" + this.port +
-                " (user name: " + this.userName + ", password: " + this.password + ")");
+                " Initiating VSCP tcp/ip client connect to " +
+                this.host + ":" + this.port + ")");
 
             this.socket = net.createConnection({
                 port: this.port,
@@ -777,15 +630,16 @@ module.exports = vscp_tcp_Client = function () {
                 console.info(vscp.utility.getTime() + ' Connected to remote VSCP server!');
                 this.state = this.states.CONNECTED;
 
-                this._sendCommand({
-                    command: "_CONNECT_",
-                    data: "",
-                    simulate: true,
-                    onSuccess: onSuccess,
-                    onError: null,
-                    resolve: resolve,
-                    reject: reject
-                })
+                this.sendCommand(
+                    {
+                        command: "_CONNECT_",
+                        data: "",
+                        simulate: true,
+                        onSuccess: onSuccess,
+                        onError: null,
+                        resolve: resolve,
+                        reject: reject
+                    })
 
                 // //this.socket.onopen =
                 // this.socket.on('connect', () => {
@@ -793,19 +647,13 @@ module.exports = vscp_tcp_Client = function () {
                 //     this.emit('onconnect');
                 // });//.bind(this);
 
-                // this.socket.onclose = this.socket.on('close', () => {
-                //     console.log('Disconnect');
-                // });//.bind(this);
 
-                // this.socket.onmessage = this.socket.on('data', (chunk) => {
-                //     console.log('data');
-                // });//.bind(this);
 
                 this.socket.on('data', (chunk) => {
+                    this._signalMessage(chunk);
                     this.onSrvResponse(chunk);
                 });
 
-                //this._signalSuccess("_CONNECT_");
             });
 
             // Report timeout condition
@@ -815,7 +663,7 @@ module.exports = vscp_tcp_Client = function () {
                 console.error(vscp.utility.getTime() +
                     " Couldn't open a tcp/ip connection.");
 
-                this._signalConnError.call(this);
+                this._signalConnError();
 
                 this.onConnError = null;
                 this.onMessage = null;
@@ -828,23 +676,21 @@ module.exports = vscp_tcp_Client = function () {
                 //this.onConnectionOpen();
             });
 
-            this.socket.on('data', function (data) {
-                //parseData(data, this);
-                console.log('>data');
-            });
-
             this.socket.on('error', function (error) {
                 this.emit('onerror', error);
-            });
+                console.log('>error');
+            }.bind(this));
 
             this.socket.on('end', function () {
                 this.emit('onend');
-            });
+                console.log('>end');
+            }.bind(this));
 
             this.socket.on('close', function () {
                 this.emit('onclose');
-                //this.onConnectionClose();
-            });
+                this.disconnect();
+                console.log('>close');
+            }.bind(this));
 
         }.bind(this));
     };
@@ -865,38 +711,195 @@ module.exports = vscp_tcp_Client = function () {
 
             var onSuccess = null;
 
-            console.info(vscp.utility.getTime() + " Disconnect VSCP tcp/ip  connection.");
+            console.info(vscp.utility.getTime() + " Disconnect VSCP tcp/ip connection.");
 
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
+            if ("undefined" !== typeof options) {
+                console.log(options.onSuccess);
+                if ("function" === typeof options.onSuccess) {
+                    console.log(1);
+                    onSuccess = options.onSuccess;
+                }
             }
 
-            this._sendCommand({
-                command: "_DISCONNECT_",
-                simulate: true,
+            this.sendCommand({
+                command: "quit",
+                simulate: false,
                 onSuccess: onSuccess,
                 onError: null,
                 resolve: resolve,
                 reject: reject
             });
 
-            // Close socket
-            socket.end(() => {
-                console.info(vscp.utility.getTime() + 'disconnected from remote VSCP server!');
+            this.socket.once('error', (err) => {
+                console.error(vscp.utility.getTime() +
+                    " Couldn't close tcp/ip connection.");
+
+                this._signalConnError.call(this);
+
+                this.socket.destroy();
+
+                this.onConnError = null;
+                this.onMessage = null;
+
+                reject(this, Error("Couldn't close tcp/ip connection."));
+            });
+
+            // Free resources for gc
+            this.socket.once('onclose', () => {
+                if (this.states.DISCONNECTED === this.state) return;
+                console.info(vscp.utility.getTime() + ' Disconnected from remote VSCP server!');
                 this.onConnError = null;
                 this.onMessage = null;
                 this.onEvent = [];
-                this.socket.close();
                 this.socket = null;
                 this.state = this.states.DISCONNECTED;
-                this.substate = this.substates.CLOSED;
                 this.cmdQueue = [];
             });
 
-            this._signalSuccess("DISCONNECT");
+        }.bind(this));
+    };
+
+    /**
+     * Send command to remote VSCP server and store the command in the internal queue.
+     * In some situation only a virtual command shall be stored, but not sent. In this
+     * case use set the 'simulate' parameter to true.
+     *
+     * @param {object} options                  - Options
+     * @param {string} options.command          - Command string
+     * @param {string} [options.argument]       - Command argument string
+     * @param {boolean} [options.simulate]      - Simulate the command (true/false)
+     *                                              (default: false)
+     * @param {function} [options.onSuccess]    - Callback on success (default: null)
+     * @param {function} [options.onError]      - Callback on error (default: null)
+     * @param {function} [options.resolve]      - Promise resolve function (default: null)
+     * @param {function} [options.reject]       - Promise reject function (default: null)
+     */
+    vscp_tcp_Client.prototype.sendCommand = function (options) {
+
+        /* eslint-disable no-unused-vars */
+        return new Promise(function (resolve, reject) {
+            /* eslint-enable no-unused-vars */
+
+            var cmdObj = null;
+            var cmdStr = "";
+            var cmdArg = "";
+            var simulate = false;
+            var onSuccess = null;
+            var onError = null;
+            // var resolve = null;
+            // var reject = null;
+
+            if ("undefined" === typeof options) {
+                console.error(vscp.utility.getTime() + " Options are missing.");
+                return;
+            }
+
+            if ("string" !== typeof options.command) {
+                console.error(vscp.utility.getTime() + " Command is missing.");
+                return;
+            } else if (0 === options.command) {
+                console.error(vscp.utility.getTime() + " Command is empty.");
+                return;
+            }
+
+            if ("string" === typeof options.argument) {
+                cmdArg = options.argument;
+            }
+
+            if ("boolean" === typeof options.simulate) {
+                simulate = options.simulate;
+            }
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
+            // if ("function" === typeof options.resolve) {
+            //     resolve = options.resolve;
+            // }
+
+            // if ("function" === typeof options.reject) {
+            //     reject = options.reject;
+            // }
+
+            /* Put command to queue with pending commands */
+            cmdObj = new Command(options.command, onSuccess, onError, resolve, reject);
+            this.cmdQueue.push(cmdObj);
+
+            if (false === simulate) {
+
+                /* Build command string */
+                cmdStr = options.command;
+
+                if (0 < cmdArg.length) {
+                    cmdStr += " " + cmdArg;
+                }
+
+                cmdStr += "\r\n"
+
+                /* Send command via tcp/ip to the VSCP server */
+                console.debug(vscp.utility.getTime() + " Cmd: " + cmdStr);
+                this.socket.write(cmdStr);
+            };
+        }.bind(this));
+    };
+
+    /**
+     * Send event to VSCP server.
+     *
+     * @private
+     * @param {object} options              - Options
+     * @param {string} options.data         - Data string
+     * @param {function} options.onSuccess  - Callback on success
+     * @param {function} options.onError    - Callback on error
+     */
+    vscp_tcp_Client.prototype.sendEvent = function (options) {
+
+        /* eslint-disable no-unused-vars */
+        return new Promise(function (resolve, reject) {
+            /* eslint-enable no-unused-vars */
+
+            var cmdObj = null;
+            var cmdStr = "E;";
+            var onSuccess = null;
+            var onError = null;
+
+            if ("undefined" === typeof options) {
+                console.error(vscp.utility.getTime() + " Options are missing.");
+                return;
+            }
+
+            if ("string" !== typeof options.data) {
+                console.error(vscp.utility.getTime() + " Command data is missing.");
+                return;
+            }
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
+            /* Put command to queue with pending commands */
+            cmdObj = new Command("EVENT", onSuccess, onError);
+            this.cmdQueue.push(cmdObj);
+
+            /* Build command string */
+            cmdStr += options.data;
+
+            /* Send command via tcp/ip to the VSCP server */
+            console.debug(vscp.utility.getTime() + " Cmd: " + cmdStr);
+            this.socket.send(cmdStr);
 
         }.bind(this));
     };
+
 
     /**
      * Start rcvloop.
@@ -935,7 +938,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "RCVLOOP",
                 data: "",
                 onSuccess: onSuccess,
@@ -983,7 +986,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "QUITLOOP",
                 data: "",
                 onSuccess: onSuccess,
@@ -1031,7 +1034,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "CLRQ",
                 data: "",
                 onSuccess: onSuccess,
@@ -1095,7 +1098,7 @@ module.exports = vscp_tcp_Client = function () {
 
             cmdData = options.event.getText();
 
-            this._sendEvent({
+            this.sendEvent({
                 data: cmdData,
                 onSuccess: onSuccess,
                 onError: onError,
@@ -1234,7 +1237,7 @@ module.exports = vscp_tcp_Client = function () {
 
             cmdData += vscp.utility.guidToStr(maskGuid);
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "SF",
                 data: cmdData,
                 onSuccess: onSuccess,
@@ -1338,7 +1341,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "CVAR",
                 data: options.name + ";" +
                     type + ";" +
@@ -1392,7 +1395,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "RVAR",
                 data: options.name,
                 onSuccess: onSuccess,
@@ -1465,7 +1468,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "WVAR",
                 data: options.name + ";" + vscp.encodeValueIfBase64(options.type, value),
                 onSuccess: onSuccess,
@@ -1514,7 +1517,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "RSTVAR",
                 data: options.name,
                 onSuccess: onSuccess,
@@ -1561,7 +1564,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "DELVAR",
                 data: options.name,
                 onSuccess: onSuccess,
@@ -1608,7 +1611,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "LENVAR",
                 data: options.name,
                 onSuccess: onSuccess,
@@ -1655,7 +1658,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "LCVAR",
                 data: options.name,
                 onSuccess: onSuccess,
@@ -1710,7 +1713,7 @@ module.exports = vscp_tcp_Client = function () {
                 onError = options.onError;
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "LSTVAR",
                 data: regex,
                 onSuccess: onSuccess,
@@ -1797,7 +1800,7 @@ module.exports = vscp_tcp_Client = function () {
                 data += ";;";
             }
 
-            this._sendCommand({
+            this.sendCommand({
                 command: "TBL_GET",
                 data: data,
                 onSuccess: onSuccess,
