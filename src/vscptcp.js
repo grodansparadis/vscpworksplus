@@ -277,9 +277,9 @@ module.exports = vscp_tcp_Client = function () {
             if (("function" === typeof cmd.onSuccess) && (null !== cmd.onSuccess)) {
 
                 if ("undefined" === typeof obj) {
-                    cmd.onSuccess(this);
+                    cmd.onSuccess();
                 } else {
-                    cmd.onSuccess(this, obj);
+                    cmd.onSuccess(obj);
                 }
             }
 
@@ -287,12 +287,14 @@ module.exports = vscp_tcp_Client = function () {
 
                 if ("undefined" === typeof obj) {
                     if (null !== cmd.resolve) {
-                        cmd.resolve(this);
+                        console.log('cmd.resolve(this)');
+                        cmd.resolve();
                     }
                 } else {
                     /* eslint-disable no-lonely-if */
                     if (null !== cmd.resolve) {
-                        cmd.resolve(this, obj);
+                        console.log('cmd.resolve(this, obj)');
+                        cmd.resolve(obj);
                     }
                     /* eslint-enable no-lonely-if */
                 }
@@ -317,9 +319,9 @@ module.exports = vscp_tcp_Client = function () {
             if (("function" === typeof cmd.onError) && (null !== cmd.onError)) {
 
                 if ("undefined" === typeof obj) {
-                    cmd.onError(this);
+                    cmd.onError();
                 } else {
-                    cmd.onError(this, obj);
+                    cmd.onError(obj);
                 }
             }
 
@@ -327,12 +329,14 @@ module.exports = vscp_tcp_Client = function () {
 
                 if ("undefined" === typeof obj) {
                     if (null !== cmd.reject) {
-                        cmd.reject(this);
+                        console.log('cmd.reject(this)');
+                        cmd.reject();
                     }
                 } else {
                     /* eslint-disable no-lonely-if */
                     if (null !== cmd.reject) {
-                        cmd.reject(this, obj);
+                        console.log('cmd.reject(this, obj)');
+                        cmd.reject(obj);
                     }
                     /* eslint-enable no-lonely-if */
                 }
@@ -363,14 +367,14 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {boolean} Message is handled (true) or not (false).
      */
-    this._signalMessage = function (msg) {
+    this._signalMessage = function (chunk) {
 
         var status = false;
 
         if (("function" === typeof this.onMessage) &&
             (null !== this.onMessage)) {
 
-            if (true === this.onMessage(this, msg)) {
+            if (true === this.onMessage(this, chunk)) {
                 status = true;
             }
         }
@@ -421,27 +425,94 @@ module.exports = vscp_tcp_Client = function () {
                 this.onEvent.splice(index, 1);
             }
         }
+    };
+
+    /**
+     * Send command to remote VSCP server and store the command in the internal queue.
+     * In some situation only a virtual command shall be stored, but not sent. In this
+     * case use set the 'simulate' parameter to true.
+     *
+     * @param {object} options                  - Options
+     * @param {string} options.command          - Command string
+     * @param {string} [options.argument]       - Command argument string
+     * @param {boolean} [options.simulate]      - Simulate the command (true/false)
+     *                                              (default: false)
+     * @param {function} [options.onSuccess]    - Callback on success (default: null)
+     * @param {function} [options.onError]      - Callback on error (default: null)
+     * @param {function} [options.resolve]      - Promise resolve function (default: null)
+     * @param {function} [options.reject]       - Promise reject function (default: null)
+     */
+    this._sendCommand = function (options) {
+
+        var cmdObj = null;
+        var cmdStr = "";
+        var cmdArg = "";
+        var simulate = false;
+        var onSuccess = null;
+        var onError = null;
+        var resolve = null;
+        var reject = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.utility.getTime() + " Options are missing.");
+            return;
+        }
+
+        if ("string" !== typeof options.command) {
+            console.error(vscp.utility.getTime() + " Command is missing.");
+            return;
+        } else if (0 === options.command) {
+            console.error(vscp.utility.getTime() + " Command is empty.");
+            return;
+        }
+
+        if ("string" === typeof options.argument) {
+            cmdArg = options.argument;
+        }
+
+        if ("boolean" === typeof options.simulate) {
+            simulate = options.simulate;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
+        if ("function" === typeof options.resolve) {
+            resolve = options.resolve;
+        }
+
+        if ("function" === typeof options.reject) {
+            reject = options.reject;
+        }
+
+        /* Put command to queue with pending commands */
+        cmdObj = new Command(options.command, onSuccess, onError, resolve, reject);
+        this.cmdQueue.push(cmdObj);
+
+        if (false === simulate) {
+
+            /* Build command string */
+            cmdStr = options.command;
+
+            if (0 < cmdArg.length) {
+                cmdStr += " " + cmdArg;
+            }
+
+            cmdStr += "\r\n"
+
+            /* Send command via tcp/ip to the VSCP server */
+            console.debug(vscp.utility.getTime() + " Cmd: " + cmdStr);
+            this.socket.write(cmdStr);
+        };
 
     };
 
     // -----------------------------------------------------------------------------
-
-    /**
-     * This function is called by the tcp/ip when the connection is established.
-     */
-    vscp_tcp_Client.prototype.onConnectionOpen = function () {
-        console.info(vscp.utility.getTime() + " tcp/ip connection established.");
-        this.state = this.states.CONNECTED;
-    };
-
-    /**
-     * This function is called by the net sublayer in case that the connection is closed.
-     */
-    vscp_tcp_Client.prototype.onConnectionClose = function () {
-        console.info(vscp.utility.getTime() + " tcp/ip connection closed.");
-        this.state = this.states.DISCONNECTED;
-        this._signalConnError();
-    };
 
     /**
      * This function is called for any VSCP server response message.
@@ -566,7 +637,11 @@ module.exports = vscp_tcp_Client = function () {
      * @param {object} options                  - Options
      * @param {string} options.host             - VSCP server to connect to
      * @param {string} options.port             - VSCP server port to connect to
-     * @param {string} options.timeout          - timeout to use
+     * @param {string} [options.localaddress]   - Local address the socket should connect from.
+     * @param {number} [options.localport]      - Local port the socket should connect from.
+     * @param {number} [options.family]         - Version of IP stack, can be either 4 or 6. Default: 4.
+     * @param {number} [options.timeout]        - timeout to use for connect operation
+     * @param {number} [options.idletimeout]    - idle timeout for connection
      * @param {function} [options.onMessage]    - Function which is called on any received
      *                                              VSCP response message.
      * @param {function} [options.onSuccess]    - Function which is called on a successful
@@ -582,6 +657,8 @@ module.exports = vscp_tcp_Client = function () {
 
         return new Promise(function (resolve, reject) {
 
+            var connobj = {};
+            var idleTimeout = 0;
             var onSuccess = null;
 
             if (this.states.DISCONNECTED !== this.state) {
@@ -596,7 +673,7 @@ module.exports = vscp_tcp_Client = function () {
                 return;
             }
 
-            if ("string" !== typeof options.host) {
+            if ("string" === typeof options.host) {
                 this.host = options.host;
             }
 
@@ -604,8 +681,24 @@ module.exports = vscp_tcp_Client = function () {
                 this.port = options.port;
             }
 
+            if ("string" === typeof options.localhost) {
+                connobj.localAddress = options.localhost;
+            }
+
+            if ("number" === typeof options.localport) {
+                connobj.localPort = options.localport;
+            }
+
+            if ("number" === typeof options.family) {
+                connobj.family = options.family;
+            }
+
             if ("number" === typeof options.timeout) {
                 this.timeout = options.timeout;
+            }
+
+            if ("number" === typeof options.idletimeout) {
+                idleTimeout = options.idletimeout;
             }
 
             if ("function" === typeof options.onSuccess) {
@@ -622,15 +715,35 @@ module.exports = vscp_tcp_Client = function () {
                 " Initiating VSCP tcp/ip client connect to " +
                 this.host + ":" + this.port + ")");
 
-            this.socket = net.createConnection({
-                port: this.port,
-                host: this.host
-            }, () => {
+            connobj.host = this.host;
+            connobj.port = this.port;
 
-                console.info(vscp.utility.getTime() + ' Connected to remote VSCP server!');
+            this.socket = net.createConnection(connobj, () => {
+
+                this.socket.on('data', (chunk) => {
+                    clearTimeout(timer);
+                    this.onSrvResponse(chunk);
+                });
+
+                this.socket.once('end', () => {
+                    if (this.state !== this.states.DISCONNECTED) {
+                        clearTimeout(timer);
+                        this.emit('onend');
+                        console.info(vscp.utility.getTime() +
+                            " tcp/ip connection closed (by remote end).");
+                        this.state = this.states.DISCONNECTED;
+                        this._signalConnError();
+                    }
+                });
+
+                console.info(vscp.utility.getTime() +
+                    " tcp/ip connection to remote VSCP server established.");
                 this.state = this.states.CONNECTED;
 
-                this.sendCommand(
+                this.emit('onconnect');
+                clearTimeout(timer);
+
+                this._sendCommand(
                     {
                         command: "_CONNECT_",
                         data: "",
@@ -640,56 +753,37 @@ module.exports = vscp_tcp_Client = function () {
                         resolve: resolve,
                         reject: reject
                     })
-
-                // //this.socket.onopen =
-                // this.socket.on('connect', () => {
-                //     console.log('Connect');
-                //     this.emit('onconnect');
-                // });//.bind(this);
-
-
-
-                this.socket.on('data', (chunk) => {
-                    this._signalMessage(chunk);
-                    this.onSrvResponse(chunk);
-                });
-
             });
 
-            // Report timeout condition
-            this.socket.setTimeout(this.timeout);
+            timer = setTimeout(function () {
+                console.log("[ERROR] Attempt at connection exceeded timeout value");
+                this.socket.end();
+                reject(this, Error("tcp/ip connection timed out."));
+            }.bind(this), this.timeout);
 
-            this.socket.once('error', (err) => {
+            // Report timeout condition
+            if (idleTimeout > 0) {
+                this.socket.setTimeout(idleTimeout);
+            }
+
+            this.socket.on('error', function (error) {
+                this.emit('onerror', error);
+                clearTimeout(timer);
+
                 console.error(vscp.utility.getTime() +
-                    " Couldn't open a tcp/ip connection.");
+                    " Could not open a connection.");
 
                 this._signalConnError();
 
                 this.onConnError = null;
                 this.onMessage = null;
 
-                reject(this, Error("Couldn't open a tcp/ip connection."));
-            });
-
-            this.socket.once('connect', function () {
-                console.log('>connect');
-                //this.onConnectionOpen();
-            });
-
-            this.socket.on('error', function (error) {
-                this.emit('onerror', error);
-                console.log('>error');
+                reject(Error("Couldn't open a tcp/ip connection."));
             }.bind(this));
 
-            this.socket.on('end', function () {
-                this.emit('onend');
-                console.log('>end');
-            }.bind(this));
-
-            this.socket.on('close', function () {
-                this.emit('onclose');
-                this.disconnect();
-                console.log('>close');
+            this.socket.on('timeout', function () {
+                this.emit('ontimeout');
+                console.log('>timeout');
             }.bind(this));
 
         }.bind(this));
@@ -711,7 +805,7 @@ module.exports = vscp_tcp_Client = function () {
 
             var onSuccess = null;
 
-            console.info(vscp.utility.getTime() + " Disconnect VSCP tcp/ip connection.");
+            console.info(vscp.utility.getTime() + "[COMMAND] Disconnect VSCP tcp/ip connection.");
 
             if ("undefined" !== typeof options) {
                 console.log(options.onSuccess);
@@ -721,27 +815,13 @@ module.exports = vscp_tcp_Client = function () {
                 }
             }
 
-            this.sendCommand({
+            this._sendCommand({
                 command: "quit",
                 simulate: false,
                 onSuccess: onSuccess,
                 onError: null,
                 resolve: resolve,
                 reject: reject
-            });
-
-            this.socket.once('error', (err) => {
-                console.error(vscp.utility.getTime() +
-                    " Couldn't close tcp/ip connection.");
-
-                this._signalConnError.call(this);
-
-                this.socket.destroy();
-
-                this.onConnError = null;
-                this.onMessage = null;
-
-                reject(this, Error("Couldn't close tcp/ip connection."));
             });
 
             // Free resources for gc
@@ -786,8 +866,6 @@ module.exports = vscp_tcp_Client = function () {
             var simulate = false;
             var onSuccess = null;
             var onError = null;
-            // var resolve = null;
-            // var reject = null;
 
             if ("undefined" === typeof options) {
                 console.error(vscp.utility.getTime() + " Options are missing.");
@@ -817,14 +895,6 @@ module.exports = vscp_tcp_Client = function () {
             if ("function" === typeof options.onError) {
                 onError = options.onError;
             }
-
-            // if ("function" === typeof options.resolve) {
-            //     resolve = options.resolve;
-            // }
-
-            // if ("function" === typeof options.reject) {
-            //     reject = options.reject;
-            // }
 
             /* Put command to queue with pending commands */
             cmdObj = new Command(options.command, onSuccess, onError, resolve, reject);
@@ -864,7 +934,8 @@ module.exports = vscp_tcp_Client = function () {
             /* eslint-enable no-unused-vars */
 
             var cmdObj = null;
-            var cmdStr = "E;";
+            var cmdStr = "send";
+            var eventStr = "";
             var onSuccess = null;
             var onError = null;
 
@@ -873,8 +944,8 @@ module.exports = vscp_tcp_Client = function () {
                 return;
             }
 
-            if ("string" !== typeof options.data) {
-                console.error(vscp.utility.getTime() + " Command data is missing.");
+            if ("string" !== typeof options.event) {
+                console.error(vscp.utility.getTime() + " Event data is missing.");
                 return;
             }
 
@@ -887,7 +958,7 @@ module.exports = vscp_tcp_Client = function () {
             }
 
             /* Put command to queue with pending commands */
-            cmdObj = new Command("EVENT", onSuccess, onError);
+            cmdObj = new Command("send", onSuccess, onError, resolve, reject);
             this.cmdQueue.push(cmdObj);
 
             /* Build command string */

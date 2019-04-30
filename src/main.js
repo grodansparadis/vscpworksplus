@@ -212,6 +212,12 @@ client.on('close', function() {
 
 // ------------------------------------------------------------------
 
+// TODO - NEED SOLUTION TO CATCH ECONNREFUSED
+process.on('uncaughtException', function (err) {
+  console.log('-------------> uncaughtException');
+  console.log(err);
+});
+
 let vscp_tcp_Client = require('../src/vscptcp');
 //import vscp_tcp_Client from '../@types/vscptcp'
 //const mod = require('../src/vscptcp');
@@ -236,31 +242,57 @@ let tttt = function (aaa, bbb) {
   );
 }
 
-let t8 = new vscp_tcp_Client();
-t8.connect(
-  {
-    host: "127.0.0.1",
-    port: 9598,
-    onSuccess: null
-  })
-  .then(() => pppp())
-  .then(() => t8.sendCommand(
+function setup() {
+  let t8 = new vscp_tcp_Client();
+  t8.connect(
     {
-      command: "user",
-      argument: "admin"
-    }))
-  .then(() => t8.sendCommand(
-    {
-      command: "pass",
-      argument: "secret"
-    }))
-  .then(() => t8.sendCommand(
-    {
-      command: "iuuuuunterfacee",
-      argument: "list",
-      onSuccess: aaaa
-    }))
-    .then( (a,b) => {
-      console.log(b);
-    } )
-    .catch(err => console.log("Catch Error"+err) );
+      host: "pi4",
+      port: 9598,
+      timeout: 10000,
+      onSuccess: null
+    })
+    .then((obj) => t8.sendCommand(
+      {
+        command: "noop"
+      }))
+    .then((obj) => t8.sendCommand(
+      {
+        command: "noop"
+      }))
+    .then((obj) => t8.sendCommand(
+      {
+        command: "noop"
+      }))
+    // .then(function (a, b) {
+    //   console.log("Promise returned");
+    //   console.log(b);
+    //   t8.sendCommand(
+    //      {
+    //        command: "nuupp",
+    //      });
+    // })
+    .then((obj) => t8.sendCommand(
+      {
+        command: "user",
+        argument: "admin"
+      }))
+    .then((obj) => t8.sendCommand(
+      {
+        command: "pass",
+        argument: "secret"
+      }))
+    .then((obj) => t8.sendCommand(
+      {
+        command: "interface",
+        argument: "list",
+        onSuccess: aaaa
+      }))
+    .then(obj => {
+      console.log('Last');
+      console.log(obj);
+      t8.disconnect();
+    })
+    .catch(err => console.log("Catch Error " + err.message));
+}
+
+setup()
