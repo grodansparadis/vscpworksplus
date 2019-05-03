@@ -38,7 +38,7 @@
 const util = require('util');
 const events = require('events');
 const net = require('net');
-const vscp = require('vscp');
+const vscp = require('./vscp');
 
 
 /* ---------------------------------------------------------------------- */

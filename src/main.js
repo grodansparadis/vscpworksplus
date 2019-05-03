@@ -218,7 +218,7 @@ process.on('uncaughtException', function (err) {
   console.log(err);
 });
 
-const vscp = require('vscp');
+const vscp = require('./vscp');
 const vscp_tcp_Client = require('../src/vscptcp');
 //import vscp_tcp_Client from '../@types/vscptcp'
 //const mod = require('../src/vscptcp');
