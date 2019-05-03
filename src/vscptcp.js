@@ -35,92 +35,11 @@
 // Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 //
 
-/** Namespace for all functionality of the VSCP provided libraries.
- * @namespace vscp
- */
-var vscp = vscp || {};
+const util = require('util');
+const events = require('events');
+const net = require('net');
+const vscp = require('vscp');
 
-var util = require('util');
-var events = require('events');
-var net = require('net');
-
-/** Create a general purpose namespace method. This will allow us to create
- * namespace a bit easier.
- *
- * @private
- * @param {string} namespace Complete namespace, e.g. "a.b.c.d"
- */
-vscp._createNS = function (namespace) {
-
-    var nsparts = namespace.split(".");
-    var parent = vscp;
-
-    /* We want to be able to include or exclude the root namespace .
-     * So we strip it if it's in the namespace.
-     */
-    if (nsparts[0] === "vscp") {
-        nsparts = nsparts.slice(1);
-    }
-
-    /* Loop through the parts and create a nested namespace if necessary */
-    for (var i = 0; i < nsparts.length; i++) {
-        var partname = nsparts[i];
-
-        /* Check if the current parent already has the namespace declared, if
-         * not create it.
-         */
-        if ("undefined" === typeof parent[partname]) {
-            parent[partname] = {};
-        }
-
-        /* Get a reference to the deepest element in the hierarchy so far */
-        parent = parent[partname];
-    }
-
-    /* The parent is now completely constructed with empty namespaces and can be used. */
-    return parent;
-};
-
-/**
- * Utility functions
- * @namespace vscp.utility
- */
-vscp._createNS("vscp.utility");
-
-/**
- * Utility function which returns the current time in the following format: hh:mm:ss.us
- *
- * @return {string} Current time in the format hh:mm:ss.us
- */
-vscp.utility.getTime = function () {
-
-    var now = new Date();
-
-    var paddingHead = function (num, size) {
-        var str = num + "";
-
-        while (str.length < size) {
-            str = "0" + str;
-        }
-
-        return str;
-    };
-
-    var paddingTail = function (num, size) {
-        var str = num + "";
-
-        while (str.length < size) {
-            str = str + "0";
-        }
-
-        return str;
-    };
-
-    return "" + paddingHead(now.getHours(), 2) + ":" +
-        paddingHead(now.getMinutes(), 2) + ":" +
-        paddingHead(now.getSeconds(), 2) + "." +
-        paddingTail(now.getMilliseconds(), 3);
-};
 
 /* ---------------------------------------------------------------------- */
 
@@ -129,7 +48,7 @@ vscp.utility.getTime = function () {
  * VSCP tcp/ip client, used for connection establishment to a VSCP server.
  * @class
  */
-module.exports = vscp_tcp_Client = function () {
+module.exports = Client = function () {
 
     /** States of the VSCP client
      * @enum {number}
@@ -198,16 +117,22 @@ module.exports = vscp_tcp_Client = function () {
      * @private
      * @class
      * @param {string} command      - Server command string
+     * @param {string} argument     - Server command string argument
      * @param {function} onSuccess  - Function which is called on successful operation
      * @param {function} onerror    - Function which is called on failed operation
      * @param {function} resolve    - Promise resolve function
      * @param {function} reject     - Promise reject function
      */
-    var Command = function (command, onSuccess, onError, resolve, reject) {
+    var Command = function (command, argument, onSuccess, onError, resolve, reject) {
         /** Server command string
          * @member {string}
          */
         this.command = command;
+
+        /** Server command string arguments
+         * @member {string}
+         */
+        this.argument = argument;
 
         /** Function which is called on successful operation
          * @member {function}
@@ -234,9 +159,9 @@ module.exports = vscp_tcp_Client = function () {
 
     // inherit EventEmitter functions
     events.EventEmitter.call(this);
-    if (false === (this instanceof vscp_tcp_Client)) return new vscp_tcp_Client();
+    if (false === (this instanceof Client)) return new Client();
 
-    util.inherits(vscp_tcp_Client, events.EventEmitter);
+    util.inherits(Client, events.EventEmitter);
 
 
     /** Get next command from queue with pending commands.
@@ -268,9 +193,12 @@ module.exports = vscp_tcp_Client = function () {
      */
     this._signalSuccess = function (obj) {
 
+        // Mark as success
+        obj.result = 'success';
+
+        // Get command
         var cmd = this._getPendingCommand();
-        cmd.result = 'success';
-        console.log(cmd);
+
 
         if (null !== cmd) {
 
@@ -287,13 +215,11 @@ module.exports = vscp_tcp_Client = function () {
 
                 if ("undefined" === typeof obj) {
                     if (null !== cmd.resolve) {
-                        console.log('cmd.resolve(this)');
                         cmd.resolve();
                     }
                 } else {
                     /* eslint-disable no-lonely-if */
                     if (null !== cmd.resolve) {
-                        console.log('cmd.resolve(this, obj)');
                         cmd.resolve(obj);
                     }
                     /* eslint-enable no-lonely-if */
@@ -310,9 +236,10 @@ module.exports = vscp_tcp_Client = function () {
      */
     this._signalError = function (obj) {
 
+        // Mark as error
+        obj.result = 'error';
+
         var cmd = this._getPendingCommand();
-        cmd.result = 'error';
-        console.log(cmd);
 
         if (null !== cmd) {
 
@@ -329,13 +256,11 @@ module.exports = vscp_tcp_Client = function () {
 
                 if ("undefined" === typeof obj) {
                     if (null !== cmd.reject) {
-                        console.log('cmd.reject(this)');
                         cmd.reject();
                     }
                 } else {
                     /* eslint-disable no-lonely-if */
                     if (null !== cmd.reject) {
-                        console.log('cmd.reject(this, obj)');
                         cmd.reject(obj);
                     }
                     /* eslint-enable no-lonely-if */
@@ -386,7 +311,7 @@ module.exports = vscp_tcp_Client = function () {
      * Signal a received VSCP event.
      *
      * @private
-     * @param {vscp.Event} vscpEvent - VSCP event
+     * @param {vscp_Event} vscpEvent - VSCP event
      */
     this._signalEvent = function (vscpEvent) {
         var index = 0;
@@ -454,15 +379,15 @@ module.exports = vscp_tcp_Client = function () {
         var reject = null;
 
         if ("undefined" === typeof options) {
-            console.error(vscp.utility.getTime() + " Options are missing.");
+            console.error(vscp.getTime() + " Options are missing.");
             return;
         }
 
         if ("string" !== typeof options.command) {
-            console.error(vscp.utility.getTime() + " Command is missing.");
+            console.error(vscp.getTime() + " Command is missing.");
             return;
         } else if (0 === options.command) {
-            console.error(vscp.utility.getTime() + " Command is empty.");
+            console.error(vscp.getTime() + " Command is empty.");
             return;
         }
 
@@ -491,7 +416,7 @@ module.exports = vscp_tcp_Client = function () {
         }
 
         /* Put command to queue with pending commands */
-        cmdObj = new Command(options.command, onSuccess, onError, resolve, reject);
+        cmdObj = new Command(options.command, options.argument, onSuccess, onError, resolve, reject);
         this.cmdQueue.push(cmdObj);
 
         if (false === simulate) {
@@ -506,11 +431,70 @@ module.exports = vscp_tcp_Client = function () {
             cmdStr += "\r\n"
 
             /* Send command via tcp/ip to the VSCP server */
-            console.debug(vscp.utility.getTime() + " Cmd: " + cmdStr);
+            console.debug(vscp.getTime() + " Cmd: " + cmdStr.trim());
             this.socket.write(cmdStr);
         };
 
     };
+
+    /**
+     * Parse remote server version
+     */
+    this._parseRemoteVersion = function (rv) {
+        let version = {};
+        let cntElements = rv.response.length;
+        if ((rv.response.length >= 2) &&
+            (rv.command === 'version') &&
+            (rv.response[cntElements - 1]) === '+OK') {
+            let verArray = rv.response[cntElements - 2].split(',');
+            version.major = verArray[0];
+            version.minor = verArray[1];
+            version.release = verArray[2];
+            version.build = verArray[3];
+        }
+        return version;
+    }
+
+    /**
+     * Parse remote server pending event queue
+     */
+    this._parsePendingEventsCount = function (rv) {
+        let cnt = 0;
+        let cntElements = rv.response.length;
+        if ((rv.response.length >= 2) &&
+            (rv.command === 'chkdata') &&
+            (rv.response[cntElements - 1]) === '+OK') {
+            cnt = parseInt(rv.response[cntElements - 2]);
+        }
+        return cnt;
+    }
+
+    /**
+     * Parse response from interface list and return
+     * object with structured interface information
+     *
+     */
+    this._parseInterface = function (rv) {
+        let interfaces = [];
+        let cntElements = rv.response.length;
+        if (rv.response.length &&
+            (rv.command === 'interface') &&
+            (rv.response[cntElements - 1]) === '+OK') {
+            rv.response.pop(); // remove '+OK'
+            rv.response.forEach((item) => {
+                let items = item.split(',');
+                let obj = {};
+                obj.index = parseInt(items[0]);
+                obj.type = parseInt(items[1]);
+                obj.guid = vscp.strToGuid(items[2]);
+                obj.name = items[3].split('|')[0];
+                let startstr = items[3].split('|')[1].substr()
+                obj.started = startstr.substr(startstr.length - 19);
+                interfaces.push(obj);
+            });
+        }
+        return interfaces;
+    }
 
     // -----------------------------------------------------------------------------
 
@@ -519,12 +503,12 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @param {string} chunk - VSCP server response chunk
      */
-    vscp_tcp_Client.prototype.onSrvResponse = function (chunk) {
+    Client.prototype.onSrvResponse = function (chunk) {
 
         var evt = null;
         var responseList = [];
 
-        console.debug(vscp.utility.getTime() + " Response: " + chunk);
+        //console.debug(vscp.getTime() + " Response: " + chunk.toString().trim());
 
         this.collectedData += chunk.toString();
 
@@ -547,10 +531,11 @@ module.exports = vscp_tcp_Client = function () {
                         // save remaining part of server response for further processing
                         this.collectedData = lastPart.substring(pos + 3);
                         responseList = response.split("\r\n");
-                        console.debug(vscp.utility.getTime() + ' Found +OK');
+                        //console.log(responseList);
                         this._signalSuccess(
                             {
                                 command: this.cmdQueue[0].command,
+                                argument: this.cmdQueue[0].argument,
                                 response: responseList
                             });
                     }
@@ -562,10 +547,10 @@ module.exports = vscp_tcp_Client = function () {
                         this.collectedData = lastPart.substring(pos + 3);
                         responseList = response.split("\r\n");
                         // Negative response
-                        console.debug(vscp.utility.getTime() + ' Error');
                         this._signalError(
                             {
                                 command: this.cmdQueue[0].command,
+                                argument: this.cmdQueue[0].argument,
                                 response: responseList
                             });
                     }
@@ -578,7 +563,7 @@ module.exports = vscp_tcp_Client = function () {
                     if (-1 !== responseList[idx].search("\\+OK -")) {
 
                         eventItems = responseList[idx].split(',');
-                        evt = new vscp.Event();
+                        evt = new vscp_Event();
 
                         evt.vscpHead = parseInt(eventItems[0]);
                         evt.vscpClass = parseInt(eventItems[1]);
@@ -604,7 +589,7 @@ module.exports = vscp_tcp_Client = function () {
                             evt.vscpData[index] = parseInt(eventItems[offset + 7 + index]);
                         }
 
-                        console.debug(vscp.utility.getTime() + " Evt: " +
+                        console.debug(vscp.getTime() + " Evt: " +
                             " CLASS = " + evt.vscpClass +
                             " TYPE = " + evt.vscpType +
                             " GUID = " + evt.vscpGuid +
@@ -653,7 +638,7 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.connect = function (options) {
+    Client.prototype.connect = function (options) {
 
         return new Promise(function (resolve, reject) {
 
@@ -662,13 +647,13 @@ module.exports = vscp_tcp_Client = function () {
             var onSuccess = null;
 
             if (this.states.DISCONNECTED !== this.state) {
-                console.error(vscp.utility.getTime() + " A connection already exists.");
+                console.error(vscp.getTime() + " A connection already exists.");
                 reject(Error("A connection already exists."));
                 return;
             }
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
@@ -711,7 +696,7 @@ module.exports = vscp_tcp_Client = function () {
                 this.onConnError = options.onError;
             }
 
-            console.info(vscp.utility.getTime() +
+            console.info(vscp.getTime() +
                 " Initiating VSCP tcp/ip client connect to " +
                 this.host + ":" + this.port + ")");
 
@@ -729,14 +714,14 @@ module.exports = vscp_tcp_Client = function () {
                     if (this.state !== this.states.DISCONNECTED) {
                         clearTimeout(timer);
                         this.emit('onend');
-                        console.info(vscp.utility.getTime() +
+                        console.info(vscp.getTime() +
                             " tcp/ip connection closed (by remote end).");
                         this.state = this.states.DISCONNECTED;
                         this._signalConnError();
                     }
                 });
 
-                console.info(vscp.utility.getTime() +
+                console.info(vscp.getTime() +
                     " tcp/ip connection to remote VSCP server established.");
                 this.state = this.states.CONNECTED;
 
@@ -770,7 +755,7 @@ module.exports = vscp_tcp_Client = function () {
                 this.emit('onerror', error);
                 clearTimeout(timer);
 
-                console.error(vscp.utility.getTime() +
+                console.error(vscp.getTime() +
                     " Could not open a connection.");
 
                 this._signalConnError();
@@ -797,7 +782,7 @@ module.exports = vscp_tcp_Client = function () {
      *                                              disconnection.
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.disconnect = function (options) {
+    Client.prototype.disconnect = function (options) {
 
         /* eslint-disable no-unused-vars */
         return new Promise(function (resolve, reject) {
@@ -805,7 +790,7 @@ module.exports = vscp_tcp_Client = function () {
 
             var onSuccess = null;
 
-            console.info(vscp.utility.getTime() + "[COMMAND] Disconnect VSCP tcp/ip connection.");
+            console.info(vscp.getTime() + "[COMMAND] Disconnect VSCP tcp/ip connection.");
 
             if ("undefined" !== typeof options) {
                 console.log(options.onSuccess);
@@ -827,7 +812,7 @@ module.exports = vscp_tcp_Client = function () {
             // Free resources for gc
             this.socket.once('onclose', () => {
                 if (this.states.DISCONNECTED === this.state) return;
-                console.info(vscp.utility.getTime() + ' Disconnected from remote VSCP server!');
+                console.info(vscp.getTime() + ' Disconnected from remote VSCP server!');
                 this.onConnError = null;
                 this.onMessage = null;
                 this.onEvent = [];
@@ -854,7 +839,7 @@ module.exports = vscp_tcp_Client = function () {
      * @param {function} [options.resolve]      - Promise resolve function (default: null)
      * @param {function} [options.reject]       - Promise reject function (default: null)
      */
-    vscp_tcp_Client.prototype.sendCommand = function (options) {
+    Client.prototype.sendCommand = function (options) {
 
         /* eslint-disable no-unused-vars */
         return new Promise(function (resolve, reject) {
@@ -868,15 +853,15 @@ module.exports = vscp_tcp_Client = function () {
             var onError = null;
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 return;
             }
 
             if ("string" !== typeof options.command) {
-                console.error(vscp.utility.getTime() + " Command is missing.");
+                console.error(vscp.getTime() + " Command is missing.");
                 return;
             } else if (0 === options.command) {
-                console.error(vscp.utility.getTime() + " Command is empty.");
+                console.error(vscp.getTime() + " Command is empty.");
                 return;
             }
 
@@ -897,7 +882,8 @@ module.exports = vscp_tcp_Client = function () {
             }
 
             /* Put command to queue with pending commands */
-            cmdObj = new Command(options.command, onSuccess, onError, resolve, reject);
+            cmdObj = new Command(options.command, options.argument,
+                onSuccess, onError, resolve, reject);
             this.cmdQueue.push(cmdObj);
 
             if (false === simulate) {
@@ -912,7 +898,7 @@ module.exports = vscp_tcp_Client = function () {
                 cmdStr += "\r\n"
 
                 /* Send command via tcp/ip to the VSCP server */
-                console.debug(vscp.utility.getTime() + " Cmd: " + cmdStr);
+                console.debug(vscp.getTime() + " Cmd: " + cmdStr.trim());
                 this.socket.write(cmdStr);
             };
         }.bind(this));
@@ -923,11 +909,11 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @private
      * @param {object} options              - Options
-     * @param {string} options.data         - Data string
+     * @param {string} options.event        - Data string
      * @param {function} options.onSuccess  - Callback on success
      * @param {function} options.onError    - Callback on error
      */
-    vscp_tcp_Client.prototype.sendEvent = function (options) {
+    Client.prototype.sendEvent = function (options) {
 
         /* eslint-disable no-unused-vars */
         return new Promise(function (resolve, reject) {
@@ -940,12 +926,12 @@ module.exports = vscp_tcp_Client = function () {
             var onError = null;
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 return;
             }
 
             if ("string" !== typeof options.event) {
-                console.error(vscp.utility.getTime() + " Event data is missing.");
+                console.error(vscp.getTime() + " Event data is missing.");
                 return;
             }
 
@@ -958,169 +944,24 @@ module.exports = vscp_tcp_Client = function () {
             }
 
             /* Put command to queue with pending commands */
-            cmdObj = new Command("send", onSuccess, onError, resolve, reject);
+            cmdObj = new Command("send", options.event, onSuccess, onError, resolve, reject);
             this.cmdQueue.push(cmdObj);
 
             /* Build command string */
             cmdStr += options.data;
 
             /* Send command via tcp/ip to the VSCP server */
-            console.debug(vscp.utility.getTime() + " Cmd: " + cmdStr);
+            console.debug(vscp.getTime() + " Cmd: " + cmdStr.trim());
             this.socket.send(cmdStr);
 
         }.bind(this));
     };
 
-
-    /**
-     * Start rcvloop.
-     *
-     * @param {object} options                  - Options
-     * @param {function} [options.onSuccess]    - Function which is called on a
-     *                                              successful operation
-     * @param {function} [options.onError]      - Function which is called on a
-     *                                              failed operation
-     *
-     * @return {object} Promise
-     */
-    vscp_tcp_Client.prototype.rcvloop_start = function (options) {
-        return new Promise(function (resolve, reject) {
-
-            var onSuccess = null;
-            var onError = null;
-
-            if (this.states.AUTHENTICATED !== this.state) {
-                console.error(vscp.utility.getTime() + " Connection is not authenticated.");
-                reject(Error("Connection is not authenticated."));
-                return;
-            }
-
-            if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
-                reject(Error("Options are missing."));
-                return;
-            }
-
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
-
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
-
-            this.sendCommand({
-                command: "RCVLOOP",
-                data: "",
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
-    };
-
-    /**
-     * Stop rcvloop.
-     *
-     * @param {object} options                  - Options
-     * @param {function} [options.onSuccess]    - Function which is called on a
-     *                                              successful operation
-     * @param {function} [options.onError]      - Function which is called on a
-     *                                              failed operation
-     *
-     * @return {object} Promise
-     */
-    vscp_tcp_Client.prototype.rcvloop_stop = function (options) {
-        return new Promise(function (resolve, reject) {
-
-            var onSuccess = null;
-            var onError = null;
-
-            if (this.states.AUTHENTICATED !== this.state) {
-                console.error(vscp.utility.getTime() + " Connection is not authenticated.");
-                reject(Error("Connection is not authenticated."));
-                return;
-            }
-
-            if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
-                reject(Error("Options are missing."));
-                return;
-            }
-
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
-
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
-
-            this.sendCommand({
-                command: "QUITLOOP",
-                data: "",
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
-    };
-
-    /**
-     * Clear the VSCP event queue on the server side.
-     *
-     * @param {object} options                  - Options
-     * @param {function} [options.onSuccess]    - Function which is called on a
-     *                                              successful operation
-     * @param {function} [options.onError]      - Function which is called on a
-     *                                              failed operation
-     *
-     * @return {object} Promise
-     */
-    vscp_tcp_Client.prototype.clearQueue = function (options) {
-        return new Promise(function (resolve, reject) {
-
-            var onSuccess = null;
-            var onError = null;
-
-            if (this.states.AUTHENTICATED !== this.state) {
-                console.error(vscp.utility.getTime() + " Connection is not authenticated.");
-                reject(Error("Connection is not authenticated."));
-                return;
-            }
-
-            if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
-                reject(Error("Options are missing."));
-                return;
-            }
-
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
-
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
-
-            this.sendCommand({
-                command: "CLRQ",
-                data: "",
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
-    };
-
-    /**
+        /**
      * Send a VSCP event to the VSCP server.
      *
      * @param {object} options                  - Options
-     * @param {vscp.Event} options.event        - VSCP event to send
+     * @param {vscp_Event} options.event        - VSCP event to send
      * @param {function} [options.onSuccess]    - Function which is called on a
      *                                              successful operation
      * @param {function} [options.onError]      - Function which is called on a
@@ -1128,7 +969,7 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.sendEvent = function (options) {
+    Client.prototype.sendEvent = function (options) {
         return new Promise(function (resolve, reject) {
 
             var cmdData = "";
@@ -1136,25 +977,25 @@ module.exports = vscp_tcp_Client = function () {
             var onError = null;
 
             if (this.states.AUTHENTICATED !== this.state) {
-                console.error(vscp.utility.getTime() + " Connection is not authenticated.");
+                console.error(vscp.getTime() + " Connection is not authenticated.");
                 reject(Error("Connection is not authenticated."));
                 return;
             }
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
 
             if ("undefined" === typeof options.event) {
-                console.error(vscp.utility.getTime() + " VSCP event is missing.");
+                console.error(vscp.getTime() + " VSCP event is missing.");
                 reject(Error("VSCP event is missing."));
                 return;
             }
 
-            if (false === options.event instanceof vscp.Event) {
-                console.error(vscp.utility.getTime() + " Event is invalid.");
+            if (false === options.event instanceof vscp_Event) {
+                console.error(vscp.getTime() + " Event is invalid.");
                 reject(Error("Event is invalid."));
                 return;
             }
@@ -1179,6 +1020,50 @@ module.exports = vscp_tcp_Client = function () {
         }.bind(this));
     };
 
+
+    /**
+     * Start rcvloop.
+     *
+     * @return {boolean} true
+     */
+    Client.prototype.rcvloop_start = async function (options) {
+        const result = await this.sendCommand(
+            {
+                command: "rcvloop",
+            });
+        this.state = this.states.RCVLOOP;
+        return true;
+    };
+
+    /**
+     * Stop rcvloop.
+     *
+     * @return {boolean} Promise
+     */
+    Client.prototype.rcvloop_stop = async function (options) {
+        const result = await this.sendCommand(
+            {
+                command: "rcvloop",
+            });
+        this.state = this.states.CONNECTED;
+        return true;
+    };
+
+    /**
+     * Clear the VSCP event queue on the server side.
+     *
+     * @return {boolean} true
+     */
+    Client.prototype.clearQueue = async function (options) {
+        const result = await this.sendCommand(
+            {
+                command: "clrall",
+            });
+        return true;
+    };
+
+
+
     /**
      * Set a filter in the VSCP server for VSCP events.
      *
@@ -1198,7 +1083,7 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.setFilter = function (options) {
+    Client.prototype.setFilter = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
@@ -1214,13 +1099,13 @@ module.exports = vscp_tcp_Client = function () {
             var maskGuid = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
             if (this.states.AUTHENTICATED !== this.state) {
-                console.error(vscp.utility.getTime() + " Connection is not authenticated.");
+                console.error(vscp.getTime() + " Connection is not authenticated.");
                 reject(Error("Connection is not authenticated."));
                 return;
             }
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
@@ -1239,7 +1124,7 @@ module.exports = vscp_tcp_Client = function () {
 
             if (options.filterGuid instanceof Array) {
                 if (16 !== options.filterGuid.length) {
-                    console.error(vscp.utility.getTime() + " GUID filter length is invalid.");
+                    console.error(vscp.getTime() + " GUID filter length is invalid.");
                     reject(Error("GUID filter length is invalid."));
                     return;
                 }
@@ -1247,10 +1132,10 @@ module.exports = vscp_tcp_Client = function () {
                 filterGuid = options.filterGuid;
             } else if ("string" === typeof options.filterGuid) {
 
-                filterGuid = vscp.utility.strToGuid(options.filterGuid);
+                filterGuid = vscp_utility_strToGuid(options.filterGuid);
 
                 if (16 !== filterGuid.length) {
-                    console.error(vscp.utility.getTime() + " GUID filter is invalid.");
+                    console.error(vscp.getTime() + " GUID filter is invalid.");
                     reject(Error("GUID filter is invalid."));
                     return;
                 }
@@ -1270,7 +1155,7 @@ module.exports = vscp_tcp_Client = function () {
 
             if (options.maskGuid instanceof Array) {
                 if (16 !== options.maskGuid.length) {
-                    console.error(vscp.utility.getTime() + " GUID mask length is invalid.");
+                    console.error(vscp.getTime() + " GUID mask length is invalid.");
                     reject(Error("GUID mask length is invalid."));
                     return;
                 }
@@ -1278,10 +1163,10 @@ module.exports = vscp_tcp_Client = function () {
                 maskGuid = options.maskGuid;
             } else if ("string" === typeof options.maskGuid) {
 
-                maskGuid = vscp.utility.strToGuid(options.maskGuid);
+                maskGuid = vscp_utility_strToGuid(options.maskGuid);
 
                 if (16 !== maskGuid.length) {
-                    console.error(vscp.utility.getTime() + " GUID mask is invalid.");
+                    console.error(vscp.getTime() + " GUID mask is invalid.");
                     reject(Error("GUID mask is invalid."));
                     return;
                 }
@@ -1299,14 +1184,14 @@ module.exports = vscp_tcp_Client = function () {
             cmdData += "0x" + filterClass.toString(16) + ",";
             cmdData += "0x" + filterType.toString(16) + ",";
 
-            cmdData += vscp.utility.guidToStr(filterGuid);
+            cmdData += vscp_utility_guidToStr(filterGuid);
 
             cmdData += ";";
             cmdData += "0x" + maskPriority.toString(16) + ",";
             cmdData += "0x" + maskClass.toString(16) + ",";
             cmdData += "0x" + maskType.toString(16) + ",";
 
-            cmdData += vscp.utility.guidToStr(maskGuid);
+            cmdData += vscp_utility_guidToStr(maskGuid);
 
             this.sendCommand({
                 command: "SF",
@@ -1317,6 +1202,46 @@ module.exports = vscp_tcp_Client = function () {
                 reject: reject
             });
         }.bind(this));
+    };
+
+    /**
+     * Get pending event count from servers inqueue.
+     *
+     * @return {object} interfaces
+     */
+    Client.prototype.getPendingEventCount = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "chkdata",
+            });
+        return this._parsePendingEventsCount(result);
+    };
+
+    /**
+     * Get interfaces from server.
+     *
+     * @return {object} interfaces
+     */
+    Client.prototype.getInterfaces = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "interface",
+                argument: "list"
+            });
+        return this._parseInterface(result);
+    };
+
+    /**
+     * Get remote server version.
+     *
+     * @return {object} version
+     */
+    Client.prototype.getRemoteVersion = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "version",
+            });
+        return this._parseRemoteVersion(result);
     };
 
     /**
@@ -1336,25 +1261,25 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.createVar = function (options) {
+    Client.prototype.createVar = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
             var onError = null;
-            var type = vscp.constants.varTypes.STRING;  // Default type is string
+            var type = vscp_constants_varTypes.STRING;  // Default type is string
             var accessrights = 744;                     // Default access rights
             var persistency = false;                    // Not persistent
             var note = "";                              // No note
             var value = "";
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options is missing.");
+                console.error(vscp.getTime() + " Options is missing.");
                 reject(Error("Options is missing."));
                 return;
             }
 
             if ("string" !== typeof options.name) {
-                console.error(vscp.utility.getTime() + " Option 'name' is missing.");
+                console.error(vscp.getTime() + " Option 'name' is missing.");
                 reject(Error("Option 'name' is missing."));
                 return;
             }
@@ -1380,7 +1305,7 @@ module.exports = vscp_tcp_Client = function () {
                 persistency = options.persistency;
             }
             else {
-                console.error(vscp.utility.getTime() + " Option 'persistency' is missing.");
+                console.error(vscp.getTime() + " Option 'persistency' is missing.");
                 reject(Error("Option 'persistency' is missing."));
                 return;
             }
@@ -1395,7 +1320,7 @@ module.exports = vscp_tcp_Client = function () {
                 value = (options.value ? "true" : "false");
             }
             else {
-                console.error(vscp.utility.getTime() + " Option 'value' is missing.");
+                console.error(vscp.getTime() + " Option 'value' is missing.");
                 reject(Error("Option 'value' is missing."));
                 return;
             }
@@ -1418,8 +1343,8 @@ module.exports = vscp_tcp_Client = function () {
                     type + ";" +
                     accessrights + ";" +
                     (persistency ? 1 : 0) + ";" +
-                    vscp.encodeValueIfBase64(type, value) + ";" +
-                    vscp.b64EncodeUnicode(note),
+                    vscp_encodeValueIfBase64(type, value) + ";" +
+                    vscp_b64EncodeUnicode(note),
                 onSuccess: onSuccess,
                 onError: onError,
                 resolve: resolve,
@@ -1440,20 +1365,20 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.readVar = function (options) {
+    Client.prototype.readVar = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
             var onError = null;
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
 
             if ("string" !== typeof options.name) {
-                console.error(vscp.utility.getTime() + " Variable name is missing.");
+                console.error(vscp.getTime() + " Variable name is missing.");
                 reject(Error("Variable name is missing."));
                 return;
             }
@@ -1491,7 +1416,7 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.writeVar = function (options) {
+    Client.prototype.writeVar = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
@@ -1499,13 +1424,13 @@ module.exports = vscp_tcp_Client = function () {
             var value = "";
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options is missing.");
+                console.error(vscp.getTime() + " Options is missing.");
                 reject(Error("Options is missing."));
                 return;
             }
 
             if ("string" !== typeof options.name) {
-                console.error(vscp.utility.getTime() + " Option name is missing.");
+                console.error(vscp.getTime() + " Option name is missing.");
                 reject(Error("Option name is missing."));
                 return;
             }
@@ -1520,13 +1445,13 @@ module.exports = vscp_tcp_Client = function () {
                 value = (options.value ? "true" : "false");
             }
             else {
-                console.error(vscp.utility.getTime() + " Option 'value' is missing.");
+                console.error(vscp.getTime() + " Option 'value' is missing.");
                 reject(Error("Option 'value' is missing."));
                 return;
             }
 
             if ("number" !== typeof options.type) {
-                console.error(vscp.utility.getTime() + " Option type is missing.");
+                console.error(vscp.getTime() + " Option type is missing.");
                 reject(Error("Option type is missing."));
                 return;
             }
@@ -1541,7 +1466,7 @@ module.exports = vscp_tcp_Client = function () {
 
             this.sendCommand({
                 command: "WVAR",
-                data: options.name + ";" + vscp.encodeValueIfBase64(options.type, value),
+                data: options.name + ";" + vscp_encodeValueIfBase64(options.type, value),
                 onSuccess: onSuccess,
                 onError: onError,
                 resolve: resolve,
@@ -1562,20 +1487,20 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.resetVar = function (options) {
+    Client.prototype.resetVar = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
             var onError = null;
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
 
             if ("string" !== typeof options.name) {
-                console.error(vscp.utility.getTime() + " Variable name is missing.");
+                console.error(vscp.getTime() + " Variable name is missing.");
                 reject(Error("Variable name is missing."));
                 return;
             }
@@ -1609,20 +1534,20 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.removeVar = function (options) {
+    Client.prototype.removeVar = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
             var onError = null;
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
 
             if ("string" !== typeof options.name) {
-                console.error(vscp.utility.getTime() + " Variable name is missing.");
+                console.error(vscp.getTime() + " Variable name is missing.");
                 reject(Error("Variable name is missing."));
                 return;
             }
@@ -1656,20 +1581,20 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.lengthVar = function (options) {
+    Client.prototype.lengthVar = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
             var onError = null;
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
 
             if ("string" !== typeof options.name) {
-                console.error(vscp.utility.getTime() + " Variable name is missing.");
+                console.error(vscp.getTime() + " Variable name is missing.");
                 reject(Error("Variable name is missing."));
                 return;
             }
@@ -1703,20 +1628,20 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.lastChangeVar = function (options) {
+    Client.prototype.lastChangeVar = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
             var onError = null;
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
 
             if ("string" !== typeof options.name) {
-                console.error(vscp.utility.getTime() + " Variable name is missing.");
+                console.error(vscp.getTime() + " Variable name is missing.");
                 reject(Error("Variable name is missing."));
                 return;
             }
@@ -1751,7 +1676,7 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.listVar = function (options) {
+    Client.prototype.listVar = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
@@ -1759,7 +1684,7 @@ module.exports = vscp_tcp_Client = function () {
             var regex = "";
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
@@ -1769,7 +1694,7 @@ module.exports = vscp_tcp_Client = function () {
             }
 
             if ("function" !== typeof options.onVariable) {
-                console.error(vscp.utility.getTime() + " onVariable is missing.");
+                console.error(vscp.getTime() + " onVariable is missing.");
                 reject(Error("onVariable is missing."));
                 return;
             }
@@ -1810,7 +1735,7 @@ module.exports = vscp_tcp_Client = function () {
      *
      * @return {object} Promise
      */
-    vscp_tcp_Client.prototype.readTable = function (options) {
+    Client.prototype.readTable = function (options) {
         return new Promise(function (resolve, reject) {
 
             var onSuccess = null;
@@ -1820,19 +1745,19 @@ module.exports = vscp_tcp_Client = function () {
             var data = "";
 
             if ("undefined" === typeof options) {
-                console.error(vscp.utility.getTime() + " Options are missing.");
+                console.error(vscp.getTime() + " Options are missing.");
                 reject(Error("Options are missing."));
                 return;
             }
 
             if ("string" !== typeof options.name) {
-                console.error(vscp.utility.getTime() + " Table name is missing.");
+                console.error(vscp.getTime() + " Table name is missing.");
                 reject(Error("Table name is missing."));
                 return;
             }
 
             if ("function" !== typeof options.onTableRow) {
-                console.error(vscp.utility.getTime() + " onTableRow function is missing.");
+                console.error(vscp.getTime() + " onTableRow function is missing.");
                 reject(Error("onTableRow function is missing."));
                 return;
             }
