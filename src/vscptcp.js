@@ -440,13 +440,13 @@ module.exports = Client = function () {
     /**
      * Parse remote server version
      */
-    this._parseRemoteVersion = function (rv) {
+    this._parseRemoteVersion = function (result) {
         let version = {};
-        let cntElements = rv.response.length;
-        if ((rv.response.length >= 2) &&
-            (rv.command === 'version') &&
-            (rv.response[cntElements - 1]) === '+OK') {
-            let verArray = rv.response[cntElements - 2].split(',');
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'version') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            let verArray = result.response[cntElements - 2].split(',');
             version.major = verArray[0];
             version.minor = verArray[1];
             version.release = verArray[2];
@@ -458,13 +458,13 @@ module.exports = Client = function () {
     /**
      * Parse remote server pending event queue
      */
-    this._parsePendingEventsCount = function (rv) {
+    this._parsePendingEventsCount = function (result) {
         let cnt = 0;
-        let cntElements = rv.response.length;
-        if ((rv.response.length >= 2) &&
-            (rv.command === 'chkdata') &&
-            (rv.response[cntElements - 1]) === '+OK') {
-            cnt = parseInt(rv.response[cntElements - 2]);
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'chkdata') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            cnt = parseInt(result.response[cntElements - 2]);
         }
         return cnt;
     }
@@ -474,14 +474,14 @@ module.exports = Client = function () {
      * object with structured interface information
      *
      */
-    this._parseInterface = function (rv) {
+    this._parseInterface = function (result) {
         let interfaces = [];
-        let cntElements = rv.response.length;
-        if (rv.response.length &&
-            (rv.command === 'interface') &&
-            (rv.response[cntElements - 1]) === '+OK') {
-            rv.response.pop(); // remove '+OK'
-            rv.response.forEach((item) => {
+        let cntElements = result.response.length;
+        if (result.response.length &&
+            (result.command === 'interface') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            result.response.pop(); // remove '+OK'
+            result.response.forEach((item) => {
                 let items = item.split(',');
                 let obj = {};
                 obj.index = parseInt(items[0]);
@@ -494,6 +494,110 @@ module.exports = Client = function () {
             });
         }
         return interfaces;
+    }
+
+    /**
+     * Parse response from challenge and return
+     * challenge string
+     */
+    this.parseChallenge = function (result) {
+        let challenge = "";
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'challenge') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            challenge = result.response[cntElements - 2];
+        }
+        return challenge;
+    }
+
+    /**
+     * Parse response from 'retr n' and return
+     * retreived VSCP events in array
+     */
+    this._parseRetreiveEvents = function (result) {
+        let events = [];
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'retr') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            for (let i = 0; i < (cntElements - 1); i++) {
+                e = new vscp.Event();
+                e.setFromText(result.response[i]);
+                events.push(e);
+            }
+        }
+        return events;
+    }
+
+    /**
+     * Parse statistics line from remote server
+     */
+    this._parseStatistics = function (result) {
+        let statistics = {};
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'stat') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            let statsArray = result.response[cntElements - 2].split(',');
+            if (statsArray >= 7) {
+                statistics.cntReceiveData = parseInt(statsArray[3]);
+                statistics.cntReceiveFrames = parseInt(statsArray[4]);
+                statistics.cntTransmitData = parseInt(statsArray[5]);
+                statistics.cntTransmitFrames = parseInt(statsArray[6]);
+            }
+        }
+        return statistics;
+    }
+
+    /**
+     * Parse info line from remote server
+     */
+    this._parseInfo = function (result) {
+        let info = {};
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'info') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            let statsArray = result.response[cntElements - 2].split(',');
+            if (statsArray >= 4) {
+                info.status = parseInt(statsArray[0]);
+                info.lastErrorCode = parseInt(statsArray[1]);
+                info.lastErrorSubCode = parseInt(statsArray[2]);
+                info.lastErrorStr = statsArray[3];
+            }
+        }
+        return info;
+    }
+
+    /**
+     * Parse remote server channel id
+     */
+    this._parseChid = function (result) {
+        let chid = -1;
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'chid') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            chid = parseInt(result.response[cntElements - 2]);
+            result.chid = chid;
+        }
+        return result;
+    }
+
+    /**
+     * Parse remote server GUID
+     */
+    this._parseGUID = function (result) {
+        let GUID = [];
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'GETGUID') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            GUID = vscp.strToGuid(result.response[cntElements - 2]);
+            result.guid = GUID;
+        }
+        return GUID;
     }
 
     // -----------------------------------------------------------------------------
@@ -743,7 +847,7 @@ module.exports = Client = function () {
             timer = setTimeout(function () {
                 console.log("[ERROR] Attempt at connection exceeded timeout value");
                 this.socket.end();
-                reject(this, Error("tcp/ip connection timed out."));
+                reject(Error("tcp/ip connection timed out."));
             }.bind(this), this.timeout);
 
             // Report timeout condition
@@ -904,12 +1008,16 @@ module.exports = Client = function () {
         }.bind(this));
     };
 
+    // ----------------------------------------------------------------------------
+    //                                Commands
+    // ----------------------------------------------------------------------------
+
     /**
      * Send event to VSCP server.
      *
      * @private
      * @param {object} options              - Options
-     * @param {string} options.event        - Data string
+     * @param {string} options.eventstr     - VSCP event on string form to send
      * @param {function} options.onSuccess  - Callback on success
      * @param {function} options.onError    - Callback on error
      */
@@ -930,8 +1038,8 @@ module.exports = Client = function () {
                 return;
             }
 
-            if ("string" !== typeof options.event) {
-                console.error(vscp.getTime() + " Event data is missing.");
+            if ("string" !== typeof options.eventstr) {
+                console.error(vscp.getTime() + " Event string is missing.");
                 return;
             }
 
@@ -943,21 +1051,19 @@ module.exports = Client = function () {
                 onError = options.onError;
             }
 
-            /* Put command to queue with pending commands */
-            cmdObj = new Command("send", options.event, onSuccess, onError, resolve, reject);
-            this.cmdQueue.push(cmdObj);
-
-            /* Build command string */
-            cmdStr += options.data;
-
-            /* Send command via tcp/ip to the VSCP server */
-            console.debug(vscp.getTime() + " Cmd: " + cmdStr.trim());
-            this.socket.send(cmdStr);
+            sendCommand({
+                command: "send",
+                argument: options.eventstr,
+                onSuccess: onSuccess,
+                ObError: onError,
+                resolve: resolve,
+                reject: reject
+            });
 
         }.bind(this));
     };
 
-        /**
+    /**
      * Send a VSCP event to the VSCP server.
      *
      * @param {object} options                  - Options
@@ -972,15 +1078,9 @@ module.exports = Client = function () {
     Client.prototype.sendEvent = function (options) {
         return new Promise(function (resolve, reject) {
 
-            var cmdData = "";
+            var cmdArg = "";
             var onSuccess = null;
             var onError = null;
-
-            if (this.states.AUTHENTICATED !== this.state) {
-                console.error(vscp.getTime() + " Connection is not authenticated.");
-                reject(Error("Connection is not authenticated."));
-                return;
-            }
 
             if ("undefined" === typeof options) {
                 console.error(vscp.getTime() + " Options are missing.");
@@ -1008,10 +1108,10 @@ module.exports = Client = function () {
                 onError = options.onError;
             }
 
-            cmdData = options.event.getText();
+            cmdArg = options.event.getText();
 
             this.sendEvent({
-                data: cmdData,
+                eventstr: cmdArg,
                 onSuccess: onSuccess,
                 onError: onError,
                 resolve: resolve,
@@ -1020,13 +1120,80 @@ module.exports = Client = function () {
         }.bind(this));
     };
 
+    /**
+     * Do 'noop' command.
+     *
+     * @return {boolean} true
+     */
+    Client.prototype.noop = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "noop",
+            });
+        return true;
+    };
+
+    /**
+     * Send 'user' command.
+     *
+     * @return {object} version
+     */
+    Client.prototype.user = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "user",
+                argument: option.username
+            });
+        return true;
+    };
+
+    /**
+     * Send 'password' command.
+     *
+     * @return {object} version
+     */
+    Client.prototype.password = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "pass",
+                argument: option.password
+            });
+        return true;
+    };
+
+    /**
+     * Send 'quit' command.
+     *
+     * @return {boolean} true
+     */
+    Client.prototype.quit = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "quit",
+            });
+        return true;
+    };
+
+    /**
+     * Send 'challenge' command.
+     *
+     * @return {string} challenge
+     */
+    Client.prototype.password = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "challenge",
+                argument: option.password
+            });
+        return parseChallange(result);
+    };
 
     /**
      * Start rcvloop.
      *
      * @return {boolean} true
      */
-    Client.prototype.rcvloop_start = async function (options) {
+    Client.prototype.startRcvLoop = async function () {
         const result = await this.sendCommand(
             {
                 command: "rcvloop",
@@ -1040,7 +1207,7 @@ module.exports = Client = function () {
      *
      * @return {boolean} Promise
      */
-    Client.prototype.rcvloop_stop = async function (options) {
+    Client.prototype.stopRcvLoop = async function () {
         const result = await this.sendCommand(
             {
                 command: "rcvloop",
@@ -1054,7 +1221,7 @@ module.exports = Client = function () {
      *
      * @return {boolean} true
      */
-    Client.prototype.clearQueue = async function (options) {
+    Client.prototype.clearQueue = async function () {
         const result = await this.sendCommand(
             {
                 command: "clrall",
@@ -1062,7 +1229,59 @@ module.exports = Client = function () {
         return true;
     };
 
+    /**
+     * Get pending event count from servers inqueue.
+     *
+     * @return {object} interfaces
+     */
+    Client.prototype.getPendingEventCount = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "chkdata",
+            });
+        return this._parsePendingEventsCount(result);
+    };
 
+    /**
+     * Get remote server version.
+     *
+     * @return {object} version
+     */
+    Client.prototype.getRemoteVersion = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "version",
+            });
+        return this._parseRemoteVersion(result);
+    };
+
+    /**
+     * Do 'restart' command.
+     *
+     * @return {boolean} true
+     */
+    Client.prototype.restart = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "restart",
+                argument: options.password
+            });
+        return true;
+    };
+
+    /**
+ * Do 'shutdown' command.
+ *
+ * @return {boolean} true
+ */
+    Client.prototype.shutdown = async function () {
+        const result = await this.sendCommand(
+            {
+                command: "shutdown",
+                argument: options.password
+            });
+        return true;
+    };
 
     /**
      * Set a filter in the VSCP server for VSCP events.
@@ -1072,10 +1291,6 @@ module.exports = Client = function () {
      * @param {number} [options.filterClass]            - Class filter (default: 0)
      * @param {number} [options.filterType]             - Type filter (default: 0)
      * @param {number[]|string} [options.filterGuid]    - GUID filter (default: 0)
-     * @param {number} [options.maskPriority]           - Priority mask (default: 0)
-     * @param {number} [options.maskClass]              - Class mask (default: 0xffff)
-     * @param {number} [options.maskType]               - Type mask (default: 0xffff)
-     * @param {number[]|string} [options.maskGuid]      - GUID mask (default: 0)
      * @param {function} [options.onSuccess]            - Function which is called on
      *                                                      a successful operation
      * @param {function} [options.onError]              - Function which is called on
@@ -1093,16 +1308,6 @@ module.exports = Client = function () {
             var filterClass = 0;
             var filterType = 0;
             var filterGuid = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            var maskPriority = 0;
-            var maskClass = 0xffff;
-            var maskType = 0xffff;
-            var maskGuid = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-
-            if (this.states.AUTHENTICATED !== this.state) {
-                console.error(vscp.getTime() + " Connection is not authenticated.");
-                reject(Error("Connection is not authenticated."));
-                return;
-            }
 
             if ("undefined" === typeof options) {
                 console.error(vscp.getTime() + " Options are missing.");
@@ -1132,13 +1337,70 @@ module.exports = Client = function () {
                 filterGuid = options.filterGuid;
             } else if ("string" === typeof options.filterGuid) {
 
-                filterGuid = vscp_utility_strToGuid(options.filterGuid);
+                filterGuid = vscp.strToGuid(options.filterGuid);
 
                 if (16 !== filterGuid.length) {
                     console.error(vscp.getTime() + " GUID filter is invalid.");
                     reject(Error("GUID filter is invalid."));
                     return;
                 }
+            }
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
+            cmdData = "0x" + filterPriority.toString(16) + ",";
+            cmdData += "0x" + filterClass.toString(16) + ",";
+            cmdData += "0x" + filterType.toString(16) + ",";
+
+            cmdData += vscp_utility_guidToStr(filterGuid);
+
+            this.sendCommand({
+                command: "setfilter",
+                argument: cmdData,
+                onSuccess: onSuccess,
+                onError: onError,
+                resolve: resolve,
+                reject: reject
+            });
+        }.bind(this));
+    };
+
+    /**
+     * Set a mask in the VSCP server for VSCP events.
+     *
+     * @param {object} options                          - Options
+     * @param {number} [options.maskPriority]           - Priority mask (default: 0)
+     * @param {number} [options.maskClass]              - Class mask (default: 0xffff)
+     * @param {number} [options.maskType]               - Type mask (default: 0xffff)
+     * @param {number[]|string} [options.maskGuid]      - GUID mask (default: 0)
+     * @param {function} [options.onSuccess]            - Function which is called on
+     *                                                      a successful operation
+     * @param {function} [options.onError]              - Function which is called on
+     *                                                      a failed operation
+     *
+     * @return {object} Promise
+     */
+    Client.prototype.setMask = function (options) {
+        return new Promise(function (resolve, reject) {
+
+            var onSuccess = null;
+            var onError = null;
+            var cmdData = "";
+            var maskPriority = 0;
+            var maskClass = 0xffff;
+            var maskType = 0xffff;
+            var maskGuid = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+            if ("undefined" === typeof options) {
+                console.error(vscp.getTime() + " Options are missing.");
+                reject(Error("Options are missing."));
+                return;
             }
 
             if ("number" === typeof options.maskPriority) {
@@ -1163,7 +1425,7 @@ module.exports = Client = function () {
                 maskGuid = options.maskGuid;
             } else if ("string" === typeof options.maskGuid) {
 
-                maskGuid = vscp_utility_strToGuid(options.maskGuid);
+                maskGuid = vscp.strToGuid(options.maskGuid);
 
                 if (16 !== maskGuid.length) {
                     console.error(vscp.getTime() + " GUID mask is invalid.");
@@ -1180,13 +1442,6 @@ module.exports = Client = function () {
                 onError = options.onError;
             }
 
-            cmdData += "0x" + filterPriority.toString(16) + ",";
-            cmdData += "0x" + filterClass.toString(16) + ",";
-            cmdData += "0x" + filterType.toString(16) + ",";
-
-            cmdData += vscp_utility_guidToStr(filterGuid);
-
-            cmdData += ";";
             cmdData += "0x" + maskPriority.toString(16) + ",";
             cmdData += "0x" + maskClass.toString(16) + ",";
             cmdData += "0x" + maskType.toString(16) + ",";
@@ -1194,8 +1449,8 @@ module.exports = Client = function () {
             cmdData += vscp_utility_guidToStr(maskGuid);
 
             this.sendCommand({
-                command: "SF",
-                data: cmdData,
+                command: "setmask",
+                argument: cmdData,
                 onSuccess: onSuccess,
                 onError: onError,
                 resolve: resolve,
@@ -1205,21 +1460,10 @@ module.exports = Client = function () {
     };
 
     /**
-     * Get pending event count from servers inqueue.
-     *
-     * @return {object} interfaces
-     */
-    Client.prototype.getPendingEventCount = async function () {
-        const result = await this.sendCommand(
-            {
-                command: "chkdata",
-            });
-        return this._parsePendingEventsCount(result);
-    };
-
-    /**
      * Get interfaces from server.
      *
+     * @param {object} options           - Options
+     * @param {number} [options.count]   - # VSCP events to fetch (default: 1)
      * @return {object} interfaces
      */
     Client.prototype.getInterfaces = async function () {
@@ -1232,17 +1476,271 @@ module.exports = Client = function () {
     };
 
     /**
-     * Get remote server version.
+     * Retrieve events from server.
      *
-     * @return {object} version
+     * @param {object} [options]              - Options
+     * @param {number} [options.count]        - number of events to fetch
+     *                                            default: 1, -1 for all
+     * @return {array} Retrieved VSCP events
      */
-    Client.prototype.getRemoteVersion = async function () {
+    Client.prototype.getEvents = async function (options) {
+
+        var count = 1;
+
+        if ("number" === typeof options.count) {
+            count = options.count;
+        }
+
         const result = await this.sendCommand(
             {
-                command: "version",
+                command: "retr",
+                argument: count
             });
-        return this._parseRemoteVersion(result);
+        return this._parseRetreiveEvents(result);
     };
+
+    /**
+     * Retrieve statistics from server.
+     *
+     * @return {object} Retrieved statistics
+     */
+    Client.prototype.getStatistics = async function () {
+        var count = 1;
+
+        const result = await this.sendCommand(
+            {
+                command: "stat",
+            });
+        return this._parseStatistics(result);
+    };
+
+    /**
+     * Retrieve info from server.
+     *
+     * @return {object} Retrieved info
+     */
+    Client.prototype.getInfo = async function () {
+        var count = 1;
+
+        const result = await this.sendCommand(
+            {
+                command: "info",
+            });
+        return this._parseInfo(result);
+    };
+
+    /**
+     * Retrieve channel id from server.
+     *
+     * @return {object} Retrieved channel id
+     */
+    Client.prototype.getChannelID = async function () {
+        var count = 1;
+
+        const result = await this.sendCommand(
+            {
+                command: "chid",
+            });
+        return this._parseChid(result);
+    };
+
+    /**
+     * Set GUID for channel.
+     *
+     * @param {object} options                    - Options
+     * @param {number[]|string} [options.guid]    - GUID (default: 0)
+     *
+     * @return {object} Result object
+     */
+    Client.prototype.setGUID = async function (options) {
+        let guid = '-';
+
+        if (options.guid instanceof Array) {
+            if (16 !== options.filterGuid.length) {
+                console.error(vscp.getTime() + " GUID length is invalid.");
+                reject(Error("GUID length is invalid."));
+                return;
+            }
+
+            guid = options.guid;
+        } else if ("string" === typeof options.guid) {
+
+            guid = vscp.strToGuid(options.guid);
+
+            if (16 !== guid.length) {
+                console.error(vscp.getTime() + " GUID is invalid.");
+                reject(Error("GUID is invalid."));
+                return;
+            }
+        }
+
+        const result = await this.sendCommand(
+            {
+                command: "setguid",
+                argument: guid
+            });
+        return result;
+    };
+
+    /**
+     * Get GUID for interface.
+     *
+     * @return {object} Result object
+     */
+    Client.prototype.getGUID = async function (options) {
+        let guid = [];
+
+        const result = await this.sendCommand(
+            {
+                command: "getguid"
+            });
+        return this._parseGUID(result);
+    };
+
+    /**
+     * Send measurement to server.
+     *
+     * @param {object} options                  - Options
+     * @param {number} options.type             - VSCP type value specifying which
+     *                                             type of measurement this is.
+     * @param {number} options.unit             - The measurement unit for this type
+     *                                             of measurement. An be in the range 0-3
+     *                                             for a Level I event and 0-255 for a
+     *                                             Level II event.
+     * @param {number} options.sensorindex      - The index for the sensor for the unit.
+     *                                             Can be in the range 0-7 for a Level I event
+     *                                             and 0-255 for a Level II event.
+     * @param {number} options.value            - The measurement value.
+     * @param {number[]|string} [options.guid]  - GUID (default: 0)
+     * @param {number} [options.level]          - Set to 1 or 2 for Level I or Level II.
+     *                                             Default: 2
+     * @param {string} [options.eventformat]    - Set to "string" or "float" to generate a
+     *                                             string based or a float based event.
+     *                                             Default: 'float'
+     * @param {number} [options.zone]           - Zone value for Level II events. Defaults to zero.
+     * @param {number} [options.subzone]        - Subzone value for Level II events. Defaults to zero.
+     *
+     * @return {object} Result object
+     */
+    Client.prototype.sendMeasurement = async function (options) {
+
+        let cmdArg = '';
+        let guid = '-';
+        let level = 2;
+        let evenFormat = 'float';
+        let zone = 0;
+        let subzone = 0;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options is missing.");
+            reject(Error("Options is missing."));
+            return;
+        }
+
+        if ("number" !== typeof options.type) {
+            console.error(vscp.getTime() + " Option 'type' is missing.");
+            reject(Error("Option 'type' is missing."));
+            return;
+        }
+
+        cmdArg = options.type.toString() + ',';
+
+        if ("number" !== typeof options.unit) {
+            console.error(vscp.getTime() + " Option 'unit' is missing.");
+            reject(Error("Option 'unit' is missing."));
+            return;
+        }
+
+        cmdArg = options.unit.toString() + ',';
+
+        if ("number" !== typeof options.sensorindex) {
+            console.error(vscp.getTime() + " Option 'sensorindex' is missing.");
+            reject(Error("Option 'sensorindex' is missing."));
+            return;
+        }
+
+        cmdArg = options.sensorindex.toString() + ',';
+
+        if ("number" !== typeof options.value) {
+            console.error(vscp.getTime() + " Option 'value' is missing.");
+            reject(Error("Option 'value' is missing."));
+            return;
+        }
+
+        cmdArg = options.value.toString() + ',';
+
+        if (options.guid instanceof Array) {
+            if (16 !== options.filterGuid.length) {
+                console.error(vscp.getTime() + " GUID length is invalid.");
+                reject(Error("GUID length is invalid."));
+                return;
+            }
+
+            guid = guidToStr(options.guid);
+
+        } else if ("string" === typeof options.guid) {
+
+            guid = options.guid;
+
+        }
+
+        if ("number" === typeof options.level) {
+            if (1 === options.level) {
+                level = options.level;
+            }
+            else if (2 === options.level) {
+                level = options.level;
+            }
+            else {
+                console.error(vscp.getTime() + " Option 'level' can only be set to 1 or 2.");
+                reject(Error("Option 'level' can only be set to 1 or 2."));
+            }
+        }
+
+        cmdArg = level.toString() + ',';
+
+        if ("string" === typeof options.eventformat) {
+            if ('float' === options.level) {
+                eventformat = options.eventformat;
+            }
+            else if ('string' === options.eventformat) {
+                eventformat = options.eventformat;
+            }
+            else {
+                console.error(vscp.getTime() + " Option 'eventformat' can only be set to 'float' or 'string'.");
+                reject(Error("Option 'eventformat' can only be set to 'float' or 'string'."));
+            }
+        }
+
+        cmdArg = eventformat + ',';
+
+
+        if ("number" === typeof options.zone) {
+            zone = options.zone;
+        }
+
+        cmdArg = zone.toString() + ',';
+
+
+        if ("number" === typeof options.subzone) {
+            subzone = options.subzone;
+        }
+
+        cmdArg = subzone.toString();
+
+        const result = await this.sendCommand(
+            {
+                command: "measurement",
+                argument: cmdArg
+            });
+
+        return result;
+    };
+
+
+    // ----------------------------------------------------------------------------
+    //                                Variables
+    // ----------------------------------------------------------------------------
 
     /**
      * Create a a VSCP remote variable.

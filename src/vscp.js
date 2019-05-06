@@ -699,12 +699,64 @@ Event.prototype.getText = function() {
 
         str += this.vscpData;
     } else {
-
         console.error(getTime() + " Invalid VSCP event data.");
     }
 
     return str;
 };
+
+/**
+ * Set event from string.
+ * @return {string} Event as string
+ */
+Event.prototype.setFromText = function(str) {
+    if ("string" !== typeof str) {
+        console.error(vscp.getTime() + " VSCP event is not in string form.");
+        reject(Error("VSCP event is not in string form."));
+    }
+
+    ea = str.spit(',');
+
+    // Get head
+    if ( ea.length ) {
+        this.vscpHead = readValue(ea[0]);
+    }
+
+    // Get VSCP class
+    if ( ea.length > 1 ) {
+        this.vscpClass = readValue(ea[1]);
+    }
+
+    // Get VSCP type
+    if ( ea.length > 2 ) {
+        this.vscpType = readValue(ea[2]);
+    }
+
+    // Get VSCP obid
+    if ( ea.length > 3 ) {
+        this.vscpObId = readValue(ea[3]);
+    }
+
+    // Get VSCP datetime
+    vscpDateTime = new Date(Date.UTC(0, 0, 0, 0, 0, 0));  //  Sun, 31 Dec 1899 00:00:00 GMT
+    if ( ea.length > 4 ) {
+        this.vscpDateTime(ea[4]);
+    }
+
+    // Get VSCP GUID
+    this.vscpGuid = "-";
+    if ( ea.length > 5 ) {
+        this.vscpGuid = ea[5];
+    }
+
+    // Get VSCP data
+    this.vscpData = [];
+    if ( ea.length > 6 ) {
+        for (let i=6; i<ea.length; i++) {
+            this.vscpData[i] = readValue(ea[i]);
+        }
+    }
+}
 
 /* ---------------------------------------------------------------------- */
 
