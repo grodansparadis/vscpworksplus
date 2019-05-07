@@ -124,10 +124,11 @@ module.exports = Client = function () {
      * @param {function} reject     - Promise reject function
      */
     var Command = function (command, argument, onSuccess, onError, resolve, reject) {
+
         /** Server command string
          * @member {string}
          */
-        this.command = command;
+        this.command = command.toUpperCase();
 
         /** Server command string arguments
          * @member {string}
@@ -416,7 +417,9 @@ module.exports = Client = function () {
         }
 
         /* Put command to queue with pending commands */
-        cmdObj = new Command(options.command, options.argument, onSuccess, onError, resolve, reject);
+        cmdObj = new Command(options.command, options.argument,
+            onSuccess, onError,
+            resolve, reject);
         this.cmdQueue.push(cmdObj);
 
         if (false === simulate) {
@@ -437,14 +440,18 @@ module.exports = Client = function () {
 
     };
 
+    // ----------------------------------------------------------------------------
+    //                              Response Parsers
+    // ----------------------------------------------------------------------------
+
     /**
      * Parse remote server version
      */
-    this._parseRemoteVersion = function (result) {
+    Client.prototype.parseRemoteVersion = function (result) {
         let version = {};
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
-            (result.command === 'version') &&
+            (result.command === 'VERSION') &&
             (result.response[cntElements - 1]) === '+OK') {
             let verArray = result.response[cntElements - 2].split(',');
             version.major = verArray[0];
@@ -458,11 +465,11 @@ module.exports = Client = function () {
     /**
      * Parse remote server pending event queue
      */
-    this._parsePendingEventsCount = function (result) {
+    Client.prototype.parsePendingEventsCount = function (result) {
         let cnt = 0;
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
-            (result.command === 'chkdata') &&
+            (result.command === 'CHKDATA') &&
             (result.response[cntElements - 1]) === '+OK') {
             cnt = parseInt(result.response[cntElements - 2]);
         }
@@ -474,11 +481,11 @@ module.exports = Client = function () {
      * object with structured interface information
      *
      */
-    this._parseInterface = function (result) {
+    Client.prototype.parseInterface = function (result) {
         let interfaces = [];
         let cntElements = result.response.length;
         if (result.response.length &&
-            (result.command === 'interface') &&
+            (result.command === 'INTERFACE LIST') &&
             (result.response[cntElements - 1]) === '+OK') {
             result.response.pop(); // remove '+OK'
             result.response.forEach((item) => {
@@ -500,11 +507,11 @@ module.exports = Client = function () {
      * Parse response from challenge and return
      * challenge string
      */
-    this.parseChallenge = function (result) {
+    Client.prototype.parseChallenge = function (result) {
         let challenge = "";
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
-            (result.command === 'challenge') &&
+            (result.command === 'CHALLENGE') &&
             (result.response[cntElements - 1]) === '+OK') {
             challenge = result.response[cntElements - 2];
         }
@@ -515,11 +522,11 @@ module.exports = Client = function () {
      * Parse response from 'retr n' and return
      * retreived VSCP events in array
      */
-    this._parseRetreiveEvents = function (result) {
+    Client.prototype.parseRetreiveEvents = function (result) {
         let events = [];
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
-            (result.command === 'retr') &&
+            (result.command === 'RETR') &&
             (result.response[cntElements - 1]) === '+OK') {
             for (let i = 0; i < (cntElements - 1); i++) {
                 e = new vscp.Event();
@@ -533,11 +540,11 @@ module.exports = Client = function () {
     /**
      * Parse statistics line from remote server
      */
-    this._parseStatistics = function (result) {
+    Client.prototype.parseStatistics = function (result) {
         let statistics = {};
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
-            (result.command === 'stat') &&
+            (result.command === 'STAT') &&
             (result.response[cntElements - 1]) === '+OK') {
             let statsArray = result.response[cntElements - 2].split(',');
             if (statsArray >= 7) {
@@ -553,11 +560,11 @@ module.exports = Client = function () {
     /**
      * Parse info line from remote server
      */
-    this._parseInfo = function (result) {
+    Client.prototype.parseInfo = function (result) {
         let info = {};
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
-            (result.command === 'info') &&
+            (result.command === 'INFO') &&
             (result.response[cntElements - 1]) === '+OK') {
             let statsArray = result.response[cntElements - 2].split(',');
             if (statsArray >= 4) {
@@ -573,11 +580,11 @@ module.exports = Client = function () {
     /**
      * Parse remote server channel id
      */
-    this._parseChid = function (result) {
+    Client.prototype.parseChid = function (result) {
         let chid = -1;
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
-            (result.command === 'chid') &&
+            (result.command === 'CHID') &&
             (result.response[cntElements - 1]) === '+OK') {
             chid = parseInt(result.response[cntElements - 2]);
             result.chid = chid;
@@ -588,7 +595,7 @@ module.exports = Client = function () {
     /**
      * Parse remote server GUID
      */
-    this._parseGUID = function (result) {
+    Client.prototype.parseGUID = function (result) {
         let GUID = [];
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
@@ -600,7 +607,52 @@ module.exports = Client = function () {
         return GUID;
     }
 
-    // -----------------------------------------------------------------------------
+
+
+    /**
+     * Parse remote server WCYD code
+     */
+    Client.prototype.parseWcyd = function (result) {
+        let wcyd = [];
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'WCYD') &&
+            (result.response[cntElements - 1]) === '+OK') {
+            GUID = result.response[cntElements - 2].split('-');
+            result.wcyd = wcyd;
+        }
+        return wcyd;
+    }
+
+
+    Client.prototype.parseVariableList = function (result) {
+        let variables = {};
+        variables.varArray = [];
+        let cntElements = result.response.length;
+        if (result.response.length &&
+            (result.command === 'VARIABLE LIST') &&
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
+            result.response.pop(); // remove '+OK'
+            // Get count
+            variables.count = parseInt(result.response[0]);
+            result.response.shift();
+            result.response.forEach((item) => {
+                let items = item.split(';');
+                let obj = {};
+                obj.index = parseInt(items[0]);
+                obj.name = items[1];
+                obj.type = parseInt(items[2]);
+                obj.owner = parseInt(items[3]);
+                obj.rights = parseInt(items[4]);
+                obj.bPersistent = (/true/i).test(items[5]);
+                obj.last = new Date(items[6]);
+
+                variables.varArray.push(obj);
+            });
+        }
+        result.variables = variables;
+        return variables;
+    }
 
     /**
      * This function is called for any VSCP server response message.
@@ -625,16 +677,25 @@ module.exports = Client = function () {
             // Save lines up to +OK/-OK
             if (this.state === this.states.CONNECTED) {
 
-                let pos;
+                let posOk, posEnd;
 
                 // Positive response? ("+OK ......\r\n")
-                if (-1 !== (pos = this.collectedData.search("\\+OK"))) {
-                    var response = this.collectedData.substring(0, pos + 3);
-                    var lastPart = this.collectedData.substring(pos + 3);
-                    if (-1 !== (pos = lastPart.search("\r\n"))) {
+                if (-1 !== (posOk = this.collectedData.search("\\+OK"))) {
+
+                    lastPart = this.collectedData.substring(posOk);
+                    //console.log('lastPart = [' + lastPart + ']');
+                    if (-1 !== (posEnd = lastPart.search("\r\n"))) {
+                        //console.log(posOk,posEnd);
+                        response = this.collectedData.substring(0, posOk) +
+                            lastPart.substring(0, posEnd + 2);
+                        //console.log('response = [' + response + ']');
+                        lastPart = this.collectedData.substring(posOk + posEnd + 2);
+                        //console.log('lastPart = [' + lastPart + ']');
+
                         // save remaining part of server response for further processing
-                        this.collectedData = lastPart.substring(pos + 3);
+                        this.collectedData = this.collectedData.substring(posOk + 2 + posEnd + 2);
                         responseList = response.split("\r\n");
+                        responseList.pop(); // Remove last ('\r\n')
                         //console.log(responseList);
                         this._signalSuccess(
                             {
@@ -643,13 +704,20 @@ module.exports = Client = function () {
                                 response: responseList
                             });
                     }
-                } else if (-1 !== (pos = this.collectedData.search("\\-OK"))) {
-                    var response = this.collectedData.substring(0, pos + 3);
-                    var lastPart = this.collectedData.substring(pos + 3);
-                    if (-1 !== (pos = lastPart.search("\r\n"))) {
+                } else if (-1 !== (posOk = this.collectedData.search("\\-OK"))) {
+                    lastPart = this.collectedData.substring(posOk);
+                    //console.log('lastPart = [' + lastPart + ']');
+                    if (-1 !== (posEnd = lastPart.search("\r\n"))) {
+                        //console.log(posOk,posEnd);
+                        response = this.collectedData.substring(0, posOk) +
+                            lastPart.substring(0, posEnd + 2);
+                        //console.log('response = [' + response + ']');
+                        lastPart = this.collectedData.substring(posOk + posEnd + 2);
+                        //console.log('lastPart = [' + lastPart + ']');
                         // save remaining part of server response for further processing
-                        this.collectedData = lastPart.substring(pos + 3);
+                        this.collectedData = this.collectedData.substring(posOk + 2 + posEnd + 2);
                         responseList = response.split("\r\n");
+                        responseList.pop();
                         // Negative response
                         this._signalError(
                             {
@@ -987,7 +1055,8 @@ module.exports = Client = function () {
 
             /* Put command to queue with pending commands */
             cmdObj = new Command(options.command, options.argument,
-                onSuccess, onError, resolve, reject);
+                onSuccess, onError,
+                resolve, reject);
             this.cmdQueue.push(cmdObj);
 
             if (false === simulate) {
@@ -1239,7 +1308,7 @@ module.exports = Client = function () {
             {
                 command: "chkdata",
             });
-        return this._parsePendingEventsCount(result);
+        return this.parsePendingEventsCount(result);
     };
 
     /**
@@ -1252,7 +1321,7 @@ module.exports = Client = function () {
             {
                 command: "version",
             });
-        return this._parseRemoteVersion(result);
+        return this.parseRemoteVersion(result);
     };
 
     /**
@@ -1469,10 +1538,9 @@ module.exports = Client = function () {
     Client.prototype.getInterfaces = async function () {
         const result = await this.sendCommand(
             {
-                command: "interface",
-                argument: "list"
+                command: "interface list",
             });
-        return this._parseInterface(result);
+        return this.parseInterface(result);
     };
 
     /**
@@ -1496,7 +1564,7 @@ module.exports = Client = function () {
                 command: "retr",
                 argument: count
             });
-        return this._parseRetreiveEvents(result);
+        return this.parseRetreiveEvents(result);
     };
 
     /**
@@ -1511,7 +1579,7 @@ module.exports = Client = function () {
             {
                 command: "stat",
             });
-        return this._parseStatistics(result);
+        return this.parseStatistics(result);
     };
 
     /**
@@ -1526,7 +1594,7 @@ module.exports = Client = function () {
             {
                 command: "info",
             });
-        return this._parseInfo(result);
+        return this.parseInfo(result);
     };
 
     /**
@@ -1541,7 +1609,7 @@ module.exports = Client = function () {
             {
                 command: "chid",
             });
-        return this._parseChid(result);
+        return this.parseChid(result);
     };
 
     /**
@@ -1594,7 +1662,7 @@ module.exports = Client = function () {
             {
                 command: "getguid"
             });
-        return this._parseGUID(result);
+        return this.parseGUID(result);
     };
 
     /**
@@ -1738,93 +1806,46 @@ module.exports = Client = function () {
     };
 
 
+    /**
+     * Ask remote server for wcyd code
+     *
+     * @return {object} Result object
+     */
+    Client.prototype.getWhatCanYouDo = async function (options) {
+        let guid = [];
+
+        const result = await this.sendCommand(
+            {
+                command: "wcyd"
+            });
+        return this.parseWcyd(result);
+    };
+
+
     // ----------------------------------------------------------------------------
     //                                Variables
     // ----------------------------------------------------------------------------
 
     /**
-     * Create a a VSCP remote variable.
+     * List (all) VSCP server variables.
      *
-     * @param {object} options                      - Options
-     * @param {string} options.name                 - Variable name
-     * @param {number} [options.type]               - Variable type (default: string)
-     * @param {number} [options.accessrights]       - Variable value (default: 744)
-     * @param {boolean} options.persistency         - Variable is persistent (true) or not (false)
-     * @param {string} options.value                - Variable Value
-     * @param {string} [options.note]               - Variable note (optional)
-     * @param {function} [options.onSuccess]        - Function which is called on
-     *                                                  a successful operation
-     * @param {function} [options.onError]          - Function which is called on
-     *                                                  a failed operation
+     * @param {object} options                  - Options
+     * @param {string} [options.regex]          - Regular expression to filter variables
+     * @param {function} [options.onSuccess]    - Function which is called on a successful operation
+     * @param {function} [options.onError]      - Function which is called on a failed operation
      *
      * @return {object} Promise
      */
-    Client.prototype.createVar = function (options) {
-        return new Promise(function (resolve, reject) {
+    Client.prototype.listVar = async function (options) {
 
-            var onSuccess = null;
-            var onError = null;
-            var type = vscp_constants_varTypes.STRING;  // Default type is string
-            var accessrights = 744;                     // Default access rights
-            var persistency = false;                    // Not persistent
-            var note = "";                              // No note
-            var value = "";
+        var onSuccess = null;
+        var onError = null;
+        var regex = "";
 
-            if ("undefined" === typeof options) {
-                console.error(vscp.getTime() + " Options is missing.");
-                reject(Error("Options is missing."));
-                return;
-            }
+        if ("undefined" !== typeof options) {
 
-            if ("string" !== typeof options.name) {
-                console.error(vscp.getTime() + " Option 'name' is missing.");
-                reject(Error("Option 'name' is missing."));
-                return;
-            }
-
-            if ("number" === typeof options.type) {
-                type = options.type;
-            }
-
-            if ("number" === typeof options.accessrights) {
-                accessrights = options.accessrights;
-            }
-
-            if ("string" === typeof options.persistency) {
-
-                if ('false' === options.persistency.toLowerCase()) {
-                    persistency = false;
-                }
-                else {
-                    persistency = true;
-                }
-            }
-            else if ("boolean" === typeof options.persistency) {
-                persistency = options.persistency;
-            }
-            else {
-                console.error(vscp.getTime() + " Option 'persistency' is missing.");
-                reject(Error("Option 'persistency' is missing."));
-                return;
-            }
-
-            if ("string" !== typeof options.value) {
-                value = options.value;
-            }
-            else if ("number" !== typeof options.value) {
-                value = options.value.toString();
-            }
-            else if ("boolean" !== typeof options.value) {
-                value = (options.value ? "true" : "false");
-            }
-            else {
-                console.error(vscp.getTime() + " Option 'value' is missing.");
-                reject(Error("Option 'value' is missing."));
-                return;
-            }
-
-            if ("string" === typeof options.note) {
-                note = options.note;
+            if ("string" === typeof options.regex) {
+                regex = options.regex;
             }
 
             if ("function" === typeof options.onSuccess) {
@@ -1834,21 +1855,157 @@ module.exports = Client = function () {
             if ("function" === typeof options.onError) {
                 onError = options.onError;
             }
+        }
 
-            this.sendCommand({
-                command: "CVAR",
-                data: options.name + ";" +
-                    type + ";" +
-                    accessrights + ";" +
-                    (persistency ? 1 : 0) + ";" +
-                    vscp_encodeValueIfBase64(type, value) + ";" +
-                    vscp_b64EncodeUnicode(note),
+        const result = await this.sendCommand(
+            {
+                command: "variable list",
+                argument: regex.toUpperCase(),
                 onSuccess: onSuccess,
                 onError: onError,
-                resolve: resolve,
-                reject: reject
             });
-        }.bind(this));
+
+        return this.parseVariableList(result);
+    };
+
+
+    /**
+     * Create a a VSCP remote variable.
+     *
+     * @param {object} options                      - Options
+     * @param {string} options.name                 - Variable name
+     * @param {string} options.value                - Variable value
+     * @param {number|string} [options.type]        - Variable type (default: string)
+     * @param {number} [options.access]             - Variable value (default: 744)
+     * @param {number|string} [options.owner]       - Variable owner if (0/'admin' = superuser)
+     *                                                  If empty logged in user is used
+     * @param {boolean} [options.bPersistent]       - Variable is persistent (true)
+     *                                                  or not (false) Default: false
+     * @param {string} [options.note]               - Variable note (optional)
+     * @param {function} [options.onSuccess]        - Function which is called on
+     *                                                  a successful operation
+     * @param {function} [options.onError]          - Function which is called on
+     *                                                  a failed operation
+     *
+     * @return {object} Promise
+     */
+    Client.prototype.createVar = async function (options) {
+
+        let onSuccess = null;
+        let onError = null;
+
+        let type = vscp.varTypes.STRING;  // Default type is string
+        let typeStr = "";                 // Used if type is given symbolically
+        let rights = 0x744;               // Default access rights
+        let owner = -1;                   // Use current user
+        let ownerStr = "";                // Used if owner is given symbolically
+        let bPersistent = false;          // Not persistent
+        let note = "";                    // No note
+        let value = "";                   // Empty value
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options is missing.");
+            reject(Error("Options is missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Option 'name' is missing.");
+            reject(Error("Option 'name' is missing."));
+            return;
+        }
+
+        if ("number" === typeof options.type) {
+            type = options.type;
+        }
+        else if ("string" === typeof options.type) {
+            typeStr = options.type;
+        }
+
+        if ("number" === typeof options.rights) {
+            accessrights = options.rights;
+        }
+
+        if ("number" === typeof options.owner) {
+            owner = options.owner;
+        }
+        else if ("string" === typeof options.owner) {
+            ownerStr = options.owner;
+        }
+
+        if ("string" === typeof options.bPersistent) {
+            bPersistent = (/true/i).test(options.bPersistent)
+        }
+        else if ("boolean" === typeof options.bPersistent) {
+            bPersistent = options.bPersistent;
+        }
+
+        if ("string" !== typeof options.value) {
+            value = options.value;
+        }
+        else if ("number" !== typeof options.value) {
+            value = options.value.toString();
+        }
+        else if ("boolean" !== typeof options.value) {
+            value = (options.value ? "true" : "false");
+        }
+        else {
+            console.error(vscp.getTime() + " Option 'value' is missing.");
+            reject(Error("Option 'value' is missing."));
+            return;
+        }
+
+        if ("string" === typeof options.note) {
+            note = options.note;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
+        let argument = options.name + ';';
+
+        if (typeStr.length) {
+            // symbolic type
+            argument += typeStr + ';';
+        }
+        else {
+            // type id
+            argument += type.toString() + ';';
+        }
+
+        argument += (bPersistent ? 1 : 0) + ';';
+
+        if ((-1 === owner) && (0 === ownerStr.length)) {
+            // Use logged in user
+            argument += ';';
+        }
+        else if (ownerstr.length) {
+            // Symbolic user
+            argument += ownerstr + ';';
+        }
+        else {
+            // User if
+            argument += owner.toString() + ';';
+        }
+
+        argument += rights.toString() + ';';
+        argument += vscp.b64EncodeUnicode(value) + ';';
+        argument += vscp.b64EncodeUnicode(note) + ';';
+
+        const result = await this.sendCommand(
+            {
+                command: "variable write",
+                argument: argument,
+                onSuccess: onSuccess,
+                onError: onError,
+            });
+
+        return true;
     };
 
     /**
@@ -2163,60 +2320,6 @@ module.exports = Client = function () {
         }.bind(this));
     };
 
-    /**
-     * List all VSCP server variables.
-     *
-     * @param {object} options                  - Options
-     * @param {string} [options.regex]          - Regular expression to filter variables
-     * @param {function} options.onVariable     - Function which is called per variable
-     * @param {function} [options.onSuccess]    - Function which is called on a successful operation
-     * @param {function} [options.onError]      - Function which is called on a failed operation
-     *
-     * @return {object} Promise
-     */
-    Client.prototype.listVar = function (options) {
-        return new Promise(function (resolve, reject) {
-
-            var onSuccess = null;
-            var onError = null;
-            var regex = "";
-
-            if ("undefined" === typeof options) {
-                console.error(vscp.getTime() + " Options are missing.");
-                reject(Error("Options are missing."));
-                return;
-            }
-
-            if ("string" === typeof options.regex) {
-                regex = options.regex;
-            }
-
-            if ("function" !== typeof options.onVariable) {
-                console.error(vscp.getTime() + " onVariable is missing.");
-                reject(Error("onVariable is missing."));
-                return;
-            }
-
-            this.onVariable = options.onVariable;
-
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
-
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
-
-            this.sendCommand({
-                command: "LSTVAR",
-                data: regex,
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
-    };
 
 
     /**

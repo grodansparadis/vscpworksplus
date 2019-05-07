@@ -223,6 +223,11 @@ const vscp_tcp_Client = require('../src/vscptcp');
 //import vscp_tcp_Client from '../@types/vscptcp'
 //const mod = require('../src/vscptcp');
 
+let success = function (obj) {
+  console.log("success ");
+  console.log(obj);
+}
+
 let aaaa = function (aaa) {
   console.log("[aaaa] interface success ");
   console.log(aaa);
@@ -359,16 +364,35 @@ const test2 = async () => {
   // console.log(parseInterface(iff));
   const iff = await vscp_tcp_client.getInterfaces();
   console.log(iff);
-  await vscp_tcp_client.sendCommand(
-    {
-      command: "noop"
-    });
-  const iff2 = await vscp_tcp_client.getInterfaces();
-  console.log(iff2);
+  // await vscp_tcp_client.sendCommand(
+  //   {
+  //     command: "noop"
+  //   });
+  // const iff2 = await vscp_tcp_client.getInterfaces();
+  // console.log(iff2);
   const ver = await vscp_tcp_client.getRemoteVersion();
   console.log(ver);
+
   const cnt = await vscp_tcp_client.getPendingEventCount();
   console.log(cnt);
+
+  // console.log(vscp.version.major);
+  // console.log(vscp.varTypes);
+  // console.log(vscp.varTypeNames[1]);
+  // console.log(vscp);
+
+  const varCreate = await vscp_tcp_client.createVar({
+    name: "tttt",
+    value: 'This is a test'
+  });
+  console.log(varCreate);
+
+  const varList = await vscp_tcp_client.listVar({
+    onSuccess: success,
+    regex: 'tttt'
+  });
+  console.log(varList);
+
   await vscp_tcp_client.disconnect();
   var end = new Date().getTime();
   var time = end - start;
