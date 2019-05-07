@@ -640,7 +640,7 @@ module.exports.getNodeId = function(guid) {
  * @return {string} Base64
  */
 module.exports.b64EncodeUnicode = function(str) {
-    return Buffer.from(str).toString('base64');
+    return new Buffer.from(str, 'binary').toString('base64');
 };
 
 /** Decode base64 unicode safe.
@@ -649,7 +649,7 @@ module.exports.b64EncodeUnicode = function(str) {
  * Note: prior to Node v4, use new Buffer rather than Buffer.from.
  */
 module.exports.b64DecodeUnicode = function(str) {
-    return Buffer.from(b64Encoded, 'base64').toString() ;
+    return new Buffer.from(str, 'base64').toString('binary');
 };
 
 /** Get variable type name as string by numerical code.

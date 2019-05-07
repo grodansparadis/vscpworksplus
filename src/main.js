@@ -327,7 +327,7 @@ const test2 = async () => {
   let vscp_tcp_client = new vscp_tcp_Client();
   const value1 = await vscp_tcp_client.connect(
     {
-      host: "pi4",
+      host: "localhost",
       port: 9598,
       timeout: 10000,
       onSuccess: null
@@ -381,9 +381,10 @@ const test2 = async () => {
   // console.log(vscp.varTypeNames[1]);
   // console.log(vscp);
 
-  const varCreate = await vscp_tcp_client.createVar({
+  const varCreate = await vscp_tcp_client.writeVar({
     name: "tttt",
-    value: 'This is a test'
+    value: 'This is a test åäöÅÄÖ',
+    note: 'This is a super variable åäöÅÄÖ'
   });
   console.log(varCreate);
 
@@ -392,6 +393,33 @@ const test2 = async () => {
     regex: 'tttt'
   });
   console.log(varList);
+
+   const varRead = await vscp_tcp_client.readVar({
+    name: 'tttt'
+  });
+  console.log(varRead);
+
+  const varReadValue = await vscp_tcp_client.readVarValue({
+    name: 'tttt'
+  });
+  console.log(varReadValue);
+
+  const varWriteValue = await vscp_tcp_client.writeVarValue({
+    name: 'tttt',
+    value: 'Det här är det nya värdet'
+  });
+  console.log(varWriteValue);
+
+  const varReadValue2 = await vscp_tcp_client.readVarValue({
+    name: 'tttt'
+  });
+  console.log(varReadValue2); 
+
+  // const varReadNote = await vscp_tcp_client.readVarNote({
+  //   onSuccess: success,
+  //   name: 'tttt'
+  // });
+  // console.log(varReadNode);
 
   await vscp_tcp_client.disconnect();
   var end = new Date().getTime();

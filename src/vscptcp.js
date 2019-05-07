@@ -452,7 +452,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'VERSION') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             let verArray = result.response[cntElements - 2].split(',');
             version.major = verArray[0];
             version.minor = verArray[1];
@@ -470,7 +470,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'CHKDATA') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             cnt = parseInt(result.response[cntElements - 2]);
         }
         return cnt;
@@ -486,7 +486,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if (result.response.length &&
             (result.command === 'INTERFACE LIST') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             result.response.pop(); // remove '+OK'
             result.response.forEach((item) => {
                 let items = item.split(',');
@@ -512,7 +512,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'CHALLENGE') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             challenge = result.response[cntElements - 2];
         }
         return challenge;
@@ -527,7 +527,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'RETR') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             for (let i = 0; i < (cntElements - 1); i++) {
                 e = new vscp.Event();
                 e.setFromText(result.response[i]);
@@ -545,7 +545,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'STAT') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             let statsArray = result.response[cntElements - 2].split(',');
             if (statsArray >= 7) {
                 statistics.cntReceiveData = parseInt(statsArray[3]);
@@ -565,7 +565,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'INFO') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             let statsArray = result.response[cntElements - 2].split(',');
             if (statsArray >= 4) {
                 info.status = parseInt(statsArray[0]);
@@ -585,7 +585,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'CHID') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             chid = parseInt(result.response[cntElements - 2]);
             result.chid = chid;
         }
@@ -600,7 +600,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'GETGUID') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             GUID = vscp.strToGuid(result.response[cntElements - 2]);
             result.guid = GUID;
         }
@@ -617,7 +617,7 @@ module.exports = Client = function () {
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
             (result.command === 'WCYD') &&
-            (result.response[cntElements - 1]) === '+OK') {
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             GUID = result.response[cntElements - 2].split('-');
             result.wcyd = wcyd;
         }
@@ -652,6 +652,79 @@ module.exports = Client = function () {
         }
         result.variables = variables;
         return variables;
+    }
+
+    /**
+     * Parse remote server variable
+     */
+    Client.prototype.parseVariable = function (result) {
+        let variable = {};
+        variable.value = variable.note = "";
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'VARIABLE READ') &&
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
+            let varArray = result.response[cntElements - 2].split(';');
+            variable.name = varArray[0];
+            variable.type = parseInt(varArray[1]);
+            variable.user = parseInt(varArray[2]);
+            variable.rights = parseInt(varArray[3]);
+            variable.bPersistent = (/true/i).test(varArray[4]);
+            variable.last = new Date(varArray[5]);
+            variable.value = vscp.b64DecodeUnicode(varArray[6]);
+            // Note my not be present
+            if (varArray.length > 7) {
+                variable.note = vscp.b64DecodeUnicode(varArray[7]);
+            }
+            result.variable = variable;
+        }
+        return variable;
+    }
+
+    /**
+     * Parse remote server value
+     */
+    Client.prototype.parseVariableValue = function (result, cmd) {
+        let value = '';
+        let cntElements = result.response.length;
+        console.log(cmd.toUpperCase());
+        if ((result.response.length >= 2) &&
+            (result.command === cmd.toUpperCase()) &&
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
+            value = vscp.b64DecodeUnicode(result.response[cntElements - 2]);
+            result.value = value;
+        }
+        return value;
+    }
+
+    /**
+     * Parse remote server note
+     */
+    Client.prototype.parseVariableNote = function (result) {
+        let note = '';
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'VARIABLE READNOTE') &&
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
+            note = vscp.b64DecodeUnicode(result.response[cntElements - 2]);
+            result.note = note;
+        }
+        return note;
+    }
+
+    /**
+     * Parse remote variable length
+     */
+    Client.prototype.parseVariableLength = function (result) {
+        let length = 0;
+        let cntElements = result.response.length;
+        if ((result.response.length >= 2) &&
+            (result.command === 'VARIABLE LENGTH') &&
+            (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
+            length = parseInt(result.response[cntElements - 2]);
+            result.length = length;
+        }
+        return length;
     }
 
     /**
@@ -1870,7 +1943,7 @@ module.exports = Client = function () {
 
 
     /**
-     * Create a a VSCP remote variable.
+     * Create/Write a a VSCP remote variable.
      *
      * @param {object} options                      - Options
      * @param {string} options.name                 - Variable name
@@ -1889,7 +1962,7 @@ module.exports = Client = function () {
      *
      * @return {object} Promise
      */
-    Client.prototype.createVar = async function (options) {
+    Client.prototype.writeVar = async function (options) {
 
         let onSuccess = null;
         let onError = null;
@@ -2009,7 +2082,7 @@ module.exports = Client = function () {
     };
 
     /**
-     * Read a value from a VSCP server variable.
+     * Read a variable from a VSCP server variable.
      *
      * @param {object} options                  - Options
      * @param {string} options.name             - Variable name
@@ -2020,50 +2093,94 @@ module.exports = Client = function () {
      *
      * @return {object} Promise
      */
-    Client.prototype.readVar = function (options) {
-        return new Promise(function (resolve, reject) {
+    Client.prototype.readVar = async function (options) {
 
-            var onSuccess = null;
-            var onError = null;
+        var onSuccess = null;
+        var onError = null;
 
-            if ("undefined" === typeof options) {
-                console.error(vscp.getTime() + " Options are missing.");
-                reject(Error("Options are missing."));
-                return;
-            }
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
 
-            if ("string" !== typeof options.name) {
-                console.error(vscp.getTime() + " Variable name is missing.");
-                reject(Error("Variable name is missing."));
-                return;
-            }
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Variable name is missing.");
+            reject(Error("Variable name is missing."));
+            return;
+        }
 
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
 
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
 
-            this.sendCommand({
-                command: "RVAR",
-                data: options.name,
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
+        const result = await this.sendCommand({
+            command: "variable read",
+            argument: options.name,
+            onSuccess: onSuccess,
+            onError: onError
+        });
+
+        return this.parseVariable(result);
     };
 
     /**
-     * Write a value to a VSCP server variable.
+     * Read a variable value from a VSCP server variable.
+     *
+     * @param {object} options                  - Options
+     * @param {string} options.name             - Variable name
+     * @param {function} [options.onSuccess]    - Function which is called on a
+     *                                              successful operation
+     * @param {function} [options.onError]      - Function which is called on a
+     *                                              failed operation
+     *
+     * @return {object} Promise
+     */
+    Client.prototype.readVarValue = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Variable name is missing.");
+            reject(Error("Variable name is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
+        const result = await this.sendCommand({
+            command: "variable readvalue",
+            argument: options.name,
+            onSuccess: onSuccess,
+            onError: onError
+        });
+
+        return this.parseVariableValue(result, "variable readvalue");
+    };
+
+    /**
+     * Write variable value to a VSCP server variable.
      *
      * @param {object} options                  - Options
      * @param {string} options.name             - Variable name
      * @param {string} options.value            - Variable value
-     * @param {number} options.type             - Variable type
      * @param {function} [options.onSuccess]    - Function which is called on a
      *                                              successful operation
      * @param {function} [options.onError]      - Function which is called on a
@@ -2071,66 +2188,257 @@ module.exports = Client = function () {
      *
      * @return {object} Promise
      */
-    Client.prototype.writeVar = function (options) {
-        return new Promise(function (resolve, reject) {
+    Client.prototype.writeVarValue = async function (options) {
 
-            var onSuccess = null;
-            var onError = null;
-            var value = "";
+        var onSuccess = null;
+        var onError = null;
+        var value = "";
 
-            if ("undefined" === typeof options) {
-                console.error(vscp.getTime() + " Options is missing.");
-                reject(Error("Options is missing."));
-                return;
-            }
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options is missing.");
+            reject(Error("Options is missing."));
+            return;
+        }
 
-            if ("string" !== typeof options.name) {
-                console.error(vscp.getTime() + " Option name is missing.");
-                reject(Error("Option name is missing."));
-                return;
-            }
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Option name is missing.");
+            reject(Error("Option name is missing."));
+            return;
+        }
 
-            if ("string" !== typeof options.value) {
-                value = options.value;
-            }
-            else if ("number" !== typeof options.value) {
-                value = options.value.toString();
-            }
-            else if ("boolean" !== typeof options.value) {
-                value = (options.value ? "true" : "false");
-            }
-            else {
-                console.error(vscp.getTime() + " Option 'value' is missing.");
-                reject(Error("Option 'value' is missing."));
-                return;
-            }
+        if ("string" !== typeof options.value) {
+            value = options.value;
+        }
+        else if ("number" !== typeof options.value) {
+            value = options.value.toString();
+        }
+        else if ("boolean" !== typeof options.value) {
+            value = (options.value ? "true" : "false");
+        }
+        else {
+            console.error(vscp.getTime() + " Option 'value' is missing.");
+            reject(Error("Option 'value' is missing."));
+            return;
+        }
 
-            if ("number" !== typeof options.type) {
-                console.error(vscp.getTime() + " Option type is missing.");
-                reject(Error("Option type is missing."));
-                return;
-            }
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
 
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
 
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
+        let result = await this.sendCommand({
+            command: "variable writevalue",
+            argument: options.name + " " + vscp.b64EncodeUnicode(value),
+            onSuccess: onSuccess,
+            onError: onError,
+        });
 
-            this.sendCommand({
-                command: "WVAR",
-                data: options.name + ";" + vscp_encodeValueIfBase64(options.type, value),
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
+        return result;
     };
 
 
+
+    /**
+         * Read a variable note from a VSCP server variable.
+         *
+         * @param {object} options                  - Options
+         * @param {string} options.name             - Variable name
+         * @param {function} [options.onSuccess]    - Function which is called on a
+         *                                              successful operation
+         * @param {function} [options.onError]      - Function which is called on a
+         *                                              failed operation
+         *
+         * @return {object} Promise
+         */
+    Client.prototype.readVarNote = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Variable name is missing.");
+            reject(Error("Variable name is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
+        const result = await this.sendCommand({
+            command: "variable readvalue",
+            argument: options.name,
+            onSuccess: onSuccess,
+            onError: onError
+        });
+
+        return this.parseVariableNote(result);
+    };
+
+    /**
+     * Write variable note to a VSCP server variable.
+     *
+     * @param {object} options                  - Options
+     * @param {string} options.name             - Variable name
+     * @param {string} options.note             - Variable note
+     * @param {function} [options.onSuccess]    - Function which is called on a
+     *                                              successful operation
+     * @param {function} [options.onError]      - Function which is called on a
+     *                                              failed operation
+     *
+     * @return {object} Promise
+     */
+    Client.prototype.writeVarNote = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+        var note = "";
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options is missing.");
+            reject(Error("Options is missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Option name is missing.");
+            reject(Error("Option name is missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.note) {
+            note = options.note;
+        }
+        else {
+            console.error(vscp.getTime() + " Option 'note' is missing.");
+            reject(Error("Option 'note' is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
+        let result = await this.sendCommand({
+            command: "variable writenote",
+            argument: options.name + " " + vscp.b64EncodeUnicode(note),
+            onSuccess: onSuccess,
+            onError: onError,
+        });
+
+        return result;
+    };
+
+    /**
+     * Read a remote variable value and reset the value.
+     *
+     * @param {object} options                  - Options
+     * @param {string} options.name             - Variable name
+     * @param {function} [options.onSuccess]    - Function which is called on a
+     *                                              successful operation
+     * @param {function} [options.onError]      - Function which is called on a
+     *                                              failed operation
+     *
+     * @return {object} Promise
+     */
+    Client.prototype.readVarValueReset = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Variable name is missing.");
+            reject(Error("Variable name is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
+        const result = await this.sendCommand({
+            command: "variable readreset",
+            argument: options.name,
+            onSuccess: onSuccess,
+            onError: onError
+        });
+
+        return this.parseVariableValue(result, "variable readreset");
+    };
+
+    /**
+     * Read a remote variable value and delete the variable
+     *
+     * @param {object} options                  - Options
+     * @param {string} options.name             - Variable name
+     * @param {function} [options.onSuccess]    - Function which is called on a
+     *                                              successful operation
+     * @param {function} [options.onError]      - Function which is called on a
+     *                                              failed operation
+     *
+     * @return {object} Promise
+     */
+    Client.prototype.readVarDelete = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Variable name is missing.");
+            reject(Error("Variable name is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
+        const result = await this.sendCommand({
+            command: "variable readremove",
+            argument: options.name,
+            onSuccess: onSuccess,
+            onError: onError
+        });
+
+        return this.parseVariableValue(result, "variable readremove");
+    };
 
     /**
      * Reset a VSCP server variable.
@@ -2142,41 +2450,40 @@ module.exports = Client = function () {
      *
      * @return {object} Promise
      */
-    Client.prototype.resetVar = function (options) {
-        return new Promise(function (resolve, reject) {
+    Client.prototype.resetVar = async function (options) {
 
-            var onSuccess = null;
-            var onError = null;
+        var onSuccess = null;
+        var onError = null;
 
-            if ("undefined" === typeof options) {
-                console.error(vscp.getTime() + " Options are missing.");
-                reject(Error("Options are missing."));
-                return;
-            }
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
 
-            if ("string" !== typeof options.name) {
-                console.error(vscp.getTime() + " Variable name is missing.");
-                reject(Error("Variable name is missing."));
-                return;
-            }
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Variable name is missing.");
+            reject(Error("Variable name is missing."));
+            return;
+        }
 
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
 
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
 
-            this.sendCommand({
-                command: "RSTVAR",
-                data: options.name,
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
+        let result = await this.sendCommand({
+            command: "variable reset",
+            argument: options.name,
+            onSuccess: onSuccess,
+            onError: onError,
+
+        });
+
+        return result;
     };
 
     /**
@@ -2189,41 +2496,39 @@ module.exports = Client = function () {
      *
      * @return {object} Promise
      */
-    Client.prototype.removeVar = function (options) {
-        return new Promise(function (resolve, reject) {
+    Client.prototype.removeVar = async function (options) {
 
-            var onSuccess = null;
-            var onError = null;
+        var onSuccess = null;
+        var onError = null;
 
-            if ("undefined" === typeof options) {
-                console.error(vscp.getTime() + " Options are missing.");
-                reject(Error("Options are missing."));
-                return;
-            }
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
 
-            if ("string" !== typeof options.name) {
-                console.error(vscp.getTime() + " Variable name is missing.");
-                reject(Error("Variable name is missing."));
-                return;
-            }
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Variable name is missing.");
+            reject(Error("Variable name is missing."));
+            return;
+        }
 
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
 
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
 
-            this.sendCommand({
-                command: "DELVAR",
-                data: options.name,
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
+        let result = await this.sendCommand({
+            command: "variable remove",
+            argument: options.name,
+            onSuccess: onSuccess,
+            onError: onError,
+        });
+
+        return result;
     };
 
     /**
@@ -2236,41 +2541,39 @@ module.exports = Client = function () {
      *
      * @return {object} Promise
      */
-    Client.prototype.lengthVar = function (options) {
-        return new Promise(function (resolve, reject) {
+    Client.prototype.lengthVar = async function (options) {
 
-            var onSuccess = null;
-            var onError = null;
+        var onSuccess = null;
+        var onError = null;
 
-            if ("undefined" === typeof options) {
-                console.error(vscp.getTime() + " Options are missing.");
-                reject(Error("Options are missing."));
-                return;
-            }
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
 
-            if ("string" !== typeof options.name) {
-                console.error(vscp.getTime() + " Variable name is missing.");
-                reject(Error("Variable name is missing."));
-                return;
-            }
+        if ("string" !== typeof options.name) {
+            console.error(vscp.getTime() + " Variable name is missing.");
+            reject(Error("Variable name is missing."));
+            return;
+        }
 
-            if ("function" === typeof options.onSuccess) {
-                onSuccess = options.onSuccess;
-            }
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
 
-            if ("function" === typeof options.onError) {
-                onError = options.onError;
-            }
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
 
-            this.sendCommand({
-                command: "LENVAR",
-                data: options.name,
-                onSuccess: onSuccess,
-                onError: onError,
-                resolve: resolve,
-                reject: reject
-            });
-        }.bind(this));
+        let result = await this.sendCommand({
+            command: "variable length",
+            argument: options.name,
+            onSuccess: onSuccess,
+            onError: onError,
+        });
+
+        return parseVariableLength(result);
     };
 
     /**
