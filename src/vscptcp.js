@@ -1271,9 +1271,9 @@ module.exports = Client = function () {
      * @param {object} options                  - Options
      * @param {vscp_Event} options.event        - VSCP event to send
      * @param {function} [options.onSuccess]    - Function which is called on a
-     *                                              successful operation
+     *                                            successful operation
      * @param {function} [options.onError]      - Function which is called on a
-     *                                              failed operation
+     *                                            failed operation
      *
      * @return {object} Promise
      */
@@ -1337,12 +1337,16 @@ module.exports = Client = function () {
         var onSuccess = null;
         var onError = null;
 
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
+        if ("undefined" == typeof options) {
 
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+            
         }
 
         const result = await this.sendCommand(
@@ -1463,12 +1467,16 @@ module.exports = Client = function () {
         var onSuccess = null;
         var onError = null;
 
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
+        if ("undefined" == typeof options) {
 
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
         }
 
         const result = await this.sendCommand(
@@ -1543,12 +1551,16 @@ module.exports = Client = function () {
         var onSuccess = null;
         var onError = null;
 
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
+        if ("undefined" == typeof options) {
 
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
         }
 
         const result = await this.sendCommand(
@@ -1578,12 +1590,16 @@ module.exports = Client = function () {
         var onSuccess = null;
         var onError = null;
 
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
+        if ("undefined" == typeof options) {
 
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
         }
 
         const result = await this.sendCommand(
@@ -1612,12 +1628,15 @@ module.exports = Client = function () {
         var onSuccess = null;
         var onError = null;
 
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
+        if ("undefined" == typeof options) {
 
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
         }
 
         const result = await this.sendCommand(
@@ -1645,12 +1664,16 @@ module.exports = Client = function () {
         var onSuccess = null;
         var onError = null;
 
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
+        if ("undefined" == typeof options) {
 
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
         }
 
         const result = await this.sendCommand(
@@ -1678,13 +1701,15 @@ module.exports = Client = function () {
         var onSuccess = null;
         var onError = null;
 
+        if ("undefined" == typeof options) {
 
-        if ("function" === typeof options.onSuccess) {
-            onSuccess = options.onSuccess;
-        }
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
 
-        if ("function" === typeof options.onError) {
-            onError = options.onError;
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
         }
 
         const result = await this.sendCommand(
@@ -1889,9 +1914,9 @@ module.exports = Client = function () {
      * @param {number} [options.maskType]               - Type mask (default: 0xffff)
      * @param {number[]|string} [options.maskGuid]      - GUID mask (default: 0)
      * @param {function} [options.onSuccess]            - Function which is called on
-     *                                                      a successful operation
+     *                                                    a successful operation
      * @param {function} [options.onError]              - Function which is called on
-     *                                                      a failed operation
+     *                                                    a failed operation
      *
      * @return {object} Promise
      */
@@ -1971,15 +1996,36 @@ module.exports = Client = function () {
     /**
      * Get interfaces from server.
      *
-     * @param {object} options           - Options
-     * @param {number} [options.count]   - # VSCP events to fetch (default: 1)
+     * @param {object} options                          - Options
+     * @param {function} [options.onSuccess]            - Function which is called on
+     *                                                    a successful operation
+     * @param {function} [options.onError]              - Function which is called on
+     *                                                    a failed operation
      * @return {object} interfaces
      */
-    Client.prototype.getInterfaces = async function () {
+    Client.prototype.getInterfaces = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" !== typeof options.onSuccess) {
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+        }
+
         const result = await this.sendCommand(
             {
                 command: "interface list",
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         return this.parseInterface(result);
     };
 
@@ -1988,51 +2034,115 @@ module.exports = Client = function () {
      *
      * @param {object} [options]              - Options
      * @param {number} [options.count]        - number of events to fetch
-     *                                            default: 1, -1 for all
+     *                                          default: 1, -1 for all
+     * @param {function} [options.onSuccess]  - Function which is called on
+     *                                          a successful operation
+     * @param {function} [options.onError]    - Function which is called on
+     *                                          a failed operation
      * @return {array} Retrieved VSCP events
      */
     Client.prototype.getEvents = async function (options) {
 
         var count = 1;
+        var onSuccess = null;
+        var onError = null;
 
-        if ("number" === typeof options.count) {
-            count = options.count;
+        if ("undefined" !== typeof options.onSuccess) {
+
+            if ("number" === typeof options.count) {
+                count = options.count;
+            }
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
         }
 
         const result = await this.sendCommand(
             {
                 command: "retr",
-                argument: count
+                argument: count,
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         return this.parseRetrieveEvents(result);
     };
 
     /**
      * Retrieve statistics from server.
      *
+     * @param {object} [options]              - Options
+     * @param {function} [options.onSuccess]  - Function which is called on
+     *                                          a successful operation
+     * @param {function} [options.onError]    - Function which is called on
+     *                                          a failed operation
      * @return {object} Retrieved statistics
      */
-    Client.prototype.getStatistics = async function () {
-        var count = 1;
+    Client.prototype.getStatistics = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" !== typeof options.onSuccess) {
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
+        }
 
         const result = await this.sendCommand(
             {
                 command: "stat",
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         return this.parseStatistics(result);
     };
 
     /**
      * Retrieve info from server.
      *
+     * @param {object} [options]              - Options
+     * @param {function} [options.onSuccess]  - Function which is called on
+     *                                          a successful operation
+     * @param {function} [options.onError]    - Function which is called on
+     *                                          a failed operation
      * @return {object} Retrieved info
      */
-    Client.prototype.getInfo = async function () {
-        var count = 1;
+    Client.prototype.getInfo = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" !== typeof options.onSuccess) {
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
+        }
 
         const result = await this.sendCommand(
             {
                 command: "info",
+                onSuccess: onSuccess,
+                onError: onError,
             });
         return this.parseInfo(result);
     };
@@ -2040,28 +2150,69 @@ module.exports = Client = function () {
     /**
      * Retrieve channel id from server.
      *
+     * @param {object} [options]              - Options
+     * @param {function} [options.onSuccess]  - Function which is called on
+     *                                          a successful operation
+     * @param {function} [options.onError]    - Function which is called on
+     *                                          a failed operation
      * @return {object} Retrieved channel id
      */
-    Client.prototype.getChannelID = async function () {
-        var count = 1;
+    Client.prototype.getChannelID = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" !== typeof options.onSuccess) {
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
 
         const result = await this.sendCommand(
             {
                 command: "chid",
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         return this.parseChid(result);
     };
 
     /**
      * Set GUID for channel.
      *
-     * @param {object} options                    - Options
+     * @param {object} [options]              - Options
+     * @param {function} [options.onSuccess]  - Function which is called on
+     *                                          a successful operation
+     * @param {function} [options.onError]    - Function which is called on
+     *                                          a failed operation
      * @param {number[]|string} [options.guid]    - GUID (default: 0)
      *
      * @return {object} Result object
      */
     Client.prototype.setGUID = async function (options) {
+
         let guid = '-';
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options is missing.");
+            reject(Error("Options is missing."));
+            return;
+        }
+
+        if (("string" !== typeof options.guid) && !(options.guid instanceof Array)) {
+            console.error(vscp.getTime() + " Option 'guid' is missing.");
+            reject(Error("Option 'guid' is missing."));
+            return;
+        }
 
         if (options.guid instanceof Array) {
             if (16 !== options.filterGuid.length) {
@@ -2071,6 +2222,7 @@ module.exports = Client = function () {
             }
 
             guid = options.guid;
+
         } else if ("string" === typeof options.guid) {
 
             guid = vscp.strToGuid(options.guid);
@@ -2082,10 +2234,20 @@ module.exports = Client = function () {
             }
         }
 
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "setguid",
-                argument: guid
+                argument: guid,
+                onSuccess: onSuccess,
+                onError: onError,
             });
         return result;
     };
@@ -2093,14 +2255,36 @@ module.exports = Client = function () {
     /**
      * Get GUID for interface.
      *
+     * @param {object} [options]              - Options
+     * @param {function} [options.onSuccess]  - Function which is called on
+     *                                          a successful operation
+     * @param {function} [options.onError]    - Function which is called on
+     *                                          a failed operation
      * @return {object} Result object
      */
     Client.prototype.getGUID = async function (options) {
+
         let guid = [];
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" !== typeof options.onSuccess) {
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
+        }
 
         const result = await this.sendCommand(
             {
-                command: "getguid"
+                command: "getguid",
+                onSuccess: onSuccess,
+                onError: onError,
             });
         return this.parseGUID(result);
     };
@@ -2138,6 +2322,8 @@ module.exports = Client = function () {
         let evenFormat = 'float';
         let zone = 0;
         let subzone = 0;
+        var onSuccess = null;
+        var onError = null;
 
         if ("undefined" === typeof options) {
             console.error(vscp.getTime() + " Options is missing.");
@@ -2236,10 +2422,20 @@ module.exports = Client = function () {
 
         cmdArg = subzone.toString();
 
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "measurement",
-                argument: cmdArg
+                argument: cmdArg,
+                onSuccess: onSuccess,
+                onError: onError,
             });
 
         return result;
@@ -2249,15 +2445,37 @@ module.exports = Client = function () {
     /**
      * Ask remote server for wcyd code
      *
+     * @param {object} [options]              - Options
+     * @param {function} [options.onSuccess]  - Function which is called on
+     *                                          a successful operation
+     * @param {function} [options.onError]    - Function which is called on
+     *                                          a failed operation
      * @return {object} Result object
      */
     Client.prototype.getWhatCanYouDo = async function (options) {
-        let guid = [];
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" !== typeof options.onSuccess) {
+
+            if ("function" === typeof options.onSuccess) {
+                onSuccess = options.onSuccess;
+            }
+
+            if ("function" === typeof options.onError) {
+                onError = options.onError;
+            }
+
+        }
 
         const result = await this.sendCommand(
             {
-                command: "wcyd"
+                command: "wcyd",
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         return this.parseWcyd(result);
     };
 
@@ -2766,9 +2984,9 @@ module.exports = Client = function () {
      * @param {object} options                  - Options
      * @param {string} options.name             - Variable name
      * @param {function} [options.onSuccess]    - Function which is called on a
-     *                                              successful operation
+     *                                            successful operation
      * @param {function} [options.onError]      - Function which is called on a
-     *                                              failed operation
+     *                                            failed operation
      *
      * @return {object} Promise
      */
@@ -2980,7 +3198,7 @@ module.exports = Client = function () {
             }
 
             this.sendCommand({
-                command: "LCVAR",
+                command: "variable last",
                 data: options.name,
                 onSuccess: onSuccess,
                 onError: onError,
