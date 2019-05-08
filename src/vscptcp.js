@@ -446,6 +446,9 @@ module.exports = Client = function () {
 
     /**
      * Parse remote server version
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {object}               - Server version object
      */
     Client.prototype.parseRemoteVersion = function (result) {
         let version = {};
@@ -464,6 +467,9 @@ module.exports = Client = function () {
 
     /**
      * Parse remote server pending event queue
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {number}               - Number of events in inqueue.
      */
     Client.prototype.parsePendingEventsCount = function (result) {
         let cnt = 0;
@@ -480,6 +486,8 @@ module.exports = Client = function () {
      * Parse response from interface list and return
      * object with structured interface information
      *
+     * @param {string array} result   - Command response from remote server
+     * @return {object array}         - Array with interface objects
      */
     Client.prototype.parseInterface = function (result) {
         let interfaces = [];
@@ -495,17 +503,21 @@ module.exports = Client = function () {
                 obj.type = parseInt(items[1]);
                 obj.guid = vscp.strToGuid(items[2]);
                 obj.name = items[3].split('|')[0];
-                let startstr = items[3].split('|')[1].substr()
-                obj.started = startstr.substr(startstr.length - 19);
+                let startStr = items[3].split('|')[1].substr()
+                obj.started = startStr.substr(startStr.length - 19);
                 interfaces.push(obj);
             });
         }
+
         return interfaces;
     }
 
     /**
      * Parse response from challenge and return
      * challenge string
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {string}               - Challenge key.
      */
     Client.prototype.parseChallenge = function (result) {
         let challenge = "";
@@ -515,14 +527,18 @@ module.exports = Client = function () {
             (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
             challenge = result.response[cntElements - 2];
         }
+
         return challenge;
     }
 
     /**
      * Parse response from 'retr n' and return
-     * retreived VSCP events in array
+     * retrieved VSCP events in array
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {object array}         - Array with VSCP objectS
      */
-    Client.prototype.parseRetreiveEvents = function (result) {
+    Client.prototype.parseRetrieveEvents = function (result) {
         let events = [];
         let cntElements = result.response.length;
         if ((result.response.length >= 2) &&
@@ -534,11 +550,15 @@ module.exports = Client = function () {
                 events.push(e);
             }
         }
+
         return events;
     }
 
     /**
      * Parse statistics line from remote server
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {object}               - Statistics object
      */
     Client.prototype.parseStatistics = function (result) {
         let statistics = {};
@@ -554,11 +574,15 @@ module.exports = Client = function () {
                 statistics.cntTransmitFrames = parseInt(statsArray[6]);
             }
         }
+
         return statistics;
     }
 
     /**
      * Parse info line from remote server
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {object}               - Info. object
      */
     Client.prototype.parseInfo = function (result) {
         let info = {};
@@ -579,6 +603,10 @@ module.exports = Client = function () {
 
     /**
      * Parse remote server channel id
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {number}               - Server channel id.
+     *
      */
     Client.prototype.parseChid = function (result) {
         let chid = -1;
@@ -589,11 +617,15 @@ module.exports = Client = function () {
             chid = parseInt(result.response[cntElements - 2]);
             result.chid = chid;
         }
-        return result;
+
+        return chid;
     }
 
     /**
      * Parse remote server GUID
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {numeric array}        - GUID
      */
     Client.prototype.parseGUID = function (result) {
         let GUID = [];
@@ -604,6 +636,7 @@ module.exports = Client = function () {
             GUID = vscp.strToGuid(result.response[cntElements - 2]);
             result.guid = GUID;
         }
+
         return GUID;
     }
 
@@ -611,6 +644,9 @@ module.exports = Client = function () {
 
     /**
      * Parse remote server WCYD code
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {numeric array}        - What can you do array
      */
     Client.prototype.parseWcyd = function (result) {
         let wcyd = [];
@@ -618,13 +654,17 @@ module.exports = Client = function () {
         if ((result.response.length >= 2) &&
             (result.command === 'WCYD') &&
             (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
-            GUID = result.response[cntElements - 2].split('-');
+            wcyd = result.response[cntElements - 2].split('-');
             result.wcyd = wcyd;
         }
+
         return wcyd;
     }
 
-
+    /**
+     * @param {string array} result   - Command response from remote server
+     * @return {object array}         - Array with remote variable objects
+     */
     Client.prototype.parseVariableList = function (result) {
         let variables = {};
         variables.varArray = [];
@@ -649,13 +689,18 @@ module.exports = Client = function () {
 
                 variables.varArray.push(obj);
             });
+
+            result.variables = variables;
         }
-        result.variables = variables;
+
         return variables;
     }
 
     /**
      * Parse remote server variable
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {object}               - Remote variable object
      */
     Client.prototype.parseVariable = function (result) {
         let variable = {};
@@ -678,11 +723,16 @@ module.exports = Client = function () {
             }
             result.variable = variable;
         }
+
         return variable;
     }
 
     /**
      * Parse remote server value
+     *
+     * @param {string array} result     - Command response from remote server
+     * @param {string} cmd              - Command string
+     * @return {string}                 - Remote variable value on string form
      */
     Client.prototype.parseVariableValue = function (result, cmd) {
         let value = '';
@@ -694,11 +744,15 @@ module.exports = Client = function () {
             value = vscp.b64DecodeUnicode(result.response[cntElements - 2]);
             result.value = value;
         }
+
         return value;
     }
 
     /**
      * Parse remote server note
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {string}               - Remote variable note
      */
     Client.prototype.parseVariableNote = function (result) {
         let note = '';
@@ -709,11 +763,15 @@ module.exports = Client = function () {
             note = vscp.b64DecodeUnicode(result.response[cntElements - 2]);
             result.note = note;
         }
+
         return note;
     }
 
     /**
      * Parse remote variable length
+     *
+     * @param {string array} result   - Command response from remote server
+     * @return {number}               - Remote variable length
      */
     Client.prototype.parseVariableLength = function (result) {
         let length = 0;
@@ -724,11 +782,15 @@ module.exports = Client = function () {
             length = parseInt(result.response[cntElements - 2]);
             result.length = length;
         }
+
         return length;
     }
 
     /**
-     * This function is called for any VSCP server response message.
+     * This function is called for any VSCP server response message
+     * and handle and parse response from the server until a line with
+     * either +OK or -OK is found. If a receive loop
+     * is active events are fired as they come in.
      *
      * @param {string} chunk - VSCP server response chunk
      */
@@ -856,7 +918,6 @@ module.exports = Client = function () {
             }
         }
 
-        return;
     };
 
 
@@ -1157,7 +1218,6 @@ module.exports = Client = function () {
     /**
      * Send event to VSCP server.
      *
-     * @private
      * @param {object} options              - Options
      * @param {string} options.eventstr     - VSCP event on string form to send
      * @param {function} options.onSuccess  - Callback on success
@@ -1265,164 +1325,471 @@ module.exports = Client = function () {
     /**
      * Do 'noop' command.
      *
-     * @return {boolean} true
+     * @param {object} options               - Options
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object} Result object
      */
-    Client.prototype.noop = async function () {
+    Client.prototype.noop = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "noop",
+                onSuccess: onSuccess,
+                onError: onError,
             });
-        return true;
+
+        return result;
     };
 
     /**
      * Send 'user' command.
      *
-     * @return {object} version
+     * @param {object} options               - Options
+     * @param {string} options.username      - Valid username for account
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object} Result object
      */
-    Client.prototype.user = async function () {
+    Client.prototype.user = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.username) {
+            console.error(vscp.getTime() + " Username is missing.");
+            reject(Error("Usernme is missing."));
+            return;
+        }
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "user",
-                argument: option.username
+                argument: option.username,
+                onSuccess: onSuccess,
+                onError: onError,
             });
-        return true;
+
+        return result;
     };
 
     /**
      * Send 'password' command.
      *
-     * @return {object} version
+     * @param {object} options               - Options
+     * @param {string} options.password      - Valid password for account
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object} Result object
      */
-    Client.prototype.password = async function () {
+    Client.prototype.password = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.password) {
+            console.error(vscp.getTime() + " Password is missing.");
+            reject(Error("Password is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "pass",
-                argument: option.password
+                argument: option.password,
+                onSuccess: onSuccess,
+                onError: onError,
             });
-        return true;
+
+        return result;
     };
 
     /**
      * Send 'quit' command.
      *
-     * @return {boolean} true
+     * @param {object} options               - Options
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {boolean} Result object
      */
-    Client.prototype.quit = async function () {
+    Client.prototype.quit = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "quit",
+                onSuccess: onSuccess,
+                onError: onError,
             });
-        return true;
+
+        return result;
     };
 
     /**
      * Send 'challenge' command.
      *
-     * @return {string} challenge
+     * @param {object} options               - Options
+     * @param {string} options.password      - Valid password for account
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {string} Challenge string
      */
-    Client.prototype.password = async function () {
+    Client.prototype.password = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.password) {
+            console.error(vscp.getTime() + " Password is missing.");
+            reject(Error("Password is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "challenge",
-                argument: option.password
+                argument: option.password,
+                onSuccess: onSuccess,
+                onError: onError,
             });
-        return parseChallange(result);
+
+        return parseChallenge(result);
     };
 
     /**
      * Start rcvloop.
      *
-     * @return {boolean} true
+     * @param {object} options               - Options
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object} Result object
      */
-    Client.prototype.startRcvLoop = async function () {
+    Client.prototype.startRcvLoop = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "rcvloop",
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         this.state = this.states.RCVLOOP;
-        return true;
+        return result;
     };
 
     /**
      * Stop rcvloop.
      *
-     * @return {boolean} Promise
+     * @param {object} options               - Options
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object} Result object
      */
-    Client.prototype.stopRcvLoop = async function () {
+
+    Client.prototype.stopRcvLoop = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "rcvloop",
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         this.state = this.states.CONNECTED;
-        return true;
+        return result;
     };
 
     /**
      * Clear the VSCP event queue on the server side.
      *
-     * @return {boolean} true
+     * @param {object} options               - Options
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object} Result object
      */
-    Client.prototype.clearQueue = async function () {
+    Client.prototype.clearQueue = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "clrall",
+                onSuccess: onSuccess,
+                onError: onError,
             });
-        return true;
+
+        return result;
     };
 
     /**
      * Get pending event count from servers inqueue.
      *
-     * @return {object} interfaces
+     * @param {object} options               - Options
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object array} Fetched events
      */
-    Client.prototype.getPendingEventCount = async function () {
+    Client.prototype.getPendingEventCount = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "chkdata",
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         return this.parsePendingEventsCount(result);
     };
 
     /**
      * Get remote server version.
      *
-     * @return {object} version
+     * @param {object} options               - Options
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object} Remote VSCP server version
      */
-    Client.prototype.getRemoteVersion = async function () {
+    Client.prototype.getRemoteVersion = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "version",
+                onSuccess: onSuccess,
+                onError: onError,
             });
+
         return this.parseRemoteVersion(result);
     };
 
     /**
      * Do 'restart' command.
      *
-     * @return {boolean} true
+     * @param {object} options               - Options
+     * @param {string} options.password      - Valid password for account
+     * @param {function} [options.onSuccess] - Function which is called on
+     *                                         a successful operation
+     * @param {function} [options.onError]   - Function which is called on
+     *                                         a failed operation
+     * @return {object} Result object
      */
-    Client.prototype.restart = async function () {
+
+    Client.prototype.restart = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.password) {
+            console.error(vscp.getTime() + " Password is missing.");
+            reject(Error("Password is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "restart",
-                argument: options.password
+                argument: options.password,
+                onSuccess: onSuccess,
+                onError: onError,
             });
-        return true;
+
+        return result;
     };
 
     /**
- * Do 'shutdown' command.
- *
- * @return {boolean} true
- */
-    Client.prototype.shutdown = async function () {
+    * Do 'shutdown' command.
+    *
+    * @param {object} options               - Options
+    * @param {string} options.password      - Valid password for account
+    * @param {function} [options.onSuccess] - Function which is called on
+    *                                         a successful operation
+    * @param {function} [options.onError]   - Function which is called on
+    *                                         a failed operation
+    * @return {object} Result object
+    */
+    Client.prototype.shutdown = async function (options) {
+
+        var onSuccess = null;
+        var onError = null;
+
+        if ("undefined" === typeof options) {
+            console.error(vscp.getTime() + " Options are missing.");
+            reject(Error("Options are missing."));
+            return;
+        }
+
+        if ("string" !== typeof options.password) {
+            console.error(vscp.getTime() + " Password is missing.");
+            reject(Error("Password is missing."));
+            return;
+        }
+
+        if ("function" === typeof options.onSuccess) {
+            onSuccess = options.onSuccess;
+        }
+
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
+
         const result = await this.sendCommand(
             {
                 command: "shutdown",
-                argument: options.password
+                argument: options.password,
+                onSuccess: onSuccess,
+                onError: onError,
             });
-        return true;
+
+        return result;
     };
 
     /**
@@ -1434,9 +1801,9 @@ module.exports = Client = function () {
      * @param {number} [options.filterType]             - Type filter (default: 0)
      * @param {number[]|string} [options.filterGuid]    - GUID filter (default: 0)
      * @param {function} [options.onSuccess]            - Function which is called on
-     *                                                      a successful operation
+     *                                                    a successful operation
      * @param {function} [options.onError]              - Function which is called on
-     *                                                      a failed operation
+     *                                                    a failed operation
      *
      * @return {object} Promise
      */
@@ -1637,7 +2004,7 @@ module.exports = Client = function () {
                 command: "retr",
                 argument: count
             });
-        return this.parseRetreiveEvents(result);
+        return this.parseRetrieveEvents(result);
     };
 
     /**

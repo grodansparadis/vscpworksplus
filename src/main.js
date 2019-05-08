@@ -222,8 +222,6 @@ const vscp = require('./vscp');
 const vscp_tcp_Client = require('../src/vscptcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');
-//import vscp_tcp_Client from '../@types/vscptcp'
-//const mod = require('../src/vscptcp');
 
 let success = function (obj) {
   console.log("success ");
