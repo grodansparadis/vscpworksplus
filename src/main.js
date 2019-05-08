@@ -220,6 +220,8 @@ process.on('uncaughtException', function (err) {
 
 const vscp = require('./vscp');
 const vscp_tcp_Client = require('../src/vscptcp');
+const vscp_class = require('../src/vscp_class.js');
+const vscp_type = require('../src/vscp_type.js');
 //import vscp_tcp_Client from '../@types/vscptcp'
 //const mod = require('../src/vscptcp');
 
@@ -413,7 +415,7 @@ const test2 = async () => {
   const varReadValue2 = await vscp_tcp_client.readVarValue({
     name: 'tttt'
   });
-  console.log(varReadValue2); 
+  console.log(varReadValue2);
 
   // const varReadNote = await vscp_tcp_client.readVarNote({
   //   onSuccess: success,
@@ -434,8 +436,8 @@ test2().catch(err => {
   console.log(err);
 })
 
-
-
+console.log(vscp_class.VSCP_CLASS2_MEASUREMENT_STR);
+console.log(vscp_type.VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE);
 console.log('--------------------------------->');
 console.log(vscp.version);
 console.log(vscp.constants_priorities);
