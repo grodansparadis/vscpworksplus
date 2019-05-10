@@ -1,0 +1,73 @@
+{
+    "vscpinterface": [
+        {
+            "type": "canal",
+            "name": "Local Socketcan",
+            "path": "/home/akhe/development/VSCP/vscp/src/vscp/drivers/level1/socketcan/linux/vscpl1drv-socketcan.so",
+            "config": "can0",
+            "flags": 0
+        },
+        {
+            "type": "tcpip",
+            "name": "Pi4",
+            "host": "192.168.1.30:9598",
+            "username": "admin",
+            "password": "secret",
+            "interfaceName": "can4vscp",
+            "level2": false,
+            "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            "filter": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            },
+            "mask": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            }
+        },
+        {
+            "type": "websocket",
+            "name": "ws remote host",
+            "host": "ws://192.168.1.44/ws1",
+            "username": "admin",
+            "password": "secret",
+            "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            "filter": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            },
+            "mask": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            }
+        },
+        {
+            "type": "rest",
+            "name": "rest remote host",
+            "host": "https://192.168.1.44/rest",
+            "username": "admin",
+            "password": "secret",
+            "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            "filter": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            },
+            "mask": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            }
+        }
+    ]
+}

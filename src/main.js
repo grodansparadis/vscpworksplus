@@ -1,20 +1,41 @@
 //import * as net from "net";
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
+const os = require('os');
 const fs = require('fs');
 const path = require('path');
 //const ipcRenderer  = electron.ipcRenderer;
 
+//const homeDir = os.homedir();
+//readOldConfig(homedir);
+
+let pathConnectConfig = path.join(__dirname, '../config/connections.json');
+let connections = {};   // No connections read in
 let mainWindow;
 let childWindows = [];
 
-let path_home = path.join(app.getPath('home'), ".vscpworks")
+let homeDir = path.join(app.getPath('home'), ".vscpworks");
+console.log(homeDir);
 
 // Create home folder if it does not exist
-if (!fs.existsSync(path_home)) {
-  fs.mkdir(path_home, { recursive: true }, (err) => {
+if (!fs.existsSync(homeDir)) {
+  fs.mkdir(homeDir, { recursive: true }, (err) => {
     if (err) throw err;
   });
 }
+
+// Read in connections if they are there
+try {
+  if (fs.existsSync(pathConnectConfig)) {
+    let rawdata = fs.readFileSync(pathConnectConfig);
+    connections = JSON.parse(rawdata);
+    //console.log(connections);
+  }
+}
+catch {
+  consol.error("Failed to fetch predefined connections from " + pathConnectConfig);
+}
+
+
 
 function createMainWindow() {
 
@@ -29,7 +50,7 @@ function createMainWindow() {
   });
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   // Show main window when it's ready to be displayed
   mainWindow.once('ready-to-show', () => {
@@ -53,12 +74,22 @@ function createMainWindow() {
 
 }
 
-// ipcMain.on('asynchronous-message', (event: any, arg: any) => {
+ipcMain.on('get-connection-object', (event, arg) => {
+  console.log("sync " + arg) // prints "ping"
+  event.returnValue = connections
+})
+
+// ipcMain.on('get-connection-object', (event,arg) => {
+//    console.log("async ")
+//    event.sender.send('reply-connection-object', connections)
+// })
+
+// ipcMain.on('asynchronous-message', (event, arg) => {
 //   console.log("async " + arg) // prints "ping"
 //   event.sender.send('asynchronous-reply', 'pong')
 // })
 
-// ipcMain.on('synchronous-message', (event: any, arg: any) => {
+// ipcMain.on('synchronous-message', (event, arg) => {
 //   console.log("sync " + arg) // prints "ping"
 //   event.returnValue = 'pong'
 //   ttt();
@@ -110,81 +141,6 @@ function ttt() {
   child.show();
 }
 
-/* var client = new net.Socket();
-client.connect(9598, '127.0.0.1', function() {
-	console.log('Connected');
-  client.write('user admin\r\n');
-  client.write('pass secret\r\n');
-});
-
-client.on('data', function(data) {
-	console.log('Received: ' + data);
-	//client.destroy(); // kill client after server's response
-});
-
-client.on('close', function() {
-	console.log('Connection closed');
-}); */
-
-
-// ------------------------------------------------------------------
-
-// let wrkResponse: string = '';
-// let response: any = [];
-// let bOK: any = false;
-
-// const client = net.createConnection({ host: '192.168.1.6', port: 9598 }, () => {
-//   console.log('connected to server!');
-//   // client.write('user admin\r\n');
-//   // client.write('pass secret\r\n');
-// });
-
-// client.on('data', (chunk: any) => {
-//   console.log(chunk.toString());
-//   parseData(chunk);
-// });
-// client.on('end', () => {
-//   console.log('disconnected from server');
-// });
-
-// // Parse response data
-// function parseData(chunk: any) {
-
-//   wrkResponse += chunk.toString();
-//   let idx = wrkResponse.search("\\+OK -|-OK -");
-
-//   // if no +OK found continue to collect data
-//   if (idx === -1 ) {
-//     return;
-//   }
-
-//   // Make response string array
-//   response = wrkResponse.split("\r\n");
-//   wrkResponse = '';
-
-//   // remove \r\n ending to get nice table
-//   response.pop();
-
-// }
-
-// // Send (do/exec) command
-// docmd = function (sock, cmd ) {
-
-//   cmd += '\r\n';
-
-//   if (sock.writable) {
-
-//     sock.write(cmd, function () {
-
-//       self.vscptcpState = 'response';
-//       self.emit('writedone');
-
-//     });
-
-//   }
-
-// }
-
 // ------------------------------------------------------------------
 
 //const axios = require('axios');
@@ -223,285 +179,296 @@ const vscp_tcp_Client = require('../src/vscptcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');
 
-let success = function (obj) {
-  console.log("success ");
-  console.log(obj);
-}
+// let success = function (obj) {
+//   console.log("success ");
+//   console.log(obj);
+// }
 
-let aaaa = function (aaa) {
-  console.log("[aaaa] interface success ");
-  console.log(aaa);
-}
+// let aaaa = function (aaa) {
+//   console.log("[aaaa] interface success ");
+//   console.log(aaa);
+// }
 
-let pppp = function (aaa) {
-  console.log("[pppp] quit success ");
-  console.log(aaa);
-}
+// let pppp = function (aaa) {
+//   console.log("[pppp] quit success ");
+//   console.log(aaa);
+// }
 
-let tttt = function (aaa) {
-  console.log("[tttt] connect success ");
-  console.log(aaa);
-  vscp_tcp_client.disconnect(
-    {
-      onSuccess: pppp
-    }
-  );
-}
+// let tttt = function (aaa) {
+//   console.log("[tttt] connect success ");
+//   console.log(aaa);
+//   vscp_tcp_client.disconnect(
+//     {
+//       onSuccess: pppp
+//     }
+//   );
+// }
 
-function test1() {
-  var start = new Date().getTime();
-  let vscp_tcp_client = new vscp_tcp_Client();
-  vscp_tcp_client.connect(
-    {
-      host: "pi4",
-      port: 9598,
-      timeout: 10000,
-      onSuccess: null
-    })
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "noop"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "noop"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "noop"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "user",
-        argument: "admin"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "pass",
-        argument: "secret"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "interface",
-        argument: "list",
-        onSuccess: aaaa
-      }))
-    .then(obj => {
-      console.log('Last');
-      console.log(obj);
-      vscp_tcp_client.disconnect();
-    })
-    .then(obj => {
-      var end = new Date().getTime();
-      var time = end - start;
-      console.log('Execution time: ' + time)
-    })
-    .catch(err => console.log("Catch Error " + err.message));
-  ;
-}
+// function test1() {
+//   var start = new Date().getTime();
+//   let vscp_tcp_client = new vscp_tcp_Client();
+//   vscp_tcp_client.connect(
+//     {
+//       host: "pi4",
+//       port: 9598,
+//       timeout: 10000,
+//       onSuccess: null
+//     })
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "noop"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "noop"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "noop"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "user",
+//         argument: "admin"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "pass",
+//         argument: "secret"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "interface",
+//         argument: "list",
+//         onSuccess: aaaa
+//       }))
+//     .then(obj => {
+//       console.log('Last');
+//       console.log(obj);
+//       vscp_tcp_client.disconnect();
+//     })
+//     .then(obj => {
+//       var end = new Date().getTime();
+//       var time = end - start;
+//       console.log('Execution time: ' + time)
+//     })
+//     .catch(err => console.log("Catch Error " + err.message));
+//   ;
+// }
 
-const test2 = async () => {
-  var start = new Date().getTime();
-  let vscp_tcp_client = new vscp_tcp_Client();
-  const value1 = await vscp_tcp_client.connect(
-    {
-      host: "localhost",
-      port: 9598,
-      timeout: 10000,
-      onSuccess: null
-    });
-  await vscp_tcp_client.sendCommand(
-    {
-      command: "noop"
-    });
-  await vscp_tcp_client.sendCommand(
-    {
-      command: "noop"
-    });
-  await vscp_tcp_client.sendCommand(
-    {
-      command: "noop"
-    });
-  const ttt = await vscp_tcp_client.sendCommand(
-    {
-      command: "user",
-      argument: "admin"
-    });
-  console.log(ttt);
-  await vscp_tcp_client.sendCommand(
-    {
-      command: "pass",
-      argument: "secret"
-    });
-  // const iff = await vscp_tcp_client.sendCommand(
-  //   {
-  //     command: "interface",
-  //     argument: "list",
-  //     onSuccess: aaaa
-  //   });
-  // console.log(parseInterface(iff));
-  const iff = await vscp_tcp_client.getInterfaces();
-  console.log(iff);
-  // await vscp_tcp_client.sendCommand(
-  //   {
-  //     command: "noop"
-  //   });
-  // const iff2 = await vscp_tcp_client.getInterfaces();
-  // console.log(iff2);
-  const ver = await vscp_tcp_client.getRemoteVersion();
-  console.log(ver);
+// const test2 = async () => {
+//   var start = new Date().getTime();
+//   let vscp_tcp_client = new vscp_tcp_Client();
+//   const value1 = await vscp_tcp_client.connect(
+//     {
+//       host: "localhost",
+//       port: 9598,
+//       timeout: 10000,
+//       onSuccess: null
+//     });
+//   await vscp_tcp_client.sendCommand(
+//     {
+//       command: "noop"
+//     });
+//   await vscp_tcp_client.sendCommand(
+//     {
+//       command: "noop"
+//     });
+//   await vscp_tcp_client.sendCommand(
+//     {
+//       command: "noop"
+//     });
+//   const ttt = await vscp_tcp_client.sendCommand(
+//     {
+//       command: "user",
+//       argument: "admin"
+//     });
+//   console.log(ttt);
+//   await vscp_tcp_client.sendCommand(
+//     {
+//       command: "pass",
+//       argument: "secret"
+//     });
+//   const iff = await vscp_tcp_client.sendCommand(
+//     {
+//       command: "interface",
+//       argument: "list",
+//       onSuccess: aaaa
+//     });
+//   console.log(parseInterface(iff));
+//   const iff = await vscp_tcp_client.getInterfaces();
+//   console.log(iff);
+//   await vscp_tcp_client.sendCommand(
+//     {
+//       command: "noop"
+//     });
+//   const iff2 = await vscp_tcp_client.getInterfaces();
+//   console.log(iff2);
+//   const ver = await vscp_tcp_client.getRemoteVersion();
+//   console.log(ver);
 
-  const cnt = await vscp_tcp_client.getPendingEventCount();
-  console.log(cnt);
+//   const cnt = await vscp_tcp_client.getPendingEventCount();
+//   console.log(cnt);
 
-  // console.log(vscp.version.major);
-  // console.log(vscp.varTypes);
-  // console.log(vscp.varTypeNames[1]);
-  // console.log(vscp);
+//   console.log(vscp.version.major);
+//   console.log(vscp.varTypes);
+//   console.log(vscp.varTypeNames[1]);
+//   console.log(vscp);
 
-  const varCreate = await vscp_tcp_client.writeVar({
-    name: "tttt",
-    value: 'This is a test åäöÅÄÖ',
-    note: 'This is a super variable åäöÅÄÖ'
-  });
-  console.log(varCreate);
+//   const varCreate = await vscp_tcp_client.writeVar({
+//     name: "tttt",
+//     value: 'This is a test åäöÅÄÖ',
+//     note: 'This is a super variable åäöÅÄÖ'
+//   });
+//   console.log(varCreate);
 
-  const varList = await vscp_tcp_client.listVar({
-    onSuccess: success,
-    regex: 'tttt'
-  });
-  console.log(varList);
+//   const varList = await vscp_tcp_client.listVar({
+//     onSuccess: success,
+//     regex: 'tttt'
+//   });
+//   console.log(varList);
 
-  const varRead = await vscp_tcp_client.readVar({
-    name: 'tttt'
-  });
-  console.log(varRead);
+//   const varRead = await vscp_tcp_client.readVar({
+//     name: 'tttt'
+//   });
+//   console.log(varRead);
 
-  const varReadValue = await vscp_tcp_client.readVarValue({
-    name: 'tttt'
-  });
-  console.log(varReadValue);
+//   const varReadValue = await vscp_tcp_client.readVarValue({
+//     name: 'tttt'
+//   });
+//   console.log(varReadValue);
 
-  const varWriteValue = await vscp_tcp_client.writeVarValue({
-    name: 'tttt',
-    value: 'Det här är det nya värdet'
-  });
-  console.log(varWriteValue);
+//   const varWriteValue = await vscp_tcp_client.writeVarValue({
+//     name: 'tttt',
+//     value: 'Det här är det nya värdet'
+//   });
+//   console.log(varWriteValue);
 
-  const varReadValue2 = await vscp_tcp_client.readVarValue({
-    name: 'tttt'
-  });
-  console.log(varReadValue2);
+//   const varReadValue2 = await vscp_tcp_client.readVarValue({
+//     name: 'tttt'
+//   });
+//   console.log(varReadValue2);
 
-  // const varReadNote = await vscp_tcp_client.readVarNote({
-  //   onSuccess: success,
-  //   name: 'tttt'
-  // });
-  // console.log(varReadNode);
+//   const varReadNote = await vscp_tcp_client.readVarNote({
+//      onSuccess: success,
+//      name: 'tttt'
+//    });
+//   console.log(varReadNote);
 
-  await vscp_tcp_client.disconnect();
-  var end = new Date().getTime();
-  var time = end - start;
-  console.log('Execution time: ' + time);
-}
+//   await vscp_tcp_client.disconnect();
+//   var end = new Date().getTime();
+//   var time = end - start;
+//   console.log('Execution time: ' + time);
+// }
 
 
-const test3 = async () => {
+// const test3 = async () => {
 
-  let vscp_tcp_client = new vscp_tcp_Client();
+//   let vscp_tcp_client = new vscp_tcp_Client();
 
-  vscp_tcp_client.addEventListener((e) => {
-    console.log("Event received");
-  });
+//   vscp_tcp_client.addEventListener((e) => {
+//     console.log("Event received");
+//   });
 
-  const value1 = await vscp_tcp_client.connect(
-    {
-      host: "localhost",
-      port: 9598,
-      timeout: 10000,
-      onSuccess: null
-    });
-  await vscp_tcp_client.sendCommand(
-    {
-      command: "noop"
-    });
-  const ttt = await vscp_tcp_client.sendCommand(
-    {
-      command: "user",
-      argument: "admin"
-    });
-  console.log(ttt);
-  await vscp_tcp_client.sendCommand(
-    {
-      command: "pass",
-      argument: "secret"
-    });
-  await vscp_tcp_client.startRcvLoop();
-}
+//   const value1 = await vscp_tcp_client.connect(
+//     {
+//       host: "localhost",
+//       port: 9598,
+//       timeout: 10000,
+//       onSuccess: null
+//     });
+//   await vscp_tcp_client.sendCommand(
+//     {
+//       command: "noop"
+//     });
+//   const ttt = await vscp_tcp_client.sendCommand(
+//     {
+//       command: "user",
+//       argument: "admin"
+//     });
+//   console.log(ttt);
+//   await vscp_tcp_client.sendCommand(
+//     {
+//       command: "pass",
+//       argument: "secret"
+//     });
+//   await vscp_tcp_client.startRcvLoop();
+// }
 
-function testPromise() {
+// function testPromise() {
 
-  var start = new Date().getTime();
-  let vscp_tcp_client = new vscp_tcp_Client();
+//   var start = new Date().getTime();
+//   let vscp_tcp_client = new vscp_tcp_Client();
 
-  vscp_tcp_client.connect(
-    {
-      host: "127.0.0.1",
-      port: 9598,
-      timeout: 10000,
-      onSuccess: null
-    })
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "noop"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "noop"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "noop"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "user",
-        argument: "admin"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "pass",
-        argument: "secret"
-      }))
-    .then((obj) => vscp_tcp_client.sendCommand(
-      {
-        command: "interface",
-        argument: "list",
-        onSuccess: aaaa
-      }))
-    .then(obj => {
-      console.log('Last command');
-      console.log(obj);
-      vscp_tcp_client.disconnect();
-    })
-    .then(obj => {
-      var end = new Date().getTime();
-      var time = end - start;
-      console.log('Execution time: ' + time)
-    })
-    .catch(err => console.log("Catch Error " + err.message));
-  ;
-}
+//   vscp_tcp_client.connect(
+//     {
+//       host: "127.0.0.1",
+//       port: 9598,
+//       timeout: 10000,
+//       onSuccess: null
+//     })
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "noop"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "noop"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "noop"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "user",
+//         argument: "admin"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "pass",
+//         argument: "secret"
+//       }))
+//     .then((obj) => vscp_tcp_client.sendCommand(
+//       {
+//         command: "interface",
+//         argument: "list",
+//         onSuccess: aaaa
+//       }))
+//     .then(obj => {
+//       console.log('Last command');
+//       console.log(obj);
+//       vscp_tcp_client.disconnect();
+//     })
+//     .then(obj => {
+//       var end = new Date().getTime();
+//       var time = end - start;
+//       console.log('Execution time: ' + time)
+//     })
+//     .catch(err => console.log("Catch Error " + err.message));
+//   ;
+// }
 
-testPromise();
+// testPromise();
 
 // testPromise().catch(err => {
 //   console.log("Catching error");
 //   console.log(err);
 // })
 
-console.log(vscp_class.VSCP_CLASS2_MEASUREMENT_STR);
-console.log(vscp_type.VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE);
-console.log('--------------------------------->');
-console.log(vscp.version);
-console.log(vscp.constants_priorities);
+// console.log(vscp_class.VSCP_CLASS2_MEASUREMENT_STR);
+// console.log(vscp_type.VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE);
+// console.log('--------------------------------->');
+// console.log(vscp.version);
+// console.log(vscp.constants_priorities);
+
+
+// function readOldConfig(homedir) {
+//   var parser = new expat.Parser('UTF-8')
+//   var confdir = path.join(homedir, ".vscpworks/vscpworks.conf")
+//   var oldconf = parser.toJson(confdir);
+//   console.log(oldconf);
+
+//   parser.on('startElement', function (name, attrs) {
+//     console.log(name, attrs)
+//   })
