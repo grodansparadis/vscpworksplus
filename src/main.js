@@ -248,28 +248,6 @@ let tttt = function (aaa) {
   );
 }
 
-let parseInterface = function (rv) {
-  let interfaces = [];
-  let cntElements = rv.response.length;
-  if (rv.response.length &&
-    (rv.command === 'interface') &&
-    (rv.response[cntElements - 1]) === '+OK') {
-    rv.response.pop(); // remove '+OK'
-    rv.response.forEach((item) => {
-      let items = item.split(',');
-      let obj = {};
-      obj.index = parseInt(items[0]);
-      obj.type = parseInt(items[1]);
-      obj.guid = vscp.strToGuid(items[2]);
-      obj.name = items[3].split('|')[0];
-      let startstr = items[3].split('|')[1].substr()
-      obj.started = startstr.substr(startstr.length - 19);
-      interfaces.push(obj);
-    });
-  }
-  return interfaces;
-}
-
 function test1() {
   var start = new Date().getTime();
   let vscp_tcp_client = new vscp_tcp_Client();
@@ -394,7 +372,7 @@ const test2 = async () => {
   });
   console.log(varList);
 
-   const varRead = await vscp_tcp_client.readVar({
+  const varRead = await vscp_tcp_client.readVar({
     name: 'tttt'
   });
   console.log(varRead);
@@ -428,11 +406,99 @@ const test2 = async () => {
 }
 
 
-//test1();
-test2().catch(err => {
-  console.log("Catching error");
-  console.log(err);
-})
+const test3 = async () => {
+
+  let vscp_tcp_client = new vscp_tcp_Client();
+
+  vscp_tcp_client.addEventListener((e) => {
+    console.log("Event received");
+  });
+
+  const value1 = await vscp_tcp_client.connect(
+    {
+      host: "localhost",
+      port: 9598,
+      timeout: 10000,
+      onSuccess: null
+    });
+  await vscp_tcp_client.sendCommand(
+    {
+      command: "noop"
+    });
+  const ttt = await vscp_tcp_client.sendCommand(
+    {
+      command: "user",
+      argument: "admin"
+    });
+  console.log(ttt);
+  await vscp_tcp_client.sendCommand(
+    {
+      command: "pass",
+      argument: "secret"
+    });
+  await vscp_tcp_client.startRcvLoop();
+}
+
+function testPromise() {
+
+  var start = new Date().getTime();
+  let vscp_tcp_client = new vscp_tcp_Client();
+
+  vscp_tcp_client.connect(
+    {
+      host: "127.0.0.1",
+      port: 9598,
+      timeout: 10000,
+      onSuccess: null
+    })
+    .then((obj) => vscp_tcp_client.sendCommand(
+      {
+        command: "noop"
+      }))
+    .then((obj) => vscp_tcp_client.sendCommand(
+      {
+        command: "noop"
+      }))
+    .then((obj) => vscp_tcp_client.sendCommand(
+      {
+        command: "noop"
+      }))
+    .then((obj) => vscp_tcp_client.sendCommand(
+      {
+        command: "user",
+        argument: "admin"
+      }))
+    .then((obj) => vscp_tcp_client.sendCommand(
+      {
+        command: "pass",
+        argument: "secret"
+      }))
+    .then((obj) => vscp_tcp_client.sendCommand(
+      {
+        command: "interface",
+        argument: "list",
+        onSuccess: aaaa
+      }))
+    .then(obj => {
+      console.log('Last command');
+      console.log(obj);
+      vscp_tcp_client.disconnect();
+    })
+    .then(obj => {
+      var end = new Date().getTime();
+      var time = end - start;
+      console.log('Execution time: ' + time)
+    })
+    .catch(err => console.log("Catch Error " + err.message));
+  ;
+}
+
+testPromise();
+
+// testPromise().catch(err => {
+//   console.log("Catching error");
+//   console.log(err);
+// })
 
 console.log(vscp_class.VSCP_CLASS2_MEASUREMENT_STR);
 console.log(vscp_type.VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE);

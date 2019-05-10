@@ -1,0 +1,101 @@
+{
+    "mainwindow": {
+        "heigh": 300,
+        "width": 600,
+        "bgcolor": 5
+    },
+    "clientwindow": {
+        "heigh": 300,
+        "width": 600,
+        "bgcolor": 5,
+        "autoscroll": true,
+        "pyjamasStyle": true,
+        "useSymbolicNames": true,
+        "rcvRowLineHeight": 20
+    },
+    "general": {
+        "timeout_connection": 5000,
+        "timeout_resend": 1000,
+        "timeout_response": 5000,
+        "timeout_error": 5000,
+        "retries_rw": 3,
+        "numberbase": 16,
+        "confirmDelete": true,
+        "guidWriteEnable": false,
+        "manufacturerGuid": "01:00:00:00:00:00:00:00:00:00:00:00:06:00:00:00",
+        "manufacturerId": 0,
+        "manufacturerSubId": 0
+    },
+    "vscpinterface": [
+        {
+            "driverType": "canal",
+            "description": "Local Socketcan",
+            "path": "/home/akhe/development/VSCP/vscp/src/vscp/drivers/level1/socketcan/linux/vscpl1drv-socketcan.so",
+            "config": "can0",
+            "flags": 0
+        },
+
+        {
+            "serverType": "tcpip",
+            "description": "Pi4",
+            "host": "192.168.1.30:9598",
+            "username": "admin",
+            "password": "secret",
+            "interfaceName": "can4vscp",
+            "level2": false,
+            "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            "filter": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            },
+            "mask": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            }
+        },
+
+        {
+            "serverType": "websocket",
+            "description": "Remote host",
+            "host": "ws://192.168.1.44/ws1",
+            "username": "admin",
+            "password": "secret",
+            "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            "filter": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            },
+            "mask": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            }
+        },
+        {
+            "serverType": "rest",
+            "description": "Remote host",
+            "host": "ws://192.168.1.44/ws1",
+            "username": "admin",
+            "password": "secret",
+            "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            "filter": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+            },
+            "mask": {
+                "priority": 0,
+                "class": 0,
+                "type": 0,
+                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+            }
+        }
+    ]

@@ -744,7 +744,7 @@ module.exports.load = function(options) {
         // Datatype is XML, which forces a $.parseXML for the received data.
         dataType: "xml",
 
-        // Don't cache the transfered data.
+        // Don't cache the transferred data.
         cache: false,
 
         // The 'contentType' property sets the 'Content-Type' header.

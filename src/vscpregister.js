@@ -101,7 +101,7 @@ module.exports.constants = {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.read = function(options) {
+module.exports.read = function (options) {
 
     var page = 0;
     var count = 1;
@@ -159,7 +159,7 @@ module.exports.read = function(options) {
     }
 
     // Event listener to catch all CLASS1.PROTOCOL extended register read responses
-    eventListener = function(client, evt) {
+    eventListener = function (client, evt) {
 
         var index = 0;
         var data = [];
@@ -210,7 +210,7 @@ module.exports.read = function(options) {
             if (0 === count) {
 
                 // Order all responses
-                responseData.sort(function(a, b) {
+                responseData.sort(function (a, b) {
                     return a.index - b.index;
                 });
 
@@ -245,11 +245,11 @@ module.exports.read = function(options) {
             vscpData: eventData
         }),
 
-        onSuccess: function(client) {
+        onSuccess: function (client) {
             client.addEventListener(eventListener);
 
             timerHandle = setTimeout(
-                function() {
+                function () {
                     console.info(vscp.utility.getTime() + " Read register timeout.");
 
                     options.client.removeEventListener(eventListener);
@@ -263,8 +263,8 @@ module.exports.read = function(options) {
         },
 
         /* eslint-disable no-unused-vars */
-        onError: function(client) {
-        /* eslint-enable no-unused-vars */
+        onError: function (client) {
+            /* eslint-enable no-unused-vars */
             console.error(vscp.utility.getTime() + " Reading register failed.");
 
             if (null !== onError) {
@@ -286,7 +286,7 @@ module.exports.read = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.write = function(options) {
+module.exports.write = function (options) {
 
     var page = 0;
     var count = 0;
@@ -336,7 +336,7 @@ module.exports.write = function(options) {
     }
 
     // Event listener to catch all CLASS1.PROTOCOL extended register write responses
-    eventListener = function(client, evt) {
+    eventListener = function (client, evt) {
 
         if ("undefined" === typeof evt) {
             return;
@@ -393,10 +393,10 @@ module.exports.write = function(options) {
                     vscpData: eventData
                 }),
 
-                onSuccess: function(wsClient) {
+                onSuccess: function (wsClient) {
 
                     timerHandle = setTimeout(
-                        function() {
+                        function () {
                             console.info(vscp.utility.getTime() + " Write register timeout.");
 
                             wsClient.removeEventListener(eventListener);
@@ -409,7 +409,7 @@ module.exports.write = function(options) {
                     );
                 },
 
-                onError: function(wsClient) {
+                onError: function (wsClient) {
 
                     console.error(vscp.utility.getTime() + " Writing register failed.");
 
@@ -453,11 +453,11 @@ module.exports.write = function(options) {
             vscpData: eventData
         }),
 
-        onSuccess: function(client) {
+        onSuccess: function (client) {
             client.addEventListener(eventListener);
 
             timerHandle = setTimeout(
-                function() {
+                function () {
                     console.info(vscp.utility.getTime() + " Write register timeout.");
 
                     client.removeEventListener(eventListener);
@@ -471,8 +471,8 @@ module.exports.write = function(options) {
         },
 
         /* eslint-disable no-unused-vars */
-        onError: function(client) {
-        /* eslint-enable no-unused-vars */
+        onError: function (client) {
+            /* eslint-enable no-unused-vars */
             console.error(vscp.utility.getTime() + " Writing register failed.");
 
             if (null !== onError) {
@@ -496,7 +496,7 @@ module.exports.write = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.writeBits = function(options) {
+module.exports.writeBits = function (options) {
 
     var page = 0;
     var onError = null;
@@ -565,7 +565,7 @@ module.exports.writeBits = function(options) {
 
         count: 1,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             value = data[0];
 
             // Change the bits of the read register value
@@ -601,13 +601,13 @@ module.exports.writeBits = function(options) {
 
                 data: [value],
 
-                onSuccess: function() {
+                onSuccess: function () {
 
                     options.onSuccess();
 
                 }.bind(this),
 
-                onError: function() {
+                onError: function () {
 
                     if (null !== onError) {
                         onError();
@@ -617,7 +617,7 @@ module.exports.writeBits = function(options) {
 
         }.bind(this),
 
-        onError: function() {
+        onError: function () {
 
             if (null !== onError) {
                 onError();
@@ -635,7 +635,7 @@ module.exports.writeBits = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readAlarmStatus = function(options) {
+module.exports.readAlarmStatus = function (options) {
 
     var onError = null;
 
@@ -678,11 +678,11 @@ module.exports.readAlarmStatus = function(options) {
 
         count: 1,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             options.onSuccess(data);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -699,7 +699,7 @@ module.exports.readAlarmStatus = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readVscpVersion = function(options) {
+module.exports.readVscpVersion = function (options) {
 
     var onError = null;
 
@@ -742,14 +742,14 @@ module.exports.readVscpVersion = function(options) {
 
         count: 2,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             options.onSuccess({
                 major: data[0],
                 minor: data[1]
             });
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -766,7 +766,7 @@ module.exports.readVscpVersion = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readNodeControlFlags = function(options) {
+module.exports.readNodeControlFlags = function (options) {
 
     var onError = null;
 
@@ -809,11 +809,11 @@ module.exports.readNodeControlFlags = function(options) {
 
         count: 1,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             options.onSuccess(data);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -830,7 +830,7 @@ module.exports.readNodeControlFlags = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readUserId = function(options) {
+module.exports.readUserId = function (options) {
 
     var onError = null;
 
@@ -873,7 +873,7 @@ module.exports.readUserId = function(options) {
 
         count: 5,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
 
             var index = 0;
             var userId = 0;
@@ -886,7 +886,7 @@ module.exports.readUserId = function(options) {
             options.onSuccess(userId);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -903,7 +903,7 @@ module.exports.readUserId = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readManufacturerDevId = function(options) {
+module.exports.readManufacturerDevId = function (options) {
 
     var onError = null;
 
@@ -946,7 +946,7 @@ module.exports.readManufacturerDevId = function(options) {
 
         count: 4,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
 
             var index = 0;
             var manufacturerDevId = 0;
@@ -959,7 +959,7 @@ module.exports.readManufacturerDevId = function(options) {
             options.onSuccess(manufacturerDevId);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -976,7 +976,7 @@ module.exports.readManufacturerDevId = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readManufacturerSubDevId = function(options) {
+module.exports.readManufacturerSubDevId = function (options) {
 
     var onError = null;
 
@@ -1019,7 +1019,7 @@ module.exports.readManufacturerSubDevId = function(options) {
 
         count: 4,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
 
             var index = 0;
             var manufacturerSubDevId = 0;
@@ -1032,7 +1032,7 @@ module.exports.readManufacturerSubDevId = function(options) {
             options.onSuccess(manufacturerSubDevId);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1049,7 +1049,7 @@ module.exports.readManufacturerSubDevId = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readNicknameId = function(options) {
+module.exports.readNicknameId = function (options) {
 
     var onError = null;
 
@@ -1092,11 +1092,11 @@ module.exports.readNicknameId = function(options) {
 
         count: 1,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             options.onSuccess(data);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1113,7 +1113,7 @@ module.exports.readNicknameId = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readSelectedPage = function(options) {
+module.exports.readSelectedPage = function (options) {
 
     var onError = null;
 
@@ -1156,7 +1156,7 @@ module.exports.readSelectedPage = function(options) {
 
         count: 2,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
 
             var index = 0;
             var page = 0;
@@ -1169,7 +1169,7 @@ module.exports.readSelectedPage = function(options) {
             options.onSuccess(page);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1186,7 +1186,7 @@ module.exports.readSelectedPage = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readFirmwareVersion = function(options) {
+module.exports.readFirmwareVersion = function (options) {
 
     var onError = null;
 
@@ -1229,7 +1229,7 @@ module.exports.readFirmwareVersion = function(options) {
 
         count: 3,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             options.onSuccess({
                 major: data[0],
                 minor: data[1],
@@ -1237,7 +1237,7 @@ module.exports.readFirmwareVersion = function(options) {
             });
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1254,7 +1254,7 @@ module.exports.readFirmwareVersion = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readBootloaderAlgorithm = function(options) {
+module.exports.readBootloaderAlgorithm = function (options) {
 
     var onError = null;
 
@@ -1297,11 +1297,11 @@ module.exports.readBootloaderAlgorithm = function(options) {
 
         count: 1,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             options.onSuccess(data);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1318,7 +1318,7 @@ module.exports.readBootloaderAlgorithm = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readUsedPages = function(options) {
+module.exports.readUsedPages = function (options) {
 
     var onError = null;
 
@@ -1361,11 +1361,11 @@ module.exports.readUsedPages = function(options) {
 
         count: 1,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             options.onSuccess(data);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1382,7 +1382,7 @@ module.exports.readUsedPages = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readStdDevFamCode = function(options) {
+module.exports.readStdDevFamCode = function (options) {
 
     var onError = null;
 
@@ -1425,7 +1425,7 @@ module.exports.readStdDevFamCode = function(options) {
 
         count: 4,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             var index = 0;
             var stdDevFamilyCode = 0;
 
@@ -1437,7 +1437,7 @@ module.exports.readStdDevFamCode = function(options) {
             options.onSuccess(stdDevFamilyCode);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1454,7 +1454,7 @@ module.exports.readStdDevFamCode = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readStdDevType = function(options) {
+module.exports.readStdDevType = function (options) {
 
     var onError = null;
 
@@ -1482,7 +1482,9 @@ module.exports.readStdDevType = function(options) {
         onError = options.onError;
     }
 
-    console.info(vscp.utility.getTime() + " Read standard device type from node " + options.nodeId);
+    console.info(vscp.utility.getTime() +
+        " Read standard device type from node " +
+        options.nodeId);
 
     // Read register
     module.exports.read({
@@ -1497,7 +1499,7 @@ module.exports.readStdDevType = function(options) {
 
         count: 4,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             var index = 0;
             var stdDevType = 0;
 
@@ -1509,7 +1511,7 @@ module.exports.readStdDevType = function(options) {
             options.onSuccess(stdDevType);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1526,7 +1528,7 @@ module.exports.readStdDevType = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readGUID = function(options) {
+module.exports.readGUID = function (options) {
 
     var onError = null;
 
@@ -1569,11 +1571,11 @@ module.exports.readGUID = function(options) {
 
         count: 16,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
             options.onSuccess(data);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
@@ -1590,7 +1592,7 @@ module.exports.readGUID = function(options) {
  * @param {function} options.onSuccess      - Callback which is called on successful operation
  * @param {function} [options.onError]      - Callback which is called on failed operation
  */
-module.exports.readMdfUrl = function(options) {
+module.exports.readMdfUrl = function (options) {
 
     var onError = null;
 
@@ -1633,7 +1635,7 @@ module.exports.readMdfUrl = function(options) {
 
         count: 32,
 
-        onSuccess: function(data) {
+        onSuccess: function (data) {
 
             var mdfUrl = "http://";
 
@@ -1647,7 +1649,7 @@ module.exports.readMdfUrl = function(options) {
             options.onSuccess(mdfUrl);
         },
 
-        onError: function() {
+        onError: function () {
             if (null !== onError) {
                 onError();
             }
