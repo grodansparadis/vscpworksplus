@@ -56,9 +56,9 @@ function createMainWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     console.log('Window is visible');
-    //console.log(dialog.showOpenDialog({
-    //  properties: ['openFile', 'openDirectory', 'multiSelections']
-    //}));
+    // console.log(dialog.showOpenDialog({
+    //   properties: ['openFile', 'openDirectory', 'multiSelections']
+    // }));
   });
 
   // Emitted when the window is closed.
@@ -77,7 +77,13 @@ function createMainWindow() {
 ipcMain.on('get-connection-object', (event, arg) => {
   console.log("sync " + arg) // prints "ping"
   event.returnValue = connections
-})
+});
+
+ipcMain.on('open-canal-dialog', (event, arg) => {
+  ttt();
+  console.log("sync " + arg) // prints "ping"
+  event.returnValue = connections
+});
 
 // ipcMain.on('get-connection-object', (event,arg) => {
 //    console.log("async ")
