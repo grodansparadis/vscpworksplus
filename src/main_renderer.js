@@ -1,7 +1,7 @@
 console.log("renderer main - start");
 
-const { remote,ipcRenderer } = require('electron');
-const { Menu, MenuItem } = remote;
+const { remote, ipcRenderer } = require('electron');
+const { Menu, MenuItem, app } = remote;
 
 let tblMain = document.getElementById("main-table-id");
 
@@ -11,15 +11,14 @@ const menu = new Menu()
 menu.append(new MenuItem({
     label: 'Add...',
     click() {
-        console.log('item 1 clicked');
-        openModalCanalDialog();
+        addConnection();
     }
 }));
 menu.append(new MenuItem({
     label: 'Edit...',
     click() {
-        console.log('item 1 clicked');
-        ipcRenderer.sendSync('open-canal-dialog');
+        openModalCanalDialog();
+        //ipcRenderer.sendSync('open-canal-dialog');
     }
 }));
 menu.append(new MenuItem({
@@ -61,13 +60,17 @@ menu.append(new MenuItem({
 
 // electron.ipcRenderer.send('asynchronous-message', 'ping');
 
+///////////////////////////////////////////////////////////////////////////////
+// Document ready
+//
+
 $(document).ready(function ($) {
 
     // Prevent default action of right click in chromium. Replace with our menu.
     window.addEventListener('contextmenu', (e) => {
         e.preventDefault()
         menu.popup(remote.getCurrentWindow())
-     }, false);
+    }, false);
 
     let connections = ipcRenderer.sendSync('get-connection-object');
     connections.vscpinterface.forEach((item) => {
@@ -75,7 +78,10 @@ $(document).ready(function ($) {
         addConnectionRow(item.name, item.type);
     });
 
+    ///////////////////////////////////////////////////////////////////////////////
     // Select table row
+    //
+
     $('#main-table-id > tbody > tr').on('click', function () {
         var values = [];
         var count = 0;
@@ -89,12 +95,50 @@ $(document).ready(function ($) {
         console.log(count, values);
     });
 
+    ///////////////////////////////////////////////////////////////////////////////
     // Open table row
+    //
+
     $('#main-table-id > tbody > tr').on('dblclick', function () {
         console.log("Row double-click");
     });
 
+    ///////////////////////////////////////////////////////////////////////////////
+    // Add new connection
+    //
+
+    $('#btnAdd').on('click', function () {
+        addConnection();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Edit connection
+    //
+
+    $('#btnEdit').on('click', function () {
+        editConnection();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Delete connection
+    //
+
+    $('#btnDelete').on('click', function () {
+        deleteConnection();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Clone connection
+    //
+
+    $('#btnClone').on('click', function () {
+        cloneConnection();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
     // Context menu
+    //
+
     $('#main-table-id > tbody > tr').mousedown(function (event) {
         switch (event.which) {
             case 1:
@@ -125,18 +169,142 @@ $(document).ready(function ($) {
 
 });
 
+// function openModalSelectConnectionDialog() {
+
+//     let win = new remote.BrowserWindow({
+//         parent: remote.getCurrentWindow(),
+//         show: false,
+//         modal: true,
+//         width: 600,
+//         height: 400,
+//         'show': false,
+//         'alwaysOnTop': true,
+//         'title': "test",
+//         'autoHideMenuBar': true,
+//         'webPreferences': {
+//             "nodeIntegration": true,
+//             "sandbox": false
+//         }
+//     })
+
+//     win.on('closed', () => {
+//         win = null
+//         console.log('close');
+//         //callback(promptAnswer);
+//     })
+
+//     // app.getAppPath or app.getPath(name) instead.
+//     console.log(__dirname);
+//     var theUrl = 'file://' + __dirname + '/../dialog_new_connection.html'
+//     console.log('url', theUrl);
+
+//     win.loadURL(theUrl);
+//     win.show();
+// }
+
+///////////////////////////////////////////////////////////////////////////////
+// addConnection
+//
+// Add a new connection
+//
+// @return answer - Structure or string containing the answer
+//
+
+function addConnection() {
+    var answer = ipcRenderer.sendSync("open-modal-dialog",
+        {
+            title: "Add new connection",
+            width: 600, height: 340,
+            win: remote.getCurrentWindow(),
+            url: '../dialog_new_connection.html'
+        });
+
+    switch (answer) {
+        case "canal":
+            var answer = ipcRenderer.sendSync("open-modal-dialog",
+                {
+                    title: "Add CANAL connection",
+                    width: 600, height: 520,
+                    win: remote.getCurrentWindow(),
+                    url: '../dialog_canal_device.html'
+                });
+            break;
+
+        case "tcpip":
+            var answer = ipcRenderer.sendSync("open-modal-dialog",
+                {
+                    title: "Add tcp/ip connection",
+                    width: 600, height: 670,
+                    win: remote.getCurrentWindow(),
+                    url: '../dialog_tcpip_device.html'
+                });
+            break;
+
+        case "websocket":
+            var answer = ipcRenderer.sendSync("open-modal-dialog",
+                {
+                    title: "Add websocket connection",
+                    width: 600, height: 670,
+                    win: remote.getCurrentWindow(),
+                    url: '../dialog_websocket_device.html'
+                });
+            break;
+
+        case "rest":
+            var answer = ipcRenderer.sendSync("open-modal-dialog",
+                {
+                    title: "Add REST connection",
+                    width: 600, height: 675,
+                    win: remote.getCurrentWindow(),
+                    url: '../dialog_rest_device.html'
+                });
+            break;
+
+        default:
+            break;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// editConnection
+//
+// Edit an existing connection
+//
+// @return answer - Structure or string containing the answer
+
+function editConnection() {
+    var answer = ipcRenderer.sendSync("open-modal-dialog",
+        {
+            title: "Edit connection",
+            width: 600, height: 340,
+            win: remote.getCurrentWindow(),
+            url: '../dialog_new_connection.html'
+        });
+    return answer;
+}
+
 function openModalCanalDialog() {
 
     let win = new remote.BrowserWindow({
-      parent: remote.getCurrentWindow(),
-      modal: true
+        parent: remote.getCurrentWindow(),
+        'show': false,
+        'modal': true,
+        'alwaysOnTop': true,
+        'title': options.title,
+        'autoHideMenuBar': true,
+        'webPreferences': {
+            "nodeIntegration": true,
+            "sandbox": false
+        }
     })
 
+    // app.getAppPath or app.getPath(name) instead.
+    console.log(__dirname);
     var theUrl = 'file://' + __dirname + '/../dialog_canal_device.html'
     console.log('url', theUrl);
 
     win.loadURL(theUrl);
-  }
+}
 
 // Add a row to the Wizard table
 var addConnectionRow = function (name, type) {

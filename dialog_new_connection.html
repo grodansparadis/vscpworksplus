@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
+</head>
+
+<body class="bg-light"  style="padding-top: 20px;">
+    <title>New Connection</title>
+    <div class="container text-center">
+        <div class="container col-sm-10">
+            <h4>Select connection type</h4>
+        </div>
+        <div class="row">
+            <div class="container text-center col-sm-10">
+                <button id="btnCanal" type="button" class="btn btn-sm btn-warning"><strong>canal...</strong></button>
+                <button id="btnTcpip" type="button" class="btn btn-sm btn-warning"><strong>tcp/ip...</strong></button>
+                <button id="btnWebsocket" type="button"
+                    class="btn btn-sm btn-warning"><strong>websockets</strong></button>
+                <button id="btnRest" type="button" class="btn btn-sm btn-warning"><strong>rest</strong></button>
+            </div>
+        </div>
+        <div class="row">
+            &nbsp;
+        </div>
+        <div class="row">
+            <div class="container text-left col-lg-6">
+                <p>
+                    <kbd>CANAL</kbd> - Interface CANAL hardware drivers (dl/dll).
+                </p>
+                <p>
+                    <kbd>tcp/ip</kbd> - Connect to a VSCP daemon or other device that export the the VSCP tcp/ip
+                    interface.
+                </p>
+                <p>
+                    <kbd>websocket</kbd> - Connect to VSCP daemon or other device that export the websocket interface.
+                </p>
+                <p>
+                    <kbd>rest</kbd> - Connect to a VSCP daemon or other device that export the VSCP rest interface.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = jQuery = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
+
+</body>
+
+<script>
+
+    let valSelected = '';
+    const { remote, ipcRenderer } = require('electron');
+    const { app } = remote;
+
+    function cancel() {
+        ipcRenderer.send("dialog-close", "");
+        this.close();
+    }
+
+    function response() {
+        ipcRenderer.send("dialog-close", valSelected);
+        this.close();
+    }
+
+    $(document).ready(function ($) {
+
+        // CANAL driver
+        $("#btnCanal").on('click', function (e) {
+            e.preventDefault(); // To prevent following the link (optional)
+            valSelected = "canal";
+            response();
+            remote.getCurrentWindow().close();
+            //openModalCanalDialog();
+        });
+
+        // tcpip driver
+        $("#btnTcpip").on('click', function (e) {
+            e.preventDefault(); // To prevent following the link (optional)
+            valSelected = 'tcpip';
+            response();
+            remote.getCurrentWindow().close();
+        });
+
+        // websocket driver
+        $("#btnWebsocket").on('click', function (e) {
+            e.preventDefault(); // To prevent following the link (optional)
+            valSelected = "websocket"
+            response();
+
+        });
+
+        // REST driver
+        $("#btnRest").on('click', function (e) {
+            e.preventDefault(); // To prevent following the link (optional)
+            valSelected = "rest"
+            response();
+            remote.getCurrentWindow().close();
+        });
+
+        var options = ipcRenderer.sendSync("dialog-open", "");
+        var params = JSON.parse(options);
+        // document.getElementById("label").innerHTML = params.label;
+        // document.getElementById("data").value = params.value;
+        // document.getElementById("ok").value = params.ok;
+
+        function openModalCanalDialog() {
+
+            let win = new remote.BrowserWindow({
+                parent: remote.getCurrentWindow(),
+                modal: true
+            })
+
+            // app.getAppPath or app.getPath(name) instead.
+            console.log(__dirname);
+            var theUrl = 'file://' + __dirname + '/../dialog_canal_device.html'
+            console.log('url', theUrl);
+
+            win.loadURL(theUrl);
+        }
+    });
+</script>
+
+</html>

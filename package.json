@@ -2,7 +2,7 @@
   "name": "vscpworksplus",
   "version": "0.0.1",
   "description": "Second generation vscpworks application",
-  "main": "./dist/main.js",
+  "main": "./src/main.js",
   "scripts": {
     "install": "prebuild-install || node-gyp rebuild",
     "build": "tsc",

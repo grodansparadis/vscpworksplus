@@ -1,3 +1,4 @@
+
 //import * as net from "net";
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const os = require('os');
@@ -55,7 +56,6 @@ function createMainWindow() {
   // Show main window when it's ready to be displayed
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    console.log('Window is visible');
     // console.log(dialog.showOpenDialog({
     //   properties: ['openFile', 'openDirectory', 'multiSelections']
     // }));
@@ -74,16 +74,88 @@ function createMainWindow() {
 
 }
 
+//-----------------------------------------------------------------------------
+
+let dialogWindow = null;
+let dialogOptions = {};
+let dialogAnswer = {};
+
+///////////////////////////////////////////////////////////////////////////////
+// Creating the modal dialog
+//
+
+function dialogModal(parent, options, callback) {
+
+  dialogOptions = options;  // Save options
+
+  dialogWindow = new BrowserWindow({
+    width: options.width, height: options.height,
+    'parent': parent,
+    'show': false,
+    'modal': true,
+    'alwaysOnTop': true,
+    'title': options.title,
+    'autoHideMenuBar': true,
+    'webPreferences': {
+      "nodeIntegration": true,
+      "sandbox": false
+    }
+  });
+
+  // Open the DevTools.
+  dialogWindow.webContents.openDevTools();
+
+  dialogWindow.on('closed', () => {
+    dialogWindow = null
+    callback(dialogAnswer);
+  });
+
+  // Load the HTML dialog box page
+  dialogWindow.loadFile(path.join(__dirname, options.url));
+
+  // Show it when loaded
+  dialogWindow.once('ready-to-show', () => {
+    dialogWindow.setTitle(dialogOptions.title);
+    dialogWindow.show();
+  });
+}
+
+
+// Called by the dialog box to get its parameters
+
+ipcMain.on("dialog-open", (event, data) => {
+  event.returnValue = JSON.stringify(dialogOptions, null, '');
+})
+
+// Called by the dialog box when closed
+
+ipcMain.on("dialog-close", (event, data) => {
+  dialogAnswer = data;
+})
+
+// Called by the application to open the prompt dialog
+
+ipcMain.on("open-modal-dialog", (event, arg) => {
+  dialogModal(arg.win, arg,
+    function (data) {
+      event.returnValue = data
+    }
+  );
+
+});
+
+//-----------------------------------------------------------------------------
+
 ipcMain.on('get-connection-object', (event, arg) => {
   console.log("sync " + arg) // prints "ping"
   event.returnValue = connections
 });
 
-ipcMain.on('open-canal-dialog', (event, arg) => {
-  ttt();
-  console.log("sync " + arg) // prints "ping"
-  event.returnValue = connections
-});
+// ipcMain.on('open-canal-dialog', (event, arg) => {
+//   selectConnetionType();
+//   console.log("sync " + arg) // prints "ping"
+//   event.returnValue = connections
+// });
 
 // ipcMain.on('get-connection-object', (event,arg) => {
 //    console.log("async ")
@@ -130,6 +202,21 @@ app.on("activate", () => {
     createMainWindow();
   }
 });
+
+function selectConnetionType() {
+  let child = new BrowserWindow({
+    parent: mainWindow,
+    show: false,
+    modal: true,
+    width: 600,
+    height: 500,
+    webPreferences: {
+      nodeIntegration: true
+    },
+  });
+  child.loadFile(path.join(__dirname, "../dialog_new_connection.html"));
+  child.show();
+}
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
