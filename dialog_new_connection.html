@@ -61,71 +61,48 @@
     const { remote, ipcRenderer } = require('electron');
     const { app } = remote;
 
-    function cancel() {
-        ipcRenderer.send("dialog-close", "");
-        this.close();
-    }
-
-    function response() {
-        ipcRenderer.send("dialog-close", valSelected);
-        this.close();
-    }
-
     $(document).ready(function ($) {
 
         // CANAL driver
         $("#btnCanal").on('click', function (e) {
-            e.preventDefault(); // To prevent following the link (optional)
+            e.preventDefault();
             valSelected = "canal";
-            response();
+            ipcRenderer.send("dialog-close", valSelected);
             remote.getCurrentWindow().close();
-            //openModalCanalDialog();
         });
 
         // tcpip driver
         $("#btnTcpip").on('click', function (e) {
-            e.preventDefault(); // To prevent following the link (optional)
+            e.preventDefault();
             valSelected = 'tcpip';
-            response();
+            ipcRenderer.send("dialog-close", valSelected);
             remote.getCurrentWindow().close();
         });
 
         // websocket driver
         $("#btnWebsocket").on('click', function (e) {
-            e.preventDefault(); // To prevent following the link (optional)
+            e.preventDefault();
             valSelected = "websocket"
-            response();
-
+            ipcRenderer.send("dialog-close", valSelected);
+            remote.getCurrentWindow().close();
         });
 
         // REST driver
         $("#btnRest").on('click', function (e) {
-            e.preventDefault(); // To prevent following the link (optional)
+            e.preventDefault();
             valSelected = "rest"
-            response();
+            ipcRenderer.send("dialog-close", valSelected);
             remote.getCurrentWindow().close();
         });
 
-        var options = ipcRenderer.sendSync("dialog-open", "");
-        var params = JSON.parse(options);
+        // Get parameters
+        // var options = ipcRenderer.sendSync("dialog-open", "");
+        // var params = JSON.parse(options);
+        // console.log("Params = " + params);
         // document.getElementById("label").innerHTML = params.label;
         // document.getElementById("data").value = params.value;
         // document.getElementById("ok").value = params.ok;
 
-        function openModalCanalDialog() {
-
-            let win = new remote.BrowserWindow({
-                parent: remote.getCurrentWindow(),
-                modal: true
-            })
-
-            // app.getAppPath or app.getPath(name) instead.
-            console.log(__dirname);
-            var theUrl = 'file://' + __dirname + '/../dialog_canal_device.html'
-            console.log('url', theUrl);
-
-            win.loadURL(theUrl);
-        }
     });
 </script>
 

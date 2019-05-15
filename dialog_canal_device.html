@@ -16,39 +16,39 @@
         <div class="col-sm-12 text-center">
             <h2>CANAL Interface</h2>
         </div>
-        <form action="" class="needs-validation" novalidate>
+        <form action="#">
 
             <div class="form-group">
                 <label class="font-weight-bold" for="description">Description:</label>
-                <input type="text" class="form-control form-control-sm" id="driverName" placeholder="Enter descriptive name"
-                    name="name" required>
-                <div class="valid-feedback"></div>
-                <div class="invalid-feedback">There must be a descriptive string for the driver.</div>
+                <input id="driverName" type="text" class="form-control form-control-sm"
+                    placeholder="Enter descriptive name" name="name" required>
+                <div id="errorName" class="invalid-feedback">You must set a unique name for the driver.</div>
             </div>
 
             <div class="form-group ">
                 <label class="font-weight-bold" for="description">Path:</label>
                 <div class="input-group input-file" name="path">
-                    <input type="text" class="form-control form-control-sm" placeholder='Choose a file...' required />
+                    <input id="driverPath" type="text" class="form-control form-control-sm"
+                        placeholder='Choose a file...' required />
                     <span class="input-group-btn">
                         &nbsp;
-                        <button class="btn-sm btn-default btn-choose" type="button">Choose</button>
-                        <button type="reset" class="btn-sm btn-default">Reset</button>
+                        <button id="btnSelectPath" class="btn-sm btn-default btn-choose" type="button">Choose</button>
+                        <button id="btnReset" type="reset" class="btn-sm btn-default">Reset</button>
                     </span>
-                    <div class="valid-feedback"></div>
-                    <div class="invalid-feedback">There must be a path for a valid CANAL driver.</div>
+                    <div id="errorPath" class="invalid-feedback">There must be a path for a valid CANAL driver.</div>
                 </div>
 
             </div>
 
             <div class="form-group">
                 <label class="font-weight-bold" for="description">Configuration:</label>
-                <input type="text" class="form-control form-control-sm" id="description"
-                    placeholder="Enter configuration" name="description">
+                <input id="driverConfig" type="text" class="form-control form-control-sm"
+                    placeholder="Enter configuration" name="config">
             </div>
+
             <div class="form-group">
                 <label class="font-weight-bold" for="flags">Flags:</label>
-                <input type="password" class="form-control form-control-sm" id="flags" placeholder="Enter flags"
+                <input id="driverFlags" type="text" class="form-control form-control-sm" placeholder="Enter flags value"
                     name="flags">
             </div>
 
@@ -77,102 +77,113 @@
 </body>
 
 <script>
-    let valSelected = '';
     const { remote, ipcRenderer } = require('electron');
     const { app } = remote;
+    const vscp = require('./src/vscp');
+    const fs = require('fs');
+
+    ///////////////////////////////////////////////////////////////////////////
+    // validate
+    //
+    // Validate form before submission
+    //
 
     let validate = function () {
-        // // Get the forms we want to add validation styles to
-        // var forms = document.getElementsByClassName('needs-validation');
-        // console.log(forms);
-        // // Loop over them and prevent submission
-        // var validation = Array.prototype.filter.call(forms, function (form) {
-        //     if (form.checkValidity() === false) {
-        //         return false;
-        //         //event.preventDefault();
-        //         //event.stopPropagation();
-        //     }
-        //     form.classList.add('was-validated');
-        // });
-        let name = name = $("#driverName").val();
-        //document.getElementById("driverName").value = "Johnny Bravo";
-        if ( 0 == name.trim().length) {
 
-            return false;
+        let rv = true;
+
+        // Test name
+        if (0 == $("#driverName").val().trim().length) {
+            $("#errorName").html("You must set a unique name for the driver.");
+            $("#errorName").addClass("d-block");
+            rv = false;
         }
-        return true;
+        else {
+            $("#errorName").removeClass("d-block");
+        }
+
+        // Is name already used
+        if (null != ipcRenderer.sendSync("get-named-connection", $("#driverName").val().trim())) {
+            console.log('Name is already used: [' + $("#driverName").val().trim() + ']' );
+            $("#errorName").html("Name must be unique and this name is already used.");
+            $("#errorName").addClass("d-block");
+            rv = false;
+        }
+
+        // Test path
+        if (0 == $("#driverPath").val().trim().length) {
+            $("#errorPath").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorPath").removeClass("d-block");
+        }
+
+        // Check that path exists
+        if (!fs.existsSync($("#driverPath").val())) {
+            $("#errorPath").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorPath").removeClass("d-block");
+        }
+
+        // Configuration
+        if (0 == $("#driverConfig").val().trim().length) {
+            $("#driverConfig").val("");
+        }
+
+        // Flags
+        if (0 == $("#driverFlags").val().trim().length) {
+            $("#driverFlags").val("0");
+        }
+
+        return rv;
     };
 
-    // Disable form submissions if there are invalid fields
-    // (function () {
-
-    //     // Get the forms we want to add validation styles to
-    //     var forms = document.getElementsByClassName('needs-validation');
-    //     // Loop over them and prevent submission
-    //     var validation = Array.prototype.filter.call(forms, function (form) {
-
-    //         if (form.checkValidity() === false) {
-    //             event.preventDefault();
-    //             event.stopPropagation();
-    //         }
-    //         form.classList.add('was-validated');
-    //     });
-    // })();
-
-    // File selection
-    // function bs_input_file() {
-    //     $(".input-file").before(
-    //         function () {
-    //             if (!$(this).prev().hasClass('input-ghost')) {
-    //                 var element = $("<input type='file' class='input-ghost' style='visibility:hidden; height:0'>");
-    //                 element.attr("name", $(this).attr("name"));
-    //                 element.change(function () {
-    //                     element.next(element).find('input').val((element.val()).split('\\').pop());
-    //                 });
-    //                 $(this).find("button.btn-choose").click(function () {
-    //                     element.click();
-    //                 });
-    //                 $(this).find("button.btn-reset").click(function () {
-    //                     element.val(null);
-    //                     $(this).parents(".input-file").find('input').val('');
-    //                 });
-    //                 $(this).find('input').css("cursor", "pointer");
-    //                 $(this).find('input').mousedown(function () {
-    //                     $(this).parents('.input-file').prev().click();
-    //                     return false;
-    //                 });
-    //                 return element;
-    //             }
-    //         }
-    //     );
-    // }
-    // $(function () {
-    //     bs_input_file();
-    // });
-
-    function Submit() {
-        ipcRenderer.send("dialog-close", valSelected);
-        this.close();
-        console.log("Close CANAL window");
-    }
-
+    // Document is fully loaded
     $(document).ready(function ($) {
 
         // Cancel
-        $("#btnCancel").on('click', function (e) {
-            e.preventDefault(); // To prevent following the link (optional)
-            valSelected = "canal";
-            Submit();
+        $("#btnCancel").on('click', (e) => {
+            e.preventDefault();
+            let result = {};
+            ipcRenderer.send("dialog-close", result);
             remote.getCurrentWindow().close();
         });
 
-        // Save new driver info
-        $("#btnSubmit").on('click', function (e) {
-            e.preventDefault(); // To prevent following the link (optional)
+        // Submit
+        $("#btnSubmit").on('click', (e) => {
+            e.preventDefault();
             if (validate()) {
-                valSelected = "canal";
-                Submit();
+                let result = {};
+                result.type = 'canal';
+                result.name = $("#driverName").val().trim();
+                result.path = $("#driverPath").val().trim();
+                result.config = $("#driverConfig").val().trim();
+                result.flags = vscp.readValue($("#driverFlags").val());
+                ipcRenderer.send("dialog-close", result);
                 remote.getCurrentWindow().close();
+            }
+        });
+
+        // Reset
+        $("#btnReset").on('click', (e) => {
+            $("#driverPath").val("");
+        });
+
+        // Path
+        $("#btnSelectPath").on('click', (e) => {
+            let answer = ipcRenderer.sendSync("dialog-file-select",
+                {
+                    win: remote.getCurrentWindow(),
+                    title: "Select CANAL driver",
+                    properties: [
+                        "openFile"
+                    ]
+                });
+            if (null != answer) {
+                $("#driverPath").val(answer[0]);
             }
         });
 

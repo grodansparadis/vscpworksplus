@@ -5,7 +5,7 @@
             "name": "Local Socketcan",
             "path": "/home/akhe/development/VSCP/vscp/src/vscp/drivers/level1/socketcan/linux/vscpl1drv-socketcan.so",
             "config": "can0",
-            "flags": 0
+            "flags": 0 
         },
         {
             "type": "tcpip",

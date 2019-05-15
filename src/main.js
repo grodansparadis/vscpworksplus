@@ -9,31 +9,34 @@ const path = require('path');
 //const homeDir = os.homedir();
 //readOldConfig(homedir);
 
-let pathConnectConfig = path.join(__dirname, '../config/connections.json');
 let connections = {};   // No connections read in
 let mainWindow;
 let childWindows = [];
 
-let homeDir = path.join(app.getPath('home'), ".vscpworks");
-console.log(homeDir);
+let home = path.join(app.getPath('home'), ".vscpworks");
+console.log('Homefolder :' + home);
 
 // Create home folder if it does not exist
-if (!fs.existsSync(homeDir)) {
-  fs.mkdir(homeDir, { recursive: true }, (err) => {
+if (!fs.existsSync(home)) {
+  fs.mkdir(home, { recursive: true }, (err) => {
     if (err) throw err;
   });
 }
 
+let pathConnectConfig = path.join(home, 'connections.json');
+console.log(pathConnectConfig);
 // Read in connections if they are there
 try {
   if (fs.existsSync(pathConnectConfig)) {
     let rawdata = fs.readFileSync(pathConnectConfig);
+    console.log(connections);
     connections = JSON.parse(rawdata);
-    //console.log(connections);
+    console.log(connections);
   }
 }
-catch {
-  consol.error("Failed to fetch predefined connections from " + pathConnectConfig);
+catch (err) {
+  console.error("Failed to fetch predefined connections from " + pathConnectConfig);
+  console.error(err);
 }
 
 
@@ -81,6 +84,8 @@ let dialogOptions = {};
 let dialogAnswer = {};
 
 ///////////////////////////////////////////////////////////////////////////////
+// dialogModal
+//
 // Creating the modal dialog
 //
 
@@ -120,35 +125,75 @@ function dialogModal(parent, options, callback) {
   });
 }
 
-
+///////////////////////////////////////////////////////////////////////////////
 // Called by the dialog box to get its parameters
+//
 
 ipcMain.on("dialog-open", (event, data) => {
   event.returnValue = JSON.stringify(dialogOptions, null, '');
 })
 
+///////////////////////////////////////////////////////////////////////////////
 // Called by the dialog box when closed
+//
 
 ipcMain.on("dialog-close", (event, data) => {
   dialogAnswer = data;
+  console.log(data);
 })
 
+///////////////////////////////////////////////////////////////////////////////
 // Called by the application to open the prompt dialog
+//
 
 ipcMain.on("open-modal-dialog", (event, arg) => {
-  dialogModal(arg.win, arg,
-    function (data) {
-      event.returnValue = data
-    }
+  dialogModal(arg.win, arg, (data) => {
+    event.returnValue = data
+  }
   );
-
 });
 
 //-----------------------------------------------------------------------------
 
+///////////////////////////////////////////////////////////////////////////////
+// Called by the application to open file select dialog
+//
+
+ipcMain.on("dialog-file-select", (event, w, options) => {
+  event.returnValue = dialog.showOpenDialog(dialogWindow, options);
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Called by the application to get the connection object
+//
+
 ipcMain.on('get-connection-object', (event, arg) => {
-  console.log("sync " + arg) // prints "ping"
   event.returnValue = connections
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Called by the application to get a named connection object
+//
+
+ipcMain.on('get-named-connection', (event, name) => {
+  connections.vscpinterface.forEach((item) => {
+    event.returnValue = null;
+    if (name === item.name) {
+      event.returnValue = item
+      return;
+    }
+  });
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Called by the application to get a named connection object
+//
+
+ipcMain.on('add-connection', (event, item) => {
+  connections.vscpinterface.push(item);
+  if (!saveConnections()) {
+
+  }
 });
 
 // ipcMain.on('open-canal-dialog', (event, arg) => {
@@ -232,6 +277,38 @@ function ttt() {
   });
   child.loadFile(path.join(__dirname, "../register.html"));
   child.show();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// saveConnections
+//
+// Save the connection object
+//
+// @return true on success, false otherwise
+//
+
+let saveConnections = function () {
+  try {
+    console.log("Saved config file");
+    fs.writeFileSync(pathConnectConfig, JSON.stringify(connections), 'utf-8');
+    return true;
+  }
+  catch (e) {
+    console.error('Failed to save connections. Path = ' + pathConnectConfig);
+    console.error(e);
+  }
+  // try {
+  //   if (fs.existsSync(pathConnectConfig)) {
+  //     let rawdata = fs.readFileSync(pathConnectConfig);
+  //     connections = JSON.parse(rawdata);
+  //     //console.log(connections);
+  //   }
+  // }
+  // catch {
+  //   consol.error("Failed to fetch predefined connections from " + pathConnectConfig);
+  // }
+
+  return false;
 }
 
 // ------------------------------------------------------------------

@@ -228,6 +228,8 @@ function addConnection() {
                     win: remote.getCurrentWindow(),
                     url: '../dialog_canal_device.html'
                 });
+                ipcRenderer.send("add-connection", answer );
+                addConnectionRow( answer.name, answer.type );
             break;
 
         case "tcpip":
@@ -273,7 +275,7 @@ function addConnection() {
 // @return answer - Structure or string containing the answer
 
 function editConnection() {
-    var answer = ipcRenderer.sendSync("open-modal-dialog",
+    let answer = ipcRenderer.sendSync("open-modal-dialog",
         {
             title: "Edit connection",
             width: 600, height: 340,
