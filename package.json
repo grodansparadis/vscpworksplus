@@ -34,6 +34,7 @@
   "devDependencies": {
     "@types/xml2js": "^0.4.4",
     "electron": "^4.2.0",
+    "electron-rebuild": "^1.8.4",
     "electron-reload": "^1.4.0"
   },
   "dependencies": {
@@ -47,6 +48,7 @@
     "braces": "^2.3.2",
     "chart": "^0.1.2",
     "config": "^3.1.0",
+    "ffi": "^2.3.0",
     "floatthead": "^2.1.3",
     "flot": "^3.0.2",
     "jquery": "^3.4.1",
@@ -56,16 +58,22 @@
     "lite-server": "^2.4.0",
     "markdown-it": "^8.4.2",
     "mime": "^2.4.2",
+    "node-addon-api": "^1.6.3",
+    "node-expat": "^2.3.17",
     "node-vscp-class": "^1.0.2",
     "node-vscp-type": "^1.0.2",
     "npm": "^6.9.0",
     "octicons": "^8.5.0",
     "popper.js": "^1.15.0",
+    "ref": "^1.3.5",
+    "ref-array": "^1.2.0",
+    "ref-struct": "^1.1.0",
     "request": "^2.88.0",
     "sprintf-js": "^1.1.2",
     "sqlite3": "^4.0.7",
     "telnet-client": "^1.0.0",
     "tls": "0.0.1",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "xml2json": "^0.11.2"
   }
 }

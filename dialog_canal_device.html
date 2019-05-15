@@ -53,7 +53,7 @@
             </div>
 
             <div class="col-sm-12 text-center">
-                <button type="button" class="btn btn-warning  form-control-sm">Configuration wizard</button>
+                <button id="btnWizard" type="button" class="btn btn-warning  form-control-sm">Configuration wizard</button>
                 <div>
                     <hr />
                 </div>
@@ -184,6 +184,16 @@
                 });
             if (null != answer) {
                 $("#driverPath").val(answer[0]);
+            }
+        });
+
+        // Wizard
+        $("#btnWizard").on('click', (e) => {
+            if (fs.existsSync($("#driverPath").val())) {
+                alert("A setup wizard is not available for the selected driver.");
+            }
+            else {
+                alert("A driver path is needed to enter the setup wizard.");
             }
         });
 

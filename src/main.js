@@ -4,7 +4,13 @@ const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
-//const ipcRenderer  = electron.ipcRenderer;
+const expat = require('node-expat');
+const { DOMParser } = require('xmldom');
+const xmlToJSON = require('xml2json');
+const ref = require("ref");
+const ArrayType = require('ref-array')
+const ffi = require("ffi");
+var Struct = require('ref-struct');
 
 //const homeDir = os.homedir();
 //readOldConfig(homedir);
@@ -31,7 +37,7 @@ try {
     let rawdata = fs.readFileSync(pathConnectConfig);
     console.log(connections);
     connections = JSON.parse(rawdata);
-    console.log(connections);
+    //console.log(connections);
   }
 }
 catch (err) {
@@ -293,20 +299,10 @@ let saveConnections = function () {
     fs.writeFileSync(pathConnectConfig, JSON.stringify(connections), 'utf-8');
     return true;
   }
-  catch (e) {
+  catch (err) {
     console.error('Failed to save connections. Path = ' + pathConnectConfig);
-    console.error(e);
+    console.error(err);
   }
-  // try {
-  //   if (fs.existsSync(pathConnectConfig)) {
-  //     let rawdata = fs.readFileSync(pathConnectConfig);
-  //     connections = JSON.parse(rawdata);
-  //     //console.log(connections);
-  //   }
-  // }
-  // catch {
-  //   consol.error("Failed to fetch predefined connections from " + pathConnectConfig);
-  // }
 
   return false;
 }
@@ -642,3 +638,101 @@ const vscp_type = require('node-vscp-type');
 //   parser.on('startElement', function (name, attrs) {
 //     console.log(name, attrs)
 //   })
+
+// function BufferToPointer(buf,offset,length)
+// {
+//     if (offset===undefined)
+//         offset = 0;
+//     if (length===undefined || length == -1)
+//         length = buf.length - offset;
+//     var ptr = new ffi.Pointer(length);
+//     var ptr2 = ptr.seek(0);
+//     var end = offset + length;
+//     for (var i=offset;i<end;++i)
+//     {
+//         ptr2.putByte(buf[i],true);
+//     }
+//     return ptr;
+// }
+
+// function PointerToBuffer(ptr,length)
+// {
+//     var buf = new Buffer(length);
+//     for(var i=0;i<length;++i)
+//     {
+//         buf.writeUInt8(ptr.getByte(true),i);
+//     }
+//     return buf;
+// }
+
+var bArray = ArrayType(ref.types.uchar);
+
+let canalEvent_t = ref.types.void;
+let canalData_t = ref.types.uchar;
+let canalEventPtr_t = ref.refType(canalEvent_t);
+let canalDataPtr_t = ref.refType(canalData_t);
+let canalDataPtrPtr_t = ref.refType(canalDataPtr_t);
+
+// binding to CANAL functions...
+var libcanal = ffi.Library('/srv/vscp/drivers/level1/vscpl1drv-logger.so', {
+  'CanalOpen': ['long', ['string', 'long']],
+  'CanalSend': ['int', ['long', canalEventPtr_t]],
+  'CanalClose': ['int', ['long']],
+});
+
+let flags_t = ref.types.ulong;
+let obid_t = ref.types.ulong;
+let id_t = ref.types.ulong;
+let sizedata_t = ref.types.uchar;
+let data_t = canalDataPtr_t;
+let timestamp_t = ref.types.ulong;
+
+// define the "timeval" struct type
+var canalEvent = Struct({
+  flags: flags_t,
+  obid: obid_t,
+  id: id_t,
+  sizeData: sizedata_t,
+  data: data_t,
+  timestamp: timestamp_t
+});
+
+let rv = 0;
+let h = libcanal.CanalOpen('/tmp/test.txt;0x0;0x0', 1);
+console.log(h);
+
+var dataArray = new bArray(8); //ref.alloc('uchar', 8); //new Buffer(8); //new bArray(8);
+const arr = new Uint8Array(8);
+arr[0] = 11;
+arr[1] = 22;
+arr[2] = 33;
+arr[3] = 44;
+arr[4] = 55;
+arr[5] = 66;
+arr[6] = 77;
+arr[7] = 88;
+console.log(arr);
+console.log(arr.data);
+dataArray[0] = 11;
+dataArray[1] = 22;
+dataArray[2] = 33;
+dataArray[3] = 44;
+dataArray[4] = 55;
+dataArray[5] = 66;
+dataArray[6] = 77;
+dataArray[7] = 88;
+console.log(dataArray);
+var ev = new canalEvent;
+ev.flags = 1;     // Extended
+ev.timestamp = 0x4321;
+ev.obid = 0x1234; // Not used
+ev.id = 0x999;
+ev.data = arr; //dataArray.ref(); //ref.address(dataArray);
+ev.sizeData = 8;
+
+// ev.data = data;
+rv = libcanal.CanalSend(h, ev.ref());
+console.log(rv);
+
+rv = libcanal.CanalClose(h);
+console.log(rv);
