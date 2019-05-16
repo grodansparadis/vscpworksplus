@@ -13,8 +13,9 @@
             "host": "192.168.1.30:9598",
             "username": "admin",
             "password": "secret",
-            "interfaceName": "can4vscp",
-            "level2": false,
+            "interface": "can4vscp",
+            "bLevel2": false,
+            "bSSL": false,
             "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
             "filter": {
                 "priority": 0,

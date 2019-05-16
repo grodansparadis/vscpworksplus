@@ -15,8 +15,8 @@ var Struct = require('ref-struct');
 //const homeDir = os.homedir();
 //readOldConfig(homedir);
 
-let connections = {};   // No connections read in
-let mainWindow;
+let connections = {};   // Defined connections
+let mainWindow;         // Initial window
 let childWindows = [];
 
 let home = path.join(app.getPath('home'), ".vscpworks");
@@ -46,6 +46,9 @@ catch (err) {
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// createMainWindow
+//
 
 function createMainWindow() {
 
@@ -92,7 +95,7 @@ let dialogAnswer = {};
 ///////////////////////////////////////////////////////////////////////////////
 // dialogModal
 //
-// Creating the modal dialog
+// Creating a modal dialog
 //
 
 function dialogModal(parent, options, callback) {
@@ -100,7 +103,8 @@ function dialogModal(parent, options, callback) {
   dialogOptions = options;  // Save options
 
   dialogWindow = new BrowserWindow({
-    width: options.width, height: options.height,
+    'width': options.width,
+    'height': options.height,
     'parent': parent,
     'show': false,
     'modal': true,
@@ -145,7 +149,6 @@ ipcMain.on("dialog-open", (event, data) => {
 
 ipcMain.on("dialog-close", (event, data) => {
   dialogAnswer = data;
-  console.log(data);
 })
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -155,8 +158,7 @@ ipcMain.on("dialog-close", (event, data) => {
 ipcMain.on("open-modal-dialog", (event, arg) => {
   dialogModal(arg.win, arg, (data) => {
     event.returnValue = data
-  }
-  );
+  });
 });
 
 //-----------------------------------------------------------------------------
@@ -182,13 +184,16 @@ ipcMain.on('get-connection-object', (event, arg) => {
 //
 
 ipcMain.on('get-named-connection', (event, name) => {
-  connections.vscpinterface.forEach((item) => {
-    event.returnValue = null;
-    if (name === item.name) {
-      event.returnValue = item
-      return;
+  rv = null;
+  for (let i = 0; i < connections.vscpinterface.length; i++) {
+    if ( "undefined" === typeof connections.vscpinterface[i].name ) continue;
+    if (name.toLowerCase() === connections.vscpinterface[i].name.toLowerCase()) {
+      rv = connections.vscpinterface[i];
+      console.log('MATCH');
+      break;
     }
-  });
+  };
+  event.returnValue = rv;
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,35 +207,17 @@ ipcMain.on('add-connection', (event, item) => {
   }
 });
 
-// ipcMain.on('open-canal-dialog', (event, arg) => {
-//   selectConnetionType();
-//   console.log("sync " + arg) // prints "ping"
-//   event.returnValue = connections
-// });
+///////////////////////////////////////////////////////////////////////////////
+// Called by the application to get a named connection object
+//
 
-// ipcMain.on('get-connection-object', (event,arg) => {
-//    console.log("async ")
-//    event.sender.send('reply-connection-object', connections)
-// })
+ipcMain.on('show-dialog-message', (event, parent, options) => {
+  dialog.showMessageBox( mainWindow, options, () => {
 
-// ipcMain.on('asynchronous-message', (event, arg) => {
-//   console.log("async " + arg) // prints "ping"
-//   event.sender.send('asynchronous-reply', 'pong')
-// })
+  });
+});
 
-// ipcMain.on('synchronous-message', (event, arg) => {
-//   console.log("sync " + arg) // prints "ping"
-//   event.returnValue = 'pong'
-//   ttt();
-// })
 
-// ipcMain.on('open-second-window', (event: any, arg: any) => {
-//   //secondWindow.show()
-// })
-
-// ipcMain.on('close-second-window', (event: any, arg: any) => {
-//   //secondWindow.hide()
-// })
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -295,8 +282,8 @@ function ttt() {
 
 let saveConnections = function () {
   try {
-    console.log("Saved config file");
     fs.writeFileSync(pathConnectConfig, JSON.stringify(connections), 'utf-8');
+    console.log("Saved connection config file");
     return true;
   }
   catch (err) {

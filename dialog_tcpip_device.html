@@ -9,6 +9,15 @@
   <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
   <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
   <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
+  <style>
+    .active {
+      background-color: rgb(154, 243, 154) !important;
+    }
+
+    .connerr {
+      background-color: rgb(250, 8, 8) !important;
+    }
+  </style>
 </head>
 
 <body class="bg-light">
@@ -18,48 +27,60 @@
       <h2>Remote VSCP Server</h2>
     </div>
     <form action="/action_page.php" class="needs-validation" novalidate>
+
       <div class="form-group">
-        <label class="font-weight-bold" for="description">Description:</label>
-        <input type="text" class="form-control form-control-sm" id="description" placeholder="Enter description"
-          name="description" required>
-        <div class="valid-feedback"></div>
-        <div class="invalid-feedback">There must be a descriptive string.</div>
+        <label class="font-weight-bold" for="description">Name:</label>
+        <input id="connectionName" type="text" class="form-control form-control-sm"
+          placeholder="Enter descriptive name for connection" name="Name" required>
+        <div id="errorName" class="invalid-feedback">You must set a unique name for the connection.</div>
       </div>
+
       <div class="form-group">
-        <label class="font-weight-bold" for="host">Server (host:port):</label>
-        <input type="text" class="form-control form-control-sm" id="host" placeholder="Enter host:port" name="host"
-          required>
-        <div class="valid-feedback"></div>
-        <div class="invalid-feedback">There must be a remote host specified (and port) on the form host:port. Default
-          port 9598.</div>
+        <label class="font-weight-bold" for="host">Remote host/device (host:port):</label>
+        <input id="remoteHost" type="text" class="form-control form-control-sm" placeholder="Enter host:port"
+          name="host" required>
+        <div id="errorHost" class="invalid-feedback">There must be a remote host/device specified (and port) on the form
+          host:port.
+          Default
+          port is 9598 if not entered).</div>
       </div>
+
       <div class="form-group">
         <label class="font-weight-bold" for="username">Username:</label>
-        <input type="password" class="form-control form-control-sm" id="username" placeholder="Enter username"
-          name="username" required>
+        <input id="username" type="text" class="form-control form-control-sm" placeholder="Enter username"
+          name="username">
       </div>
+
       <div class="form-group">
         <label class="font-weight-bold" for="pwd">Password:</label>
-        <input type="password" class="form-control form-control-sm" id="pwd" placeholder="Enter password" name="pswd"
-          required>
+        <input id="password" type="password" class="form-control form-control-sm" placeholder="Enter password"
+          name="pswd">
+      </div>
+
+      <div class="form-group">
+        <label class="font-weight-bold" for="pwd">GUID:</label>
+        <input id="guid" type="text" class="form-control form-control-sm" placeholder="Enter optional GUID" name="guid">
       </div>
 
       <div class="form-group">
         <label class="font-weight-bold" for="interface">Interface:</label>
-        <input type="text" class="form-control form-control-sm" id="interface" placeholder="Enter interface GUID"
+        <input id="interface" type="text" class="form-control form-control-sm" placeholder="Enter interface GUID"
           name="interface">
       </div>
+
       <div class="form-group form-check form-inline">
         <label class="font-weight-bold" for="pwd">Options:</label>
         <div class="col-sm-2">
           <label class="font-weight-bold" class="form-check-label">
-            <input class="form-check-input form-control-sm" type="checkbox" name="bssl"> SSL </label>
+            <input id="bSSL" class="form-check-input form-control-sm" type="checkbox" name="bssl"> SSL </label>
         </div>
+
         <div class="col-sm-5">
           <label class="font-weight-bold" class="form-check-label">
-            <input class="form-check-input" type="checkbox" name="blevel2"> Full level II
+            <input id="bLevel2" class="form-check-input" type="checkbox" name="blevel2"> Full level II
           </label>
         </div>
+
         <div class="col-sm-5">
         </div>
       </div>
@@ -67,9 +88,9 @@
         <hr />
       </div>
       <div class="col-sm-12 text-center">
-        <button type="button" class="btn btn-warning">Set filter</button>
-        <button type="button" class="btn btn-warning">Test connection</button>
-        <button type="button" class="btn btn-warning">Get interfaces</button></div>
+        <button id="btnSetFilter" type="button" class="btn btn-warning">Set filter</button>
+        <button id="btnTestConnection" type="button" class="btn btn-warning">Test connection</button>
+        <button id="btnGetInterfaces" type="button" class="btn btn-warning">Get interfaces</button></div>
 
       <div>
         <hr />
@@ -98,25 +119,177 @@
 <script>
 
   const { remote, ipcRenderer } = require('electron');
-  const { app } = remote;
+  const { app, dialog } = remote;
+  const win = remote.getCurrentWindow();
+  const vscp = require('./src/vscp');                // TODO: use module
+  const vscp_tcp_Client = require('./src/vscptcp'); // TODO: use module
+  const vscp_class = require('node-vscp-class');
+  const vscp_type = require('node-vscp-type');
 
-  function cancel() {
-    ipcRenderer.send("dialog-close", "");
-    this.close();
+  let testProgress = '';  // Holds testprogress
+
+  let filter = {
+    "priority": 0,
+    "class": 0,
+    "type": 0,
+    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+  };
+  let mask = {
+    "priority": 0,
+    "class": 0,
+    "type": 0,
+    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+  };
+
+
+  ///////////////////////////////////////////////////////////////////////////
+  // validate
+  //
+  // Validate form before submission
+  //
+
+  let validate = function () {
+
+    let rv = true;
+
+    // Test name
+    if (0 == $("#connectionName").val().trim().length) {
+      $("#errorName").html("You must set a unique name for the connection.");
+      $("#errorName").addClass("d-block");
+      rv = false;
+    }
+    else {
+      $("#errorName").removeClass("d-block");
+    }
+
+    // Is name already used
+    if (null != ipcRenderer.sendSync("get-named-connection", $("#connectionName").val().trim())) {
+      console.log('Name is already used: [' + $("#connectionName").val().trim() + ']');
+      $("#errorName").html("Name must be unique and this name is already used.");
+      $("#errorName").addClass("d-block");
+      rv = false;
+    }
+
+    // Test host
+    if (0 == $("#remoteHost").val().trim().length) {
+      $("#errorHost").html("You must enter a remote host/device address (host:port).");
+      $("#errorHost").addClass("d-block");
+      rv = false;
+    }
+    else {
+      $("#errorHost").removeClass("d-block");
+    }
+
+    // Username - everything accepted
+
+    // password - everything accepted
+
+    // guid - everything accepted
+
+    // interface - everything accepted
+
+    return rv;
+  };
+
+  ///////////////////////////////////////////////////////////////////////////
+  // testConnection
+  //
+
+  const testConnection = async () => {
+
+    testProgress = '';
+
+    // Defaults
+    let host = 'localhost';
+    let port = 9598;
+    let user = 'admin';
+    let password = 'secret';
+
+    if (0 == $("#remoteHost").val().trim().length) {
+      let options = {
+        type: 'error',
+        buttons: ['OK'],
+        title: 'Missing parameter',
+        message: 'Need a remote host on the form host:port to be able to test.'
+      }
+      dialog.showMessageBox(remote.getCurrentWindow(), options);
+      validate();
+      return;
+    }
+
+    $("#errorHost").removeClass("d-block");
+
+    let remoteHost = $("#remoteHost").val();
+    if (-1 == remoteHost.search(':')) {
+      // No port given - use default
+      host = remoteHost;
+    }
+    else {
+      let sep = remoteHost.split(':');
+      host = sep[0];
+      if (sep.length > 1) port = parseInt(sep[1], 10);
+    }
+
+    user = $("#username").val().trim();
+    password = $("#password").val().trim();
+
+    let response = {};
+    let vscp_tcp_client = new vscp_tcp_Client();
+
+    response = await vscp_tcp_client.connect(
+      {
+        host: host,
+        port: port,
+        timeout: 10000,
+        onSuccess: null
+      });
+    console.log(response);
+    if ('success' === response.result) {
+      testProgress = "connection OK\n"
+    }
+
+    response = await vscp_tcp_client.sendCommand(
+      {
+        command: "noop"
+      });
+    console.log(response);
+    if ('success' === response.result) {
+      testProgress += "noop OK\n"
+    }
+
+    if (user.length) {
+      response = await vscp_tcp_client.user({ username: user });
+      console.log(response);
+      if ('success' === response.result) {
+        testProgress += "user OK\n"
+      }
+    }
+
+    if (password.length) {
+      response = await vscp_tcp_client.password({ password: password });
+      // response = await vscp_tcp_client.sendCommand(
+      //   {
+      //     command: "pass",
+      //     argument: password
+      //   });
+      console.log(response);
+      if ('success' === response.result) {
+        testProgress += "pass OK\n"
+      }
+    }
+
+    response = await vscp_tcp_client.disconnect();
+    console.log(response);
+    if ('success' === response.result) {
+      testProgress += "disconnect OK\n"
+    }
+
+    $("#btnTestConnection").removeClass('connerr').addClass('active ');
   }
 
-  function response() {
-    ipcRenderer.send("dialog-close", valSelected);
-    this.close();
-  }
-
-  /////////////////////////////////////////////////////////////////////////////
-  // Check
+  ///////////////////////////////////////////////////////////////////////////
+  // Document ready
   //
-  // Disable form submissions if there are invalid fields
-  //
-
-
 
   $(document).ready(function ($) {
 
@@ -126,65 +299,99 @@
     // document.getElementById("data").value = params.value;
     // document.getElementById("ok").value = params.ok;
 
-    function check () {
-      'use strict';
-      window.addEventListener('load', function () {
-        // Get the forms we want to add validation styles to
-        var forms = document.getElementsByClassName('needs-validation');
-        // Loop over them and prevent submission
-        var validation = Array.prototype.filter.call(forms, function (form) {
-          form.addEventListener('submit', function (event) {
-            if (form.checkValidity() === false) {
-              event.preventDefault();
-              event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-          }, false);
-        });
-      }, false);
-    };
+    // Context menu
+    /* const myContextMenu = remote.Menu.buildFromTemplate([
+      { label: 'Exit', role: 'quit' },
+      { label: 'Minimize', role: 'minimize' },
+      { type: 'separator' },
+      { label: 'Start', click() { console.log('Start the app') } }
+    ])
 
-    function cancel() {
-      ipcRenderer.send("dialog-close", "");
-      this.close();
-    }
+    window.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      myContextMenu.popup();
+    }) */
 
-    function submit() {
-      ipcRenderer.send("dialog-close", valSelected);
-      this.close();
-    }
-
-    // Save new driver info
-    $("#btnSubmit").on('click', function (e) {
-      e.preventDefault(); // To prevent following the link (optional)
-      valSelected = "canal";
-      if ( check() ) submit();
-      //remote.getCurrentWindow().close();
+    $("button").click(function () {
+      $("button").removeClass("active");
+      //$(this).addClass("active");
     });
 
     // Cancel
     $("#btnCancel").on('click', function (e) {
-      //e.preventDefault(); // To prevent following the link (optional)
-      valSelected = "canal";
-      cancel();
-      //remote.getCurrentWindow().close();
+      ipcRenderer.send("dialog-close", '');
+      remote.getCurrentWindow().close();
     });
 
-    //   function openModalCanalDialog() {
+    // Save new driver info
+    $("#btnSubmit").on('click', function (e) {
+      e.preventDefault();
+      if (validate()) {
+        let result = {};
+        result.type = 'tcpip';
+        result.name = $("#connectionName").val().trim();
+        result.host = $("#remoteHost").val().trim();
+        result.username = $("#username").val().trim();
+        result.password = $("#password").val().trim();
+        result.guid = $("#guid").val().trim();
+        result.interface = $("#interface").val().trim();
+        if ($("#bLevel2").is(":checked")) {
+          result.bLevel2 = true;
+        }
+        else {
+          result.bLevel2 = false;
+        }
+        if ($("#bSSL").is(":checked")) {
+          result.bSSL = true;
+        }
+        else {
+          result.bSSL = false;
+        }
+        result.filter = filter;
+        result.mask = mask;
+        console.log(result);
+        ipcRenderer.send("dialog-close", result);
+        console.log('done');
+        remote.getCurrentWindow().close();
+      }
+    });
 
-    //     let win = new remote.BrowserWindow({
-    //       parent: remote.getCurrentWindow(),
-    //       modal: true
-    //     })
+    // Set filter
+    $("#btnSetFilter").on('click', function (e) {
 
-    //     // app.getAppPath or app.getPath(name) instead.
-    //     console.log(__dirname);
-    //     var theUrl = 'file://' + __dirname + '/../dialog_canal_device.html'
-    //     console.log('url', theUrl);
+    });
 
-    //     win.loadURL(theUrl);
-    //   }
+    // Test connection
+    $("#btnTestConnection").on('click', function (e) {
+
+      testConnection().catch(err => {
+
+        let options = {
+          type: 'error',
+          buttons: ['OK'],
+          title: 'Host failure',
+          message: 'Failed to connect to remote host/device',
+          detail: 'Error: ' + err.message + ' \n' + testProgress
+        }
+
+        dialog.showMessageBox(remote.getCurrentWindow(), options);
+
+        console.log("Test failed");
+        console.log(err);
+
+        $(this).removeClass('active').addClass('connerr ');
+
+        $("#errorHost").addClass("d-block");
+        $("#errorHost").html(err.message);
+
+        console.log('d-block');
+
+      });
+
+    });
+
   });
+
 </script>
 
 </html>

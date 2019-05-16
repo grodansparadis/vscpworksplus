@@ -1,5 +1,3 @@
-console.log("renderer main - start");
-
 const { remote, ipcRenderer } = require('electron');
 const { Menu, MenuItem, app } = remote;
 
@@ -74,7 +72,6 @@ $(document).ready(function ($) {
 
     let connections = ipcRenderer.sendSync('get-connection-object');
     connections.vscpinterface.forEach((item) => {
-        console.log(item.name, item.type, item.description);
         addConnectionRow(item.name, item.type);
     });
 
@@ -85,14 +82,13 @@ $(document).ready(function ($) {
     $('#main-table-id > tbody > tr').on('click', function () {
         var values = [];
         var count = 0;
-        console.log("Row click");
 
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
         $(this).find("td").each(function () {
             values[count] = $(this).text();
             count++;
         });
-        console.log(count, values);
+
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -211,6 +207,8 @@ $(document).ready(function ($) {
 //
 
 function addConnection() {
+
+    // Let user select type
     var answer = ipcRenderer.sendSync("open-modal-dialog",
         {
             title: "Add new connection",
@@ -236,10 +234,12 @@ function addConnection() {
             var answer = ipcRenderer.sendSync("open-modal-dialog",
                 {
                     title: "Add tcp/ip connection",
-                    width: 600, height: 670,
+                    width: 600, height: 750,
                     win: remote.getCurrentWindow(),
-                    url: '../dialog_tcpip_device.html'
+                    url: '../dialog_tcpip_device.html',
                 });
+                ipcRenderer.send("add-connection", answer );
+                addConnectionRow( answer.name, answer.type );
             break;
 
         case "websocket":
@@ -250,6 +250,8 @@ function addConnection() {
                     win: remote.getCurrentWindow(),
                     url: '../dialog_websocket_device.html'
                 });
+                ipcRenderer.send("add-connection", answer );
+                addConnectionRow( answer.name, answer.type );
             break;
 
         case "rest":
@@ -260,6 +262,8 @@ function addConnection() {
                     win: remote.getCurrentWindow(),
                     url: '../dialog_rest_device.html'
                 });
+                ipcRenderer.send("add-connection", answer );
+                addConnectionRow( answer.name, answer.type );
             break;
 
         default:
@@ -285,28 +289,25 @@ function editConnection() {
     return answer;
 }
 
-function openModalCanalDialog() {
+// function openModalCanalDialog() {
 
-    let win = new remote.BrowserWindow({
-        parent: remote.getCurrentWindow(),
-        'show': false,
-        'modal': true,
-        'alwaysOnTop': true,
-        'title': options.title,
-        'autoHideMenuBar': true,
-        'webPreferences': {
-            "nodeIntegration": true,
-            "sandbox": false
-        }
-    })
+//     let win = new remote.BrowserWindow({
+//         parent: remote.getCurrentWindow(),
+//         'show': false,
+//         'modal': true,
+//         'alwaysOnTop': true,
+//         'title': options.title,
+//         'autoHideMenuBar': true,
+//         'webPreferences': {
+//             "nodeIntegration": true,
+//             "sandbox": false
+//         }
+//     })
 
-    // app.getAppPath or app.getPath(name) instead.
-    console.log(__dirname);
-    var theUrl = 'file://' + __dirname + '/../dialog_canal_device.html'
-    console.log('url', theUrl);
-
-    win.loadURL(theUrl);
-}
+//     // app.getAppPath or app.getPath(name) instead.
+//     var theUrl = 'file://' + __dirname + '/../dialog_canal_device.html'
+//     win.loadURL(theUrl);
+// }
 
 // Add a row to the Wizard table
 var addConnectionRow = function (name, type) {
