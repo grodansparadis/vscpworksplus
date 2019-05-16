@@ -577,7 +577,7 @@ guidToStr = function(guid) {
  * Converts a GUID string to a GUID number array.
  *
  * @param {string} guid - GUID string, e.g. 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
- * @return {number[]} GUID number array
+ * @return {number[]} GUID number array and array with length != 16 for  invalid GUID
  */
 strToGuid = function(str) {
 
@@ -594,7 +594,7 @@ strToGuid = function(str) {
     }
 
     // If GUID is "-" use interface GUID
-    if ("-" === str) {
+    if ("-" === str.trim()) {
         str = "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00";
     }
 

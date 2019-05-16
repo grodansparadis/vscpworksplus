@@ -5,200 +5,543 @@
     <title>Event Filter</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
+    <style>
+        .active {
+            background-color: rgb(154, 243, 154) !important;
+        }
+
+        .connerr {
+            background-color: rgb(250, 8, 8) !important;
+        }
+    </style>
 </head>
 
 <body class="bg-light">
 
-    <div class="container">
+    <div class="container overflow-auto">
 
-        <div class="col-sm-12 text-center">
-            <h2>Event Filter</h2>
-        </div>
-
-        <br>
-
-        <form action="/action_page.php" class="needs-validation" novalidate>
-
-            <div class="form-group-sm form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">Filter name:</div>
-                <div class="col-sm-9" >
-                    <input type="text" class="form-input form-control-sm col-sm-6" name="description"
-                        placeholder="Enter filter name"  name="description" />
-                </div>
+            <div class="col-sm-12 text-center">
+                <h2>Event Filter</h2>
             </div>
 
             <br>
 
-            <!-- Class -->
-            <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Class filter:
-                </div>
-                <div class="col-sm-3">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="class_filter" value="0x0000"/>
-                </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Class mask:
-                </div>
-                <div class="col-sm-3">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="class_mask" value="0x0000"/>
-                </div>
-            </div>
+            <form action="/action_page.php" class="needs-validation" novalidate>
 
-            <!-- Type -->
-            <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Type filter:
+                <div class="form-group-sm form-inline">
+                    <div class="col-sm-3 font-weight-bold text-right">Filter name:</div>
+                    <div class="col-sm-9">
+                        <input id="filterName" type="text" class="form-input form-control-sm col-sm-6" name="name"
+                            placeholder="Enter filter name" />
+                    </div>
                 </div>
-                <div class="col-sm-3">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="type_filter" value="0x0000"/>
-                </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Type mask:</div>
-                <div class="col-sm-3">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="type_mask" value="0x0000"/>
-                </div>
-            </div>
 
-            <!-- Priority -->
-            <div class="form-group form-inline ">
-                <div class="col-sm-3 text-right font-weight-bold text-right">
-                    Priority filter:
-                </div>
-                <div class="col-sm-3 ">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="priority_filter" value="0"/>
-                </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Priority mask:
-                </div>
-                <div class="col-sm-3">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="priority_mask" value="0"/>
-                </div>
-            </div>
+                <br>
 
-            <!-- Index -->
-            <div class="form-group form-inline ">
-                <div class="col-sm-3  font-weight-bold text-right">
-                    Index filter:
+                <!-- Class -->
+                <div class="form-group form-inline">
+                    <div class="col-sm-3 font-weight-bold text-right">
+                        Class filter:
+                    </div>
+                    <div class="col-sm-3">
+                        <input id="filterClass" class="form-input form-control-sm col-sm-6" type="text"
+                            name="class_filter" value="0x0000" />
+                        <div id="errorFilterClass" class="invalid-feedback">Wrong format</div>
+                    </div>
+                    <div class="col-sm-3 font-weight-bold text-right">
+                        Class mask:
+                    </div>
+                    <div class="col-sm-3">
+                        <input id="maskClass" class="form-input form-control-sm col-sm-6" type="text" name="class_mask"
+                            value="0x0000" />
+                        <div id="errorMaskClass" class="invalid-feedback">Wrong format</div>
+                    </div>
                 </div>
-                <div class="col-sm-3 ">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="index_filter" value="0x00"/>
-                </div>
-                <div class="col-sm-3  font-weight-bold text-right">
-                    Index mask:
-                </div>
-                <div class="col-sm-3">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="index_mask" value="0x00"/>
-                </div>
-            </div>
 
-            <!-- Zone -->
-            <div class="form-group form-inline ">
-                <div class="col-sm-3  font-weight-bold text-right">
-                    Zone filter:
+                <!-- Type -->
+                <div class="form-group form-inline">
+                    <div class="col-sm-3 font-weight-bold text-right">
+                        Type filter:
+                    </div>
+                    <div class="col-sm-3">
+                        <input id="filterType" class="form-input form-control-sm col-sm-6" type="text"
+                            name="type_filter" value="0x0000" />
+                        <div id="errorFilterType" class="invalid-feedback">Wrong format</div>
+                    </div>
+                    <div class="col-sm-3 font-weight-bold text-right">
+                        Type mask:</div>
+                    <div class="col-sm-3">
+                        <input id="maskType" class="form-input form-control-sm col-sm-6" type="text" name="type_mask"
+                            value="0x0000" />
+                        <div id="errorMaskType" class="invalid-feedback">Wrong format</div>
+                    </div>
                 </div>
-                <div class="col-sm-3 ">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="zone_filter" value="0x00"/>
-                </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Zone mask:
-                </div>
-                <div class="col-sm-3">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="zone_mask" value="0x00"/>
-                </div>
-            </div>
 
-            <!-- Subzone -->
-            <div class="form-group form-inline">
-                <div class="col-sm-3  font-weight-bold text-right">
-                    Subzone filter:
+                <!-- Priority -->
+                <div class="form-group form-inline ">
+                    <div class="col-sm-3 text-right font-weight-bold text-right">
+                        Priority filter:
+                    </div>
+                    <div class="col-sm-3 ">
+                        <input id="filterPriority" class="form-input form-control-sm col-sm-6" type="text"
+                            name="priority_filter" value="0" />
+                        <div id="errorFilterPriority" class="invalid-feedback">Wrong format</div>
+                    </div>
+                    <div class="col-sm-3 font-weight-bold text-right">
+                        Priority mask:
+                    </div>
+                    <div class="col-sm-3">
+                        <input id="maskPriority" class="form-input form-control-sm col-sm-6" type="text"
+                            name="priority_mask" value="0" />
+                        <div id="errorMaskPriority" class="invalid-feedback">Wrong format</div>
+                    </div>
                 </div>
-                <div class="col-sm-3 ">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="subzone_filter" value="0x00"/>
+
+                <!-- Index -->
+                <div class="form-group form-inline ">
+                    <div class="col-sm-3  font-weight-bold text-right">
+                        Index filter:
+                    </div>
+                    <div class="col-sm-3 ">
+                        <input id="filterIndex" class="form-input form-control-sm col-sm-6" type="text"
+                            name="index_filter" value="0x00" />
+                        <div id="errorFilterIndex" class="invalid-feedback">Wrong format</div>
+                    </div>
+                    <div class="col-sm-3  font-weight-bold text-right">
+                        Index mask:
+                    </div>
+                    <div class="col-sm-3">
+                        <input id="maskIndex" class="form-input form-control-sm col-sm-6" type="text" name="index_mask"
+                            value="0x00" />
+                        <div id="errorMaskIndex" class="invalid-feedback">Wrong format</div>
+                    </div>
                 </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Zone mask:
+
+                <!-- Zone -->
+                <div class="form-group form-inline ">
+                    <div class="col-sm-3  font-weight-bold text-right">
+                        Zone filter:
+                    </div>
+                    <div class="col-sm-3 ">
+                        <input id="filterZone" class="form-input form-control-sm col-sm-6" type="text"
+                            name="zone_filter" value="0x00" />
+                        <div id="errorFilterZone" class="invalid-feedback">Wrong format</div>
+                    </div>
+                    <div class="col-sm-3 font-weight-bold text-right">
+                        Zone mask:
+                    </div>
+                    <div class="col-sm-3">
+                        <input id="maskZone" class="form-input form-control-sm col-sm-6" type="text" name="zone_mask"
+                            value="0x00" />
+                        <div id="errorMaskZone" class="invalid-feedback">Wrong format</div>
+                    </div>
                 </div>
-                <div class="col-sm-3">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="subzone_mask" value="0x00"/>
+
+                <!-- Subzone -->
+                <div class="form-group form-inline">
+                    <div class="col-sm-3  font-weight-bold text-right">
+                        Subzone filter:
+                    </div>
+                    <div class="col-sm-3 ">
+                        <input id="filterSubZone" class="form-input form-control-sm col-sm-6" type="text"
+                            name="subzone_filter" value="0x00" />
+                        <div id="errorFilterSubZone" class="invalid-feedback">Wrong format</div>
+                    </div>
+                    <div class="col-sm-3 font-weight-bold text-right">
+                        Zone mask:
+                    </div>
+                    <div class="col-sm-3">
+                        <input id="maskSubZone" class="form-input form-control-sm col-sm-6" type="text"
+                            name="subzone_mask" value="0x00" />
+                        <div id="errorMaskSubZone" class="invalid-feedback">Wrong format</div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- GUID filter -->
-            <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">GUID filter:</div>
-                <div class="col-sm-9">
-                    <input class="form-input form-control-sm col-sm-6" type="text" name="description"
-                        placeholder="Enter GUID filter" name="description" required />
-
-                    <div class="valid-feedback"></div>
-                    <div class="invalid-feedback">There must be a GUID filter defined.</div>
+                <!-- GUID filter -->
+                <div class="form-group form-inline">
+                    <div class="col-sm-3 font-weight-bold text-right">GUID filter:</div>
+                    <div class="col-sm-9">
+                        <input id="filterGuid" class="form-input form-control-sm col-sm-6" type="text"
+                            name="GUID_filter" placeholder="Enter GUID filter" name="description"
+                            value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" required />
+                        <div id="errorFilterGuid" class="invalid-feedback">There must be a valid (or empty) GUID filter
+                            defined.</div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- GUID mask -->
-            <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">GUID mask:</div>
-                <div class="col-sm-9">
-                    <input class="form-input form-control-sm col-sm-6 type="text" name="description"
-                        placeholder="Enter GUID mask" name="description" required />
-
-                    <div class="valid-feedback"></div>
-                    <div class="invalid-feedback">There must be a GUID mask defined.</div>
+                <!-- GUID mask -->
+                <div class="form-group form-inline">
+                    <div class="col-sm-3 font-weight-bold text-right">GUID mask:</div>
+                    <div class="col-sm-9">
+                        <input id="maskGuid" class="form-input form-control-sm col-sm-6" type="text" name="GUID_mask"
+                            placeholder="Enter GUID mask" name="description"
+                            value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" required />
+                        <div id="errorMaskGuid" class="invalid-feedback">There must be a valid (or empty) GUID mask
+                            defined.
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div>
-                <hr />
-            </div>
+                <div>
+                    <hr />
+                </div>
 
-            <div class="col-sm-12 text-center">
-                <button type="button" class="btn-sm btn-warning">Load filter...</button>
-                <button type="button" class="btn-sm btn-warning">Save filter...</button>
-                <button type="button" class="btn-sm btn-warning">GUID filter wizard...</button>
-                <button type="button" class="btn-sm btn-warning">Setup wizard...</button>
-                <button type="button" class="btn-sm btn-warning">Clear</button></div>
-
-            <div>
-                <hr />
-            </div>
-
-            <div class="row">
                 <div class="col-sm-12 text-center">
-                    <button type="submit" class="btn-lg btn-default">Cancel</button>
-                    <button type="submit" class="btn-lg btn-default">OK</button>
+                    <button id="btnLoad" type="button" class="btn-sm btn-warning">Load filter...</button>
+                    <button id="btnSave" type="button" class="btn-sm btn-warning">Save filter...</button>
+                    <button id="btnGuidFilterWiz" type="button" class="btn-sm btn-warning">GUID filter
+                        wizard...</button>
+                    <button id="btnWizard" type="button" class="btn-sm btn-warning">Setup wizard...</button>
+                    <button id="btnClear" type="button" class="btn-sm btn-warning">Clear</button></div>
+                <div>
+                    <hr />
                 </div>
-            </div>
 
-        </form>
+                <div class="row">
+                    <div class="col-sm-12 text-center">
+                        <button id="btnCancel" type="submit" class="btn-sm btn-default">Cancel</button>
+                        <button id="btnSubmit" type="submit" class="btn-sm btn-default"><span
+                                class="octicon octicon-check" aria-hidden="true"></span>OK</button>
+                        <i class="opticon octicon-mark-github"></i>
+                    </div>
+                </div>
+
+            </form>
+
     </div>
 
-    <script>
-        // Disable form submissions if there are invalid fields
-        (function () {
-            'use strict';
-            window.addEventListener('load', function () {
-                // Get the forms we want to add validation styles to
-                var forms = document.getElementsByClassName('needs-validation');
-                // Loop over them and prevent submission
-                var validation = Array.prototype.filter.call(forms, function (form) {
-                    form.addEventListener('submit', function (event) {
-                        if (form.checkValidity() === false) {
-                            event.preventDefault();
-                            event.stopPropagation();
-                        }
-                        form.classList.add('was-validated');
-                    }, false);
-                });
-            }, false);
-        })();
-    </script>
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = jQuery = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
 
 </body>
+
+
+<script>
+    const { remote, ipcRenderer } = require('electron');
+    const { app, dialog } = remote;
+    const win = remote.getCurrentWindow();
+    const sprintf = require('sprintf-js').sprintf;
+    const vscp = require('./src/vscp');                // TODO: use module
+    const vscp_class = require('node-vscp-class');
+    const vscp_type = require('node-vscp-type');
+
+    let filter = {
+        "name": '',
+        "filterPriority": 0,
+        "filterClass": 0,
+        "filterType": 0,
+        "filterGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+        "filterIndex": 0,
+        "filterZone": 0,
+        "filterSubzone": 0,
+        "maskPriority": 0,
+        "maskClass": 0,
+        "maskType": 0,
+        "maskIndex": 0,
+        "maskZone": 0,
+        "maskSubzone": 0,
+        "maskGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+    };
+
+    ///////////////////////////////////////////////////////////////////////////
+    // validate
+    //
+    // Validate form before submission
+    //
+
+    let validate = function () {
+
+        let rv = true;
+
+        // Filter
+
+        if ((vscp.readValue($("#filterClass").val()) > 0xffff) ||
+            (vscp.readValue($("#filterClass").val()) < 0)) {
+            $("#errorFilterClass").html("Filter class must be greater than zero and less than 65536/0xffff.");
+            $("#errorFilterClass").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorFilterClass").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#filterType").val()) > 0xffff) ||
+            (vscp.readValue($("#filterType").val()) < 0)) {
+            $("#errorFilterType").html("Filter type must be greater than zero and less than 65536/0xffff.");
+            $("#errorFilterType").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorFilterType").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#filterPriority").val()) > 7) ||
+            (vscp.readValue($("#filterPriority").val()) < 0)) {
+            $("#errorFilterPriority").html("Filter priority must be greater than zero and less than 7.");
+            $("#errorFilterPriority").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorFilterPriority").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#filterIndex").val()) > 0xff) ||
+            (vscp.readValue($("#filterIndex").val()) < 0)) {
+            $("#errorFilterIndex").html("Filter index must be greater than zero and less than 256.");
+            $("#errorFilterIndex").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorFilterIndex").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#filterZone").val()) > 0xff) ||
+            (vscp.readValue($("#filterZone").val()) < 0)) {
+            $("#errorFilterZone").html("Filter zone must be greater than zero and less than 256.");
+            $("#errorFilterZone").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorFilterZone").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#filterSubZone").val()) > 0xff) ||
+            (vscp.readValue($("#filterSubZone").val()) < 0)) {
+            $("#errorFilterSubZone").html("Filter subzone must be greater than zero and less than 256.");
+            $("#errorFilterSubZone").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorFilterSubZone").removeClass("d-block");
+        }
+
+
+        let filterGuid = vscp.strToGuid($("#filterGuid").val());
+        if (16 !== filterGuid.length) {
+            $("#errorFilterGuid").html("Filter GUID must be a string with hex values on the form '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00'");
+            $("#errorFilterGuid").addClass("d-block");
+        }
+        else {
+            $("#errorFilterGuid").removeClass("d-block");
+        }
+
+        // Mask
+
+        if ((vscp.readValue($("#maskClass").val()) > 0xffff) ||
+            (vscp.readValue($("#maskClass").val()) < 0)) {
+            $("#errorMaskClass").html("Mask class must be greater than zero and less than 65536/0xffff.");
+            $("#errorMaskClass").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorMaskClass").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#maskType").val()) > 0xffff) ||
+            (vscp.readValue($("#maskType").val()) < 0)) {
+            $("#errorMaskType").html("Mask type must be greater than zero and less than 65536/0xffff.");
+            $("#errorMaskType").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorMaskType").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#maskPriority").val()) > 7) ||
+            (vscp.readValue($("#maskPriority").val()) < 0)) {
+            $("#errorMaskPriority").html("Mask priority must be greater than zero and less than 7.");
+            $("#errorMaskPriority").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorMaskPriority").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#maskIndex").val()) > 0xff) ||
+            (vscp.readValue($("#maskIndex").val()) < 0)) {
+            $("#errorMaskIndex").html("Mask index must be greater than zero and less than 256.");
+            $("#errorMaskIndex").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorMaskIndex").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#maskZone").val()) > 0xff) ||
+            (vscp.readValue($("#maskZone").val()) < 0)) {
+            $("#errorMaskZone").html("Mask zone must be greater than zero and less than 256.");
+            $("#errorMaskZone").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorMaskZone").removeClass("d-block");
+        }
+
+        if ((vscp.readValue($("#maskSubZone").val()) > 0xff) ||
+            (vscp.readValue($("#maskSubZone").val()) < 0)) {
+            $("#errorMaskSubZone").html("Mask subzone must be greater than zero and less than 256.");
+            $("#errorMaskSubZone").addClass("d-block");
+            rv = false;
+        }
+        else {
+            $("#errorMaskSubZone").removeClass("d-block");
+        }
+
+        let maskGuid = vscp.strToGuid($("#maskGuid").val());
+        if (16 !== maskGuid.length) {
+            $("#errorMaskGuid").html("Mask GUID must be a string with hex values on the form '00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00'");
+            $("#errorMaskGuid").addClass("d-block");
+        }
+        else {
+            $("#errorMaskGuid").removeClass("d-block");
+        }
+
+        return rv;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Document ready
+    //
+
+    $(document).ready(function ($) {
+
+        var options = ipcRenderer.sendSync("dialog-open", "");
+        var params = JSON.parse(options);
+        filter = params.filter;
+
+        $("#filterName").val(filter.name);
+        $("#filterClass").val(sprintf('0x%04x',filter.filterClass));
+        $("#filterType").val(sprintf('0x%04x',filter.filterType));
+        $("#filterPriority").val(filter.filterPriority);
+        $("#filterIndex").val(sprintf('0x%02x',filter.filterIndex));
+        $("#filterZone").val(sprintf('0x%02x',filter.filterZone));
+        $("#filterSubŹone").val(sprintf('0x%02x',filter.filterSubZone));
+        $("#filterGuid").val(filter.filterGuid);
+
+        $("#maskClass").val(sprintf('0x%04x',filter.maskClass));
+        $("#maskType").val(sprintf('0x%04x',filter.maskType));
+        $("#maskPriority").val(filter.maskPriority);
+        $("#maskIndex").val(sprintf('0x%02x',filter.maskIndex));
+        $("#maskZone").val(sprintf('0x%02x',filter.maskZone));
+        $("#maskSubŹone").val(sprintf('0x%02x',filter.maskSubZone));
+        $("#maskGuid").val(filter.maskGuid);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Remove active class
+        //
+
+        $("button").click(function () {
+            $("button").removeClass("active");
+            //$(this).addClass("active");
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Cancel
+        //
+
+        $("#btnCancel").on('click', function (e) {
+            ipcRenderer.send("dialog-close", '');
+            remote.getCurrentWindow().close();
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Save new driver info
+        //
+
+        $("#btnSubmit").on('click', function (e) {
+
+            e.preventDefault();
+            if (validate()) {
+
+                filter.name = $("#filterName").val().trim();
+                filter.filterClass = vscp.readValue($("#filterClass").val());
+                filter.filterType = vscp.readValue($("#filterType").val());
+                filter.filterPriority = vscp.readValue($("#filterPriority").val());
+                filter.filterIndex = vscp.readValue($("#filterIndex").val());
+                filter.filterZone = vscp.readValue($("#filterZone").val());
+                filter.filterSubZone = vscp.readValue($("#filterSubZone").val());
+                filter.filterGuid= vscp.readValue($("#filterGuid").val());
+
+                filter.maskClass = vscp.readValue($("#maskClass").val());
+                filter.maskType = vscp.readValue($("#maskType").val());
+                filter.maskPriority = vscp.readValue($("#maskPriority").val());
+                filter.maskIndex = vscp.readValue($("#maskIndex").val());
+                filter.maskZone = vscp.readValue($("#maskZone").val());
+                filter.maskSubZone = vscp.readValue($("#maskSubZone").val());
+                filter.maskGuid= vscp.readValue($("#maskGuid").val());
+
+                console.log(filter);
+                ipcRenderer.send("dialog-close", filter);
+                remote.getCurrentWindow().close();
+            }
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Load filter from file
+        //
+
+        $("#btnLoad").on('click', function (e) {
+
+
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Save filter from file
+        //
+
+        $("#btnSave").on('click', function (e) {
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // GUID filter
+        //
+
+        $("#btnGuidFilterWiz").on('click', function (e) {
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Wizard
+        //
+
+        $("#btnWizard").on('click', function (e) {
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Clear/Reset form
+        //
+
+        $("#btnClear").on('click', function (e) {
+
+            $("#filterName").val('');
+
+            $("#filterClass").val('0x0000');
+            $("#filterType").val('0x0000');
+            $("#filterPriority").val('0');
+            $("#filterIndex").val('0x00');
+            $("#filterZone").val('0x00');
+            $("#filterSubZone").val('0x00');
+            $("#filterGuid").val('00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00');
+
+            $("#maskClass").val('0x0000');
+            $("#maskType").val('0x0000');
+            $("#maskPriority").val('0');
+            $("#maskIndex").val('0x00');
+            $("#maskZone").val('0x00');
+            $("#maskSubZone").val('0x00');
+            $("#maskGuid").val('00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00');
+
+            validate(); // Reset any errors
+        });
+
+    });
+
+</script>
 
 </html>

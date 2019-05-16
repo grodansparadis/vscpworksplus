@@ -5,7 +5,7 @@
             "name": "Local Socketcan",
             "path": "/home/akhe/development/VSCP/vscp/src/vscp/drivers/level1/socketcan/linux/vscpl1drv-socketcan.so",
             "config": "can0",
-            "flags": 0 
+            "flags": 0
         },
         {
             "type": "tcpip",
@@ -18,16 +18,15 @@
             "bSSL": false,
             "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
             "filter": {
-                "priority": 0,
-                "class": 0,
-                "type": 0,
-                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
-            },
-            "mask": {
-                "priority": 0,
-                "class": 0,
-                "type": 0,
-                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+                "name": "",
+                "filterPriority": 0,
+                "filterClass": 0,
+                "FilterType": 0,
+                "FilterGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+                "MaskPriority": 0,
+                "MaskClass": 0,
+                "MaskType": 0,
+                "MaskGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
             }
         },
         {
@@ -38,16 +37,15 @@
             "password": "secret",
             "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
             "filter": {
-                "priority": 0,
-                "class": 0,
-                "type": 0,
-                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
-            },
-            "mask": {
-                "priority": 0,
-                "class": 0,
-                "type": 0,
-                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+                "name": "",
+                "filterPriority": 0,
+                "filterClass": 0,
+                "FilterType": 0,
+                "FilterGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+                "MaskPriority": 0,
+                "MaskClass": 0,
+                "MaskType": 0,
+                "MaskGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
             }
         },
         {
@@ -58,16 +56,15 @@
             "password": "secret",
             "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
             "filter": {
-                "priority": 0,
-                "class": 0,
-                "type": 0,
-                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
-            },
-            "mask": {
-                "priority": 0,
-                "class": 0,
-                "type": 0,
-                "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+                "name": "",
+                "filterPriority": 0,
+                "filterClass": 0,
+                "FilterType": 0,
+                "FilterGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+                "MaskPriority": 0,
+                "MaskClass": 0,
+                "MaskType": 0,
+                "MaskGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
             }
         }
     ]

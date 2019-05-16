@@ -88,7 +88,7 @@
         <hr />
       </div>
       <div class="col-sm-12 text-center">
-        <button id="btnSetFilter" type="button" class="btn btn-warning">Set filter</button>
+        <button id="btnSetFilter" type="button" class="btn btn-warning">Set/edit filter</button>
         <button id="btnTestConnection" type="button" class="btn btn-warning">Test connection</button>
         <button id="btnGetInterfaces" type="button" class="btn btn-warning">Get interfaces</button></div>
 
@@ -126,20 +126,25 @@
   const vscp_class = require('node-vscp-class');
   const vscp_type = require('node-vscp-type');
 
-  let testProgress = '';  // Holds testprogress
+  let testProgress = '';  // Holds progress for the connection test
 
   let filter = {
-    "priority": 0,
-    "class": 0,
-    "type": 0,
-    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
-  };
-  let mask = {
-    "priority": 0,
-    "class": 0,
-    "type": 0,
-    "guid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
-  };
+    "name": "",
+    "filterPriority": 0,
+    "filterClass": 0,
+    "filterType": 0,
+    "filterIndex": 0,
+    "filterZone": 0,
+    "filterSubZone": 0,
+    "filterGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+    "maskPriority": 0,
+    "maskClass": 0,
+    "maskType": 0,
+    "maskIndex": 0,
+    "maskZone": 0,
+    "maskSubZone": 0,
+    "maskGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
+  }
 
 
   ///////////////////////////////////////////////////////////////////////////
@@ -267,11 +272,6 @@
 
     if (password.length) {
       response = await vscp_tcp_client.password({ password: password });
-      // response = await vscp_tcp_client.sendCommand(
-      //   {
-      //     command: "pass",
-      //     argument: password
-      //   });
       console.log(response);
       if ('success' === response.result) {
         testProgress += "pass OK\n"
@@ -312,18 +312,28 @@
       myContextMenu.popup();
     }) */
 
+    ///////////////////////////////////////////////////////////////////////////
+    // Remove active class
+    //
+
     $("button").click(function () {
       $("button").removeClass("active");
       //$(this).addClass("active");
     });
 
+    ///////////////////////////////////////////////////////////////////////////
     // Cancel
+    //
+
     $("#btnCancel").on('click', function (e) {
       ipcRenderer.send("dialog-close", '');
       remote.getCurrentWindow().close();
     });
 
+    ///////////////////////////////////////////////////////////////////////////
     // Save new driver info
+    //
+
     $("#btnSubmit").on('click', function (e) {
       e.preventDefault();
       if (validate()) {
@@ -349,19 +359,31 @@
         }
         result.filter = filter;
         result.mask = mask;
-        console.log(result);
+
         ipcRenderer.send("dialog-close", result);
-        console.log('done');
         remote.getCurrentWindow().close();
       }
     });
 
+    ///////////////////////////////////////////////////////////////////////////
     // Set filter
-    $("#btnSetFilter").on('click', function (e) {
+    //
 
+    $("#btnSetFilter").on('click', function (e) {
+      filter = ipcRenderer.sendSync("open-modal-dialog",
+        {
+          title: "Set/Edit filter",
+          width: 800, height: 650,
+          win: remote.getCurrentWindow(),
+          url: '../dialog_set_filter.html',
+          filter: filter
+        });
     });
 
+    ///////////////////////////////////////////////////////////////////////////
     // Test connection
+    //
+
     $("#btnTestConnection").on('click', function (e) {
 
       testConnection().catch(err => {
