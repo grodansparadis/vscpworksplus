@@ -1,0 +1,17 @@
+{
+    "name": 'testfilter',
+    "filterPriority": 1,
+    "filterClass": 2,
+    "filterType": 3,
+    "filterGuid": "00:01:02:03:04:05:06:07:08:09:0a:0b:0c:0d:0e:0f",
+    "filterIndex": 4,
+    "filterZone": 5,
+    "filterSubZone": 6,
+    "maskPriority": 7,
+    "maskClass": 8,
+    "maskType": 9,
+    "maskIndex": 10,
+    "maskZone": 11,
+    "maskSubZone": 12,
+    "maskGuid": "10:11:12:13:14:15:16:17:18:19:1a:1b:1c:1d:1e:1f"
+}

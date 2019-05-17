@@ -24,193 +24,193 @@
 
     <div class="container overflow-auto">
 
-            <div class="col-sm-12 text-center">
-                <h2>Event Filter</h2>
+        <div class="col-sm-12 text-center">
+            <h2>Event Filter</h2>
+        </div>
+
+        <br>
+
+        <form action="/action_page.php" class="needs-validation" novalidate>
+
+            <div class="form-group-sm form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">Filter name:</div>
+                <div class="col-sm-9">
+                    <input id="filterName" type="text" class="form-input form-control-sm col-sm-9" name="name"
+                        placeholder="Enter filter name" />
+                </div>
             </div>
 
             <br>
 
-            <form action="/action_page.php" class="needs-validation" novalidate>
+            <!-- Class -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Class filter:
+                </div>
+                <div class="col-sm-3">
+                    <input id="filterClass" class="form-input form-control-sm col-sm-6" type="text" name="class_filter"
+                        value="0x0000" />
+                    <div id="errorFilterClass" class="invalid-feedback">Wrong format</div>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Class mask:
+                </div>
+                <div class="col-sm-3">
+                    <input id="maskClass" class="form-input form-control-sm col-sm-6" type="text" name="class_mask"
+                        value="0x0000" />
+                    <div id="errorMaskClass" class="invalid-feedback">Wrong format</div>
+                </div>
+            </div>
 
-                <div class="form-group-sm form-inline">
-                    <div class="col-sm-3 font-weight-bold text-right">Filter name:</div>
-                    <div class="col-sm-9">
-                        <input id="filterName" type="text" class="form-input form-control-sm col-sm-6" name="name"
-                            placeholder="Enter filter name" />
+            <!-- Type -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Type filter:
+                </div>
+                <div class="col-sm-3">
+                    <input id="filterType" class="form-input form-control-sm col-sm-6" type="text" name="type_filter"
+                        value="0x0000" />
+                    <div id="errorFilterType" class="invalid-feedback">Wrong format</div>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Type mask:</div>
+                <div class="col-sm-3">
+                    <input id="maskType" class="form-input form-control-sm col-sm-6" type="text" name="type_mask"
+                        value="0x0000" />
+                    <div id="errorMaskType" class="invalid-feedback">Wrong format</div>
+                </div>
+            </div>
+
+            <!-- Priority -->
+            <div class="form-group form-inline ">
+                <div class="col-sm-3 text-right font-weight-bold text-right">
+                    Priority filter:
+                </div>
+                <div class="col-sm-3 ">
+                    <input id="filterPriority" class="form-input form-control-sm col-sm-6" type="text"
+                        name="priority_filter" value="0" />
+                    <div id="errorFilterPriority" class="invalid-feedback">Wrong format</div>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Priority mask:
+                </div>
+                <div class="col-sm-3">
+                    <input id="maskPriority" class="form-input form-control-sm col-sm-6" type="text"
+                        name="priority_mask" value="0" />
+                    <div id="errorMaskPriority" class="invalid-feedback">Wrong format</div>
+                </div>
+            </div>
+
+            <!-- Index -->
+            <div class="form-group form-inline ">
+                <div class="col-sm-3  font-weight-bold text-right">
+                    Index filter:
+                </div>
+                <div class="col-sm-3 ">
+                    <input id="filterIndex" class="form-input form-control-sm col-sm-6" type="text" name="index_filter"
+                        value="0x00" />
+                    <div id="errorFilterIndex" class="invalid-feedback">Wrong format</div>
+                </div>
+                <div class="col-sm-3  font-weight-bold text-right">
+                    Index mask:
+                </div>
+                <div class="col-sm-3">
+                    <input id="maskIndex" class="form-input form-control-sm col-sm-6" type="text" name="index_mask"
+                        value="0x00" />
+                    <div id="errorMaskIndex" class="invalid-feedback">Wrong format</div>
+                </div>
+            </div>
+
+            <!-- Zone -->
+            <div class="form-group form-inline ">
+                <div class="col-sm-3  font-weight-bold text-right">
+                    Zone filter:
+                </div>
+                <div class="col-sm-3 ">
+                    <input id="filterZone" class="form-input form-control-sm col-sm-6" type="text" name="zone_filter"
+                        value="0x00" />
+                    <div id="errorFilterZone" class="invalid-feedback">Wrong format</div>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Zone mask:
+                </div>
+                <div class="col-sm-3">
+                    <input id="maskZone" class="form-input form-control-sm col-sm-6" type="text" name="zone_mask"
+                        value="0x00" />
+                    <div id="errorMaskZone" class="invalid-feedback">Wrong format</div>
+                </div>
+            </div>
+
+            <!-- Subzone -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3  font-weight-bold text-right">
+                    Subzone filter:
+                </div>
+                <div class="col-sm-3 ">
+                    <input id="filterSubzone" class="form-input form-control-sm col-sm-6" type="text"
+                        name="subzone_filter" value="0x00" />
+                    <div id="errorFilterSubzone" class="invalid-feedback">Wrong format</div>
+                </div>
+                <div class="col-sm-3 font-weight-bold text-right">
+                    Zone mask:
+                </div>
+                <div class="col-sm-3">
+                    <input id="maskSubzone" class="form-input form-control-sm col-sm-6" type="text" name="subzone_mask"
+                        value="0x00" />
+                    <div id="errorMaskSubzone" class="invalid-feedback">Wrong format</div>
+                </div>
+            </div>
+
+            <!-- GUID filter -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">GUID filter:</div>
+                <div class="col-sm-9">
+                    <input id="filterGuid" class="form-input form-control-sm col-sm-8" type="text" name="GUID_filter"
+                        placeholder="Enter GUID filter" name="description"
+                        value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" required />
+                    <div id="errorFilterGuid" class="invalid-feedback">There must be a valid (or empty) GUID filter
+                        defined.</div>
+                </div>
+            </div>
+
+            <!-- GUID mask -->
+            <div class="form-group form-inline">
+                <div class="col-sm-3 font-weight-bold text-right">GUID mask:</div>
+                <div class="col-sm-9">
+                    <input id="maskGuid" class="form-input form-control-sm col-sm-8" type="text" name="GUID_mask"
+                        placeholder="Enter GUID mask" name="description"
+                        value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" required />
+                    <div id="errorMaskGuid" class="invalid-feedback">There must be a valid (or empty) GUID mask
+                        defined.
                     </div>
                 </div>
+            </div>
 
-                <br>
+            <div>
+                <hr />
+            </div>
 
-                <!-- Class -->
-                <div class="form-group form-inline">
-                    <div class="col-sm-3 font-weight-bold text-right">
-                        Class filter:
-                    </div>
-                    <div class="col-sm-3">
-                        <input id="filterClass" class="form-input form-control-sm col-sm-6" type="text"
-                            name="class_filter" value="0x0000" />
-                        <div id="errorFilterClass" class="invalid-feedback">Wrong format</div>
-                    </div>
-                    <div class="col-sm-3 font-weight-bold text-right">
-                        Class mask:
-                    </div>
-                    <div class="col-sm-3">
-                        <input id="maskClass" class="form-input form-control-sm col-sm-6" type="text" name="class_mask"
-                            value="0x0000" />
-                        <div id="errorMaskClass" class="invalid-feedback">Wrong format</div>
-                    </div>
-                </div>
+            <div class="col-sm-12 text-center">
+                <button id="btnLoad" type="button" class="btn-sm btn-warning">Load filter...</button>
+                <button id="btnSave" type="button" class="btn-sm btn-warning">Save filter...</button>
+                <button id="btnGuidFilterWiz" type="button" class="btn-sm btn-warning">GUID filter
+                    wizard...</button>
+                <button id="btnWizard" type="button" class="btn-sm btn-warning">Setup wizard...</button>
+                <button id="btnClear" type="button" class="btn-sm btn-warning">Clear</button></div>
+            <div>
+                <hr />
+            </div>
 
-                <!-- Type -->
-                <div class="form-group form-inline">
-                    <div class="col-sm-3 font-weight-bold text-right">
-                        Type filter:
-                    </div>
-                    <div class="col-sm-3">
-                        <input id="filterType" class="form-input form-control-sm col-sm-6" type="text"
-                            name="type_filter" value="0x0000" />
-                        <div id="errorFilterType" class="invalid-feedback">Wrong format</div>
-                    </div>
-                    <div class="col-sm-3 font-weight-bold text-right">
-                        Type mask:</div>
-                    <div class="col-sm-3">
-                        <input id="maskType" class="form-input form-control-sm col-sm-6" type="text" name="type_mask"
-                            value="0x0000" />
-                        <div id="errorMaskType" class="invalid-feedback">Wrong format</div>
-                    </div>
-                </div>
-
-                <!-- Priority -->
-                <div class="form-group form-inline ">
-                    <div class="col-sm-3 text-right font-weight-bold text-right">
-                        Priority filter:
-                    </div>
-                    <div class="col-sm-3 ">
-                        <input id="filterPriority" class="form-input form-control-sm col-sm-6" type="text"
-                            name="priority_filter" value="0" />
-                        <div id="errorFilterPriority" class="invalid-feedback">Wrong format</div>
-                    </div>
-                    <div class="col-sm-3 font-weight-bold text-right">
-                        Priority mask:
-                    </div>
-                    <div class="col-sm-3">
-                        <input id="maskPriority" class="form-input form-control-sm col-sm-6" type="text"
-                            name="priority_mask" value="0" />
-                        <div id="errorMaskPriority" class="invalid-feedback">Wrong format</div>
-                    </div>
-                </div>
-
-                <!-- Index -->
-                <div class="form-group form-inline ">
-                    <div class="col-sm-3  font-weight-bold text-right">
-                        Index filter:
-                    </div>
-                    <div class="col-sm-3 ">
-                        <input id="filterIndex" class="form-input form-control-sm col-sm-6" type="text"
-                            name="index_filter" value="0x00" />
-                        <div id="errorFilterIndex" class="invalid-feedback">Wrong format</div>
-                    </div>
-                    <div class="col-sm-3  font-weight-bold text-right">
-                        Index mask:
-                    </div>
-                    <div class="col-sm-3">
-                        <input id="maskIndex" class="form-input form-control-sm col-sm-6" type="text" name="index_mask"
-                            value="0x00" />
-                        <div id="errorMaskIndex" class="invalid-feedback">Wrong format</div>
-                    </div>
-                </div>
-
-                <!-- Zone -->
-                <div class="form-group form-inline ">
-                    <div class="col-sm-3  font-weight-bold text-right">
-                        Zone filter:
-                    </div>
-                    <div class="col-sm-3 ">
-                        <input id="filterZone" class="form-input form-control-sm col-sm-6" type="text"
-                            name="zone_filter" value="0x00" />
-                        <div id="errorFilterZone" class="invalid-feedback">Wrong format</div>
-                    </div>
-                    <div class="col-sm-3 font-weight-bold text-right">
-                        Zone mask:
-                    </div>
-                    <div class="col-sm-3">
-                        <input id="maskZone" class="form-input form-control-sm col-sm-6" type="text" name="zone_mask"
-                            value="0x00" />
-                        <div id="errorMaskZone" class="invalid-feedback">Wrong format</div>
-                    </div>
-                </div>
-
-                <!-- Subzone -->
-                <div class="form-group form-inline">
-                    <div class="col-sm-3  font-weight-bold text-right">
-                        Subzone filter:
-                    </div>
-                    <div class="col-sm-3 ">
-                        <input id="filterSubZone" class="form-input form-control-sm col-sm-6" type="text"
-                            name="subzone_filter" value="0x00" />
-                        <div id="errorFilterSubZone" class="invalid-feedback">Wrong format</div>
-                    </div>
-                    <div class="col-sm-3 font-weight-bold text-right">
-                        Zone mask:
-                    </div>
-                    <div class="col-sm-3">
-                        <input id="maskSubZone" class="form-input form-control-sm col-sm-6" type="text"
-                            name="subzone_mask" value="0x00" />
-                        <div id="errorMaskSubZone" class="invalid-feedback">Wrong format</div>
-                    </div>
-                </div>
-
-                <!-- GUID filter -->
-                <div class="form-group form-inline">
-                    <div class="col-sm-3 font-weight-bold text-right">GUID filter:</div>
-                    <div class="col-sm-9">
-                        <input id="filterGuid" class="form-input form-control-sm col-sm-6" type="text"
-                            name="GUID_filter" placeholder="Enter GUID filter" name="description"
-                            value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" required />
-                        <div id="errorFilterGuid" class="invalid-feedback">There must be a valid (or empty) GUID filter
-                            defined.</div>
-                    </div>
-                </div>
-
-                <!-- GUID mask -->
-                <div class="form-group form-inline">
-                    <div class="col-sm-3 font-weight-bold text-right">GUID mask:</div>
-                    <div class="col-sm-9">
-                        <input id="maskGuid" class="form-input form-control-sm col-sm-6" type="text" name="GUID_mask"
-                            placeholder="Enter GUID mask" name="description"
-                            value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" required />
-                        <div id="errorMaskGuid" class="invalid-feedback">There must be a valid (or empty) GUID mask
-                            defined.
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <hr />
-                </div>
-
+            <div class="row">
                 <div class="col-sm-12 text-center">
-                    <button id="btnLoad" type="button" class="btn-sm btn-warning">Load filter...</button>
-                    <button id="btnSave" type="button" class="btn-sm btn-warning">Save filter...</button>
-                    <button id="btnGuidFilterWiz" type="button" class="btn-sm btn-warning">GUID filter
-                        wizard...</button>
-                    <button id="btnWizard" type="button" class="btn-sm btn-warning">Setup wizard...</button>
-                    <button id="btnClear" type="button" class="btn-sm btn-warning">Clear</button></div>
-                <div>
-                    <hr />
+                    <button id="btnCancel" type="submit" class="btn-sm">Cancel</button>
+                    <button id="btnSubmit" type="submit" class="btn-sm btn-default"><span class="octicon octicon-check"
+                            aria-hidden="true"></span>OK</button>
+                    <i class="opticon octicon-mark-github"></i>
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="col-sm-12 text-center">
-                        <button id="btnCancel" type="submit" class="btn-sm btn-default">Cancel</button>
-                        <button id="btnSubmit" type="submit" class="btn-sm btn-default"><span
-                                class="octicon octicon-check" aria-hidden="true"></span>OK</button>
-                        <i class="opticon octicon-mark-github"></i>
-                    </div>
-                </div>
-
-            </form>
+        </form>
 
     </div>
 
@@ -226,6 +226,7 @@
 <script>
     const { remote, ipcRenderer } = require('electron');
     const { app, dialog } = remote;
+    const fs = require('fs');
     const win = remote.getCurrentWindow();
     const sprintf = require('sprintf-js').sprintf;
     const vscp = require('./src/vscp');                // TODO: use module
@@ -312,14 +313,14 @@
             $("#errorFilterZone").removeClass("d-block");
         }
 
-        if ((vscp.readValue($("#filterSubZone").val()) > 0xff) ||
-            (vscp.readValue($("#filterSubZone").val()) < 0)) {
-            $("#errorFilterSubZone").html("Filter subzone must be greater than zero and less than 256.");
-            $("#errorFilterSubZone").addClass("d-block");
+        if ((vscp.readValue($("#filterSubzone").val()) > 0xff) ||
+            (vscp.readValue($("#filterSubzone").val()) < 0)) {
+            $("#errorFilterSubzone").html("Filter subzone must be greater than zero and less than 256.");
+            $("#errorFilterSubzone").addClass("d-block");
             rv = false;
         }
         else {
-            $("#errorFilterSubZone").removeClass("d-block");
+            $("#errorFilterSubzone").removeClass("d-block");
         }
 
 
@@ -384,14 +385,14 @@
             $("#errorMaskZone").removeClass("d-block");
         }
 
-        if ((vscp.readValue($("#maskSubZone").val()) > 0xff) ||
-            (vscp.readValue($("#maskSubZone").val()) < 0)) {
-            $("#errorMaskSubZone").html("Mask subzone must be greater than zero and less than 256.");
-            $("#errorMaskSubZone").addClass("d-block");
+        if ((vscp.readValue($("#maskSubzone").val()) > 0xff) ||
+            (vscp.readValue($("#maskSubzone").val()) < 0)) {
+            $("#errorMaskSubzone").html("Mask subzone must be greater than zero and less than 256.");
+            $("#errorMaskSubzone").addClass("d-block");
             rv = false;
         }
         else {
-            $("#errorMaskSubZone").removeClass("d-block");
+            $("#errorMaskSubzone").removeClass("d-block");
         }
 
         let maskGuid = vscp.strToGuid($("#maskGuid").val());
@@ -417,20 +418,20 @@
         filter = params.filter;
 
         $("#filterName").val(filter.name);
-        $("#filterClass").val(sprintf('0x%04x',filter.filterClass));
-        $("#filterType").val(sprintf('0x%04x',filter.filterType));
+        $("#filterClass").val(sprintf('0x%04x', filter.filterClass));
+        $("#filterType").val(sprintf('0x%04x', filter.filterType));
         $("#filterPriority").val(filter.filterPriority);
-        $("#filterIndex").val(sprintf('0x%02x',filter.filterIndex));
-        $("#filterZone").val(sprintf('0x%02x',filter.filterZone));
-        $("#filterSubŹone").val(sprintf('0x%02x',filter.filterSubZone));
+        $("#filterIndex").val(sprintf('0x%02x', filter.filterIndex));
+        $("#filterZone").val(sprintf('0x%02x', filter.filterZone));
+        $("#filterSubzone").val(sprintf('0x%02x', filter.filterSubzone));
         $("#filterGuid").val(filter.filterGuid);
 
-        $("#maskClass").val(sprintf('0x%04x',filter.maskClass));
-        $("#maskType").val(sprintf('0x%04x',filter.maskType));
+        $("#maskClass").val(sprintf('0x%04x', filter.maskClass));
+        $("#maskType").val(sprintf('0x%04x', filter.maskType));
         $("#maskPriority").val(filter.maskPriority);
-        $("#maskIndex").val(sprintf('0x%02x',filter.maskIndex));
-        $("#maskZone").val(sprintf('0x%02x',filter.maskZone));
-        $("#maskSubŹone").val(sprintf('0x%02x',filter.maskSubZone));
+        $("#maskIndex").val(sprintf('0x%02x', filter.maskIndex));
+        $("#maskZone").val(sprintf('0x%02x', filter.maskZone));
+        $("#maskSubzone").val(sprintf('0x%02x', filter.maskSubzone));
         $("#maskGuid").val(filter.maskGuid);
 
         ///////////////////////////////////////////////////////////////////////////
@@ -466,16 +467,16 @@
                 filter.filterPriority = vscp.readValue($("#filterPriority").val());
                 filter.filterIndex = vscp.readValue($("#filterIndex").val());
                 filter.filterZone = vscp.readValue($("#filterZone").val());
-                filter.filterSubZone = vscp.readValue($("#filterSubZone").val());
-                filter.filterGuid= vscp.readValue($("#filterGuid").val());
+                filter.filterSubzone = vscp.readValue($("#filterSubzone").val());
+                filter.filterGuid = $("#filterGuid").val();
 
                 filter.maskClass = vscp.readValue($("#maskClass").val());
                 filter.maskType = vscp.readValue($("#maskType").val());
                 filter.maskPriority = vscp.readValue($("#maskPriority").val());
                 filter.maskIndex = vscp.readValue($("#maskIndex").val());
                 filter.maskZone = vscp.readValue($("#maskZone").val());
-                filter.maskSubZone = vscp.readValue($("#maskSubZone").val());
-                filter.maskGuid= vscp.readValue($("#maskGuid").val());
+                filter.maskSubzone = vscp.readValue($("#maskSubzone").val());
+                filter.maskGuid = $("#maskGuid").val();
 
                 console.log(filter);
                 ipcRenderer.send("dialog-close", filter);
@@ -488,8 +489,54 @@
         //
 
         $("#btnLoad").on('click', function (e) {
+            let pathHome = ipcRenderer.sendSync("get-home-folder");
+            remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
+                title: 'Import VSCP filter',
+                properties: ['openFile', 'showHiddenFiles'],
+                defaultPath: '/home/akhe/.vscpworks',
+                filters: [
+                    { name: 'VSCP event filter', extensions: ['filter', 'json'] },
+                    { name: 'All Files', extensions: ['*'] }
+                ]
+            }, (path) => {
+                // Read in the filter if it is there
+                try {
+                    if (fs.existsSync(path[0])) {
 
+                        let rawdata = fs.readFileSync(path[0]);
+                        newfilter = JSON.parse(rawdata);
 
+                        $("#filterName").val(newfilter.name);
+                        $("#filterClass").val(sprintf('0x%04x', newfilter.filterClass));
+                        $("#filterType").val(sprintf('0x%04x', newfilter.filterType));
+                        $("#filterPriority").val(newfilter.filterPriority);
+                        $("#filterIndex").val(sprintf('0x%02x', newfilter.filterIndex));
+                        $("#filterZone").val(sprintf('0x%02x', newfilter.filterZone));
+                        $("#filterSubzone").val(sprintf('0x%02x', newfilter.filterSubzone));
+                        $("#filterGuid").val(newfilter.filterGuid);
+
+                        $("#maskClass").val(sprintf('0x%04x', newfilter.maskClass));
+                        $("#maskType").val(sprintf('0x%04x', newfilter.maskType));
+                        $("#maskPriority").val(newfilter.maskPriority);
+                        $("#maskIndex").val(sprintf('0x%02x', newfilter.maskIndex));
+                        $("#maskZone").val(sprintf('0x%02x', newfilter.maskZone));
+                        $("#maskSubzone").val(sprintf('0x%02x', newfilter.maskSubzone));
+                        $("#maskGuid").val(newfilter.maskGuid);
+                    }
+                }
+                catch (err) {
+                    let options = {
+                        type: 'error',
+                        buttons: ['OK'],
+                        title: 'Import failed',
+                        message: 'Unable to import filter, check format and access rights to the file.',
+                        detail: 'Error: ' + err.message
+                    }
+                    remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
+                    console.error("Failed to fetch filter from " + path[0]);
+                    console.error(err);
+                }
+            });
         });
 
         ///////////////////////////////////////////////////////////////////////////
@@ -497,6 +544,52 @@
         //
 
         $("#btnSave").on('click', function (e) {
+            let pathHome = ipcRenderer.sendSync("get-home-folder");
+            remote.dialog.showSaveDialog(remote.getCurrentWindow(), {
+                title: 'Export VSCP filter',
+                properties: ['openFile', 'showHiddenFiles'],
+                defaultPath: '/home/akhe/.vscpworks/newfilter.filter',
+                filters: [
+                    { name: 'VSCP event filter', extensions: ['filter', 'json'] },
+                    { name: 'All Files', extensions: ['*'] }
+                ]
+            }, (path) => {
+                // Read in connections if they are there
+                try {
+                    //Check if file exist
+                    filter.name = $("#filterName").val().trim();
+                    filter.filterClass = vscp.readValue($("#filterClass").val());
+                    filter.filterType = vscp.readValue($("#filterType").val());
+                    filter.filterPriority = vscp.readValue($("#filterPriority").val());
+                    filter.filterIndex = vscp.readValue($("#filterIndex").val());
+                    filter.filterZone = vscp.readValue($("#filterZone").val());
+                    filter.filterSubzone = vscp.readValue($("#filterSubzone").val());
+                    filter.filterGuid = $("#filterGuid").val();
+
+                    filter.maskClass = vscp.readValue($("#maskClass").val());
+                    filter.maskType = vscp.readValue($("#maskType").val());
+                    filter.maskPriority = vscp.readValue($("#maskPriority").val());
+                    filter.maskIndex = vscp.readValue($("#maskIndex").val());
+                    filter.maskZone = vscp.readValue($("#maskZone").val());
+                    filter.maskSubzone = vscp.readValue($("#maskSubzone").val());
+                    filter.maskGuid = $("#maskGuid").val();
+
+                    fs.writeFileSync(path, JSON.stringify(filter), 'utf-8');
+
+                }
+                catch (err) {
+                    let options = {
+                        type: 'error',
+                        buttons: ['OK'],
+                        title: 'Export failed',
+                        message: 'Unable to export filter, check format and access rights to the folder.',
+                        detail: 'Error: ' + err.message
+                    }
+                    remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
+                    console.error("Failed to write filter to " + path[0]);
+                    console.error(err);
+                }
+            });
         });
 
         ///////////////////////////////////////////////////////////////////////////
@@ -504,6 +597,13 @@
         //
 
         $("#btnGuidFilterWiz").on('click', function (e) {
+            let options = {
+                type: 'info',
+                buttons: ['OK'],
+                title: 'Development zone',
+                message: 'Sorry, this functionality is now available yet.',
+            }
+            remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
         });
 
         ///////////////////////////////////////////////////////////////////////////
@@ -511,6 +611,13 @@
         //
 
         $("#btnWizard").on('click', function (e) {
+            let options = {
+                type: 'info',
+                buttons: ['OK'],
+                title: 'Development zone',
+                message: 'Sorry, this functionality is now available yet.',
+            }
+            remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
         });
 
         ///////////////////////////////////////////////////////////////////////////
@@ -526,7 +633,7 @@
             $("#filterPriority").val('0');
             $("#filterIndex").val('0x00');
             $("#filterZone").val('0x00');
-            $("#filterSubZone").val('0x00');
+            $("#filterSubzone").val('0x00');
             $("#filterGuid").val('00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00');
 
             $("#maskClass").val('0x0000');
@@ -534,7 +641,7 @@
             $("#maskPriority").val('0');
             $("#maskIndex").val('0x00');
             $("#maskZone").val('0x00');
-            $("#maskSubZone").val('0x00');
+            $("#maskSubzone").val('0x00');
             $("#maskGuid").val('00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00');
 
             validate(); // Reset any errors

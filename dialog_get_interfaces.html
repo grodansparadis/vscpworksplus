@@ -6,9 +6,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
+    <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
 </head>
 
 <body class="bg-light">
@@ -17,10 +18,11 @@
         <div class="col-sm-12 text-center">
             <h2>Remote interfaces</h2>
         </div>
-        <form action="/action_page.php" class="needs-validation" novalidate>
+        <div id="hostname"></div>
+        <form action="#" class="needs-validation" novalidate>
 
             <div class="form-group">
-                <table class="table table-striped table-hover " id="interface-table">
+                <table id="interface-table-id" class="table table-striped table-hover " id="interface-table">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -29,7 +31,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="clickable-row" style="cursor: pointer">
+                        <!-- <tr class="clickable-row" style="cursor: pointer">
                             <td>CAN4VSCP</td>
                             <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
                             <td>Type=2 CANAL DRIVER</td>
@@ -43,34 +45,230 @@
                             <td>Dooley</td>
                             <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
                             <td>Type=, super driver hghh ghgh hgghg ghhgh ghgh</td>
-                        </tr>
+                        </tr> -->
                     </tbody>
                 </table>
             </div>
 
-            <div class="col-sm-12 trxt-center">
+            <div class="col-sm-12 text-center">
 
                 <div>
                     <hr />
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-12" align="center">
-                        <button type="submit" class="btn-lg btn-default">Cancel</button>
-                        <button type="submit" class="btn-lg btn-default">OK</button>
+                    <div class="col-sm-12" text-center">
+                        <button type="submit" class="btn-sm btn-default">Cancel</button>
+                        <button type="submit" class="btn-sm btn-default">OK</button>
                     </div>
                 </div>
         </form>
 
     </div>
 
-    <script>
-        // Select table row
-        $('#interface-table').on('click', '.clickable-row', function (event) {
-            $(this).addClass('bg-info').siblings().removeClass('bg-info');
-        });
-    </script>
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = jQuery = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
 
 </body>
+
+<script>
+    const { remote, ipcRenderer } = require('electron');
+    const { app, dialog } = remote;
+    const win = remote.getCurrentWindow();
+    const vscp = require('./src/vscp');                // TODO: use module
+    const vscp_tcp_Client = require('./src/vscptcp');  // TODO: use module
+
+    let guid = '';
+    let testProgress = '';
+    let vscpif = [];
+
+    ///////////////////////////////////////////////////////////////////////////
+    // getInterfaces
+    //
+
+    const getInterfaces = async (options) => {
+
+        // Defaults
+        let remoteHost = '';
+        let remotePort = 9598;
+        let user = '';
+        let password = '';
+
+        if ('undefined' === typeof options) {
+            throw new Error("options is not defined.");
+        }
+
+        if ('string' !== typeof options.host) {
+            throw new Error("options.host is not defined.");
+        }
+
+        if (-1 == options.host.search(':')) {
+            // No port given - use default
+            remoteHost = options.host;
+        }
+        else {
+            let sep = options.host.split(':');
+            remoteHost = sep[0];
+            if (sep.length > 1) remotePort = parseInt(sep[1], 10);
+        }
+
+        if ('string' === typeof options.username) {
+            user = options.username;
+        }
+
+        if ('string' === typeof options.password) {
+            password = options.password;
+        }
+
+        let response = {};
+        let vscp_tcp_client = new vscp_tcp_Client();
+
+        response = await vscp_tcp_client.connect(
+            {
+                host: remoteHost,
+                port: remotePort,
+                timeout: 10000,
+                onSuccess: null
+            });
+        console.log(response);
+        if ('success' === response.result) {
+            testProgress = "connection OK\n";
+        }
+
+        if (user.length) {
+            response = await vscp_tcp_client.user({ username: user });
+            console.log(response);
+            if ('success' === response.result) {
+                testProgress += "user OK\n";
+            }
+        }
+
+        if (password.length) {
+            response = await vscp_tcp_client.password({ password: password });
+            console.log(response);
+            if ('success' === response.result) {
+                testProgress += "pass OK\n";
+            }
+        }
+
+        vscpif = response = await vscp_tcp_client.getInterfaces();
+        console.log(response);
+        if ('success' === response.result) {
+            testProgress += "interface OK\n";
+        }
+
+        response = await vscp_tcp_client.disconnect();
+        console.log(response);
+        if ('success' === response.result) {
+            testProgress += "disconnect OK\n"
+        }
+
+        $("#btnTestConnection").removeClass('connerr').addClass('active ');
+        console.log(testProgress);
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // addInterfaceRow
+    //
+
+    var addInterfaceRow = function (name, guid, type) {
+
+        let tblInterface = document.getElementById("interface-table-id");
+        let tableRef = tblInterface.getElementsByTagName('tbody')[0];
+
+        let row = tableRef.insertRow(-1);
+        row.classList.add("clickable-row");
+        row.style.cursor = "pointer";
+
+        // Name
+        let cellName = row.insertCell(0);
+        cellName.innerHTML = name;
+
+        // GUID
+        let cellGuid = row.insertCell(1);
+        cellGuid.innerHTML = guid;
+
+        // Type
+        let cellType = row.insertCell(2);
+        cellType.innerHTML = type;
+        cellType.classList.add("ctext");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Document ready
+    //
+
+    $(document).ready(function ($) {
+
+        var options = ipcRenderer.sendSync("dialog-open", "");
+        var params = JSON.parse(options);
+        console.log(params);
+        $("#hostname").html("<kbd>Host:</kbd> " + params.host);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Cancel
+        //
+
+        $("#btnCancel").on('click', function (e) {
+            ipcRenderer.send("dialog-close", '');
+            remote.getCurrentWindow().close();
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Save selected interface
+        //
+
+        $("#btnSubmit").on('click', function (e) {
+            e.preventDefault();
+            ipcRenderer.send("dialog-close", guid);
+            remote.getCurrentWindow().close();
+        });
+
+        // Select table row
+        $('#interface-table-id').on('click', '.clickable-row', function (event) {
+            $(this).addClass('bg-info').siblings().removeClass('bg-info');
+            guid = event.currentTarget.cells[1].innerHTML;
+            console.log(event.currentTarget.cells[1].innerHTML);
+        });
+
+
+        getInterfaces({
+            host: params.host,
+            username: params.username,
+            password: params.password
+        })
+            .then(res => {
+                console.log(vscpif);
+                vscpif.forEach((item) => {
+                    addInterfaceRow(item.name, item.guid, item.type);
+                });
+            })
+            .catch(err => {
+
+                let options = {
+                    type: 'error',
+                    buttons: ['OK'],
+                    title: 'Interface failure',
+                    message: 'Failed to get interfaces from remote host/device',
+                    detail: 'Error: ' + err.message + ' \n' + testProgress
+                }
+                dialog.showMessageBox(remote.getCurrentWindow(), options);
+
+                console.log("Failed to get interfaces");
+                console.log(err);
+
+                $(this).removeClass('active').addClass('connerr ');
+
+                $("#errorHost").addClass("d-block");
+                $("#errorHost").html(err.message);
+
+            });
+
+    });
+</script>
 
 </html>

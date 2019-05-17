@@ -97,7 +97,7 @@
       </div>
       <div class="row">
         <div class="col-sm-12 text-center">
-          <button id="btnCancel" type="submit" class="btn-sm btn-default">Cancel</button>
+          <button id="btnCancel" type="submit" class="btn-sm">Cancel</button>
           <button id="btnSubmit" type="submit" class="btn-sm btn-default"><span class="octicon octicon-check"
               aria-hidden="true"></span>OK</button>
           <i class="opticon octicon-mark-github"></i>
@@ -135,14 +135,14 @@
     "filterType": 0,
     "filterIndex": 0,
     "filterZone": 0,
-    "filterSubZone": 0,
+    "filterSubzone": 0,
     "filterGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
     "maskPriority": 0,
     "maskClass": 0,
     "maskType": 0,
     "maskIndex": 0,
     "maskZone": 0,
-    "maskSubZone": 0,
+    "maskSubzone": 0,
     "maskGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
   }
 
@@ -295,9 +295,6 @@
 
     var options = ipcRenderer.sendSync("dialog-open", "");
     var params = JSON.parse(options);
-    // document.getElementById("label").innerHTML = params.label;
-    // document.getElementById("data").value = params.value;
-    // document.getElementById("ok").value = params.ok;
 
     // Context menu
     /* const myContextMenu = remote.Menu.buildFromTemplate([
@@ -358,7 +355,6 @@
           result.bSSL = false;
         }
         result.filter = filter;
-        result.mask = mask;
 
         ipcRenderer.send("dialog-close", result);
         remote.getCurrentWindow().close();
@@ -395,7 +391,6 @@
           message: 'Failed to connect to remote host/device',
           detail: 'Error: ' + err.message + ' \n' + testProgress
         }
-
         dialog.showMessageBox(remote.getCurrentWindow(), options);
 
         console.log("Test failed");
@@ -410,6 +405,24 @@
 
       });
 
+    });
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Get/set interface
+    //
+
+    $("#btnGetInterfaces").on('click', function (e) {
+      interface = ipcRenderer.sendSync("open-modal-dialog",
+        {
+          title: "Get/Set interface",
+          width: 800, height: 460,
+          win: remote.getCurrentWindow(),
+          url: '../dialog_get_interfaces.html',
+          interface: $("#interface").val(),
+          host: $("#remoteHost").val(),
+          username: $("#username").val(),
+          password: $("#password").val()
+        });
     });
 
   });

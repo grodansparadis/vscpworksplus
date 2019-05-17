@@ -53,13 +53,14 @@
             </div>
 
             <div class="col-sm-12 text-center">
-                <button id="btnWizard" type="button" class="btn btn-warning  form-control-sm">Configuration wizard</button>
+                <button id="btnWizard" type="button" class="btn btn-warning  form-control-sm">Configuration
+                    wizard</button>
                 <div>
                     <hr />
                 </div>
                 <div class="row">
                     <div class="col-sm-12 text-center">
-                        <button id="btnCancel" type="submit" class="btn-sm btn-default">Cancel</button>
+                        <button id="btnCancel" type="submit" class="btn-sm">Cancel</button>
                         <button id="btnSubmit" type="submit" class="btn-sm btn-default">OK</button>
                     </div>
                 </div>
@@ -79,8 +80,10 @@
 <script>
     const { remote, ipcRenderer } = require('electron');
     const { app } = remote;
-    const vscp = require('./src/vscp');
     const fs = require('fs');
+    const path = require('path');
+    const vscp = require('./src/vscp');
+
 
     ///////////////////////////////////////////////////////////////////////////
     // validate
@@ -104,7 +107,7 @@
 
         // Is name already used
         if (null != ipcRenderer.sendSync("get-named-connection", $("#driverName").val().trim())) {
-            console.log('Name is already used: [' + $("#driverName").val().trim() + ']' );
+            console.log('Name is already used: [' + $("#driverName").val().trim() + ']');
             $("#errorName").html("Name must be unique and this name is already used.");
             $("#errorName").addClass("d-block");
             rv = false;
@@ -174,17 +177,37 @@
 
         // Path
         $("#btnSelectPath").on('click', (e) => {
-            let answer = ipcRenderer.sendSync("dialog-file-select",
-                {
-                    win: remote.getCurrentWindow(),
-                    title: "Select CANAL driver",
-                    properties: [
-                        "openFile"
-                    ]
-                });
-            if (null != answer) {
-                $("#driverPath").val(answer[0]);
-            }
+
+            let drvpath = ipcRenderer.sendSync("get-daemon-folder");
+            console.log(drvpath);
+            drvpath = path.join( drvpath, "/drivers/level1" );
+            console.log(drvpath);
+
+            remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
+                title: "Select CANAL driver",
+                properties: ['openFile'],
+                defaultPath: drvpath,
+                filters: [
+                    { name: 'VSCP CANAL drivers', extensions: ['dll', 'dl', 'so'] },
+                    { name: 'All Files', extensions: ['*'] }
+                ]
+            }, (answer) => {
+                // Read in the filter if it is there
+                if (('undefined' !== typeof answer) &&
+                    (fs.existsSync(answer[0]))) {
+                    $("#driverPath").val(answer[0]);
+                }
+                else {
+                    let options = {
+                        type: 'error',
+                        buttons: ['OK'],
+                        title: 'Select CANAL driver failed',
+                        message: 'Unable to select a CANAL driver.',
+                    }
+                    remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
+                }
+            });
+
         });
 
         // Wizard

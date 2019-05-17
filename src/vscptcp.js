@@ -480,7 +480,7 @@ Client.prototype.parseInterface = function (result) {
             let obj = {};
             obj.index = parseInt(items[0]);
             obj.type = parseInt(items[1]);
-            obj.guid = vscp.strToGuid(items[2]);
+            obj.guid = items[2];
             obj.name = items[3].split('|')[0];
             let startStr = items[3].split('|')[1].substr()
             obj.started = startStr.substr(startStr.length - 19);
@@ -613,7 +613,7 @@ Client.prototype.parseGUID = function (result) {
     if ((result.response.length >= 2) &&
         (result.command === 'GETGUID') &&
         (result.response[cntElements - 1]).substr(0, 3) === '+OK') {
-        GUID = vscp.strToGuid(result.response[cntElements - 2]);
+        GUID = result.response[cntElements - 2];
         result.guid = GUID;
     }
 
@@ -1881,7 +1881,7 @@ Client.prototype.setFilter = function (options) {
             filterGuid = options.filterGuid;
         } else if ("string" === typeof options.filterGuid) {
 
-            filterGuid = vscp.strToGuid(options.filterGuid);
+            filterGuid = options.filterGuid;
 
             if (16 !== filterGuid.length) {
                 console.error(vscp.getTime() + " GUID filter is invalid.");
@@ -1969,7 +1969,7 @@ Client.prototype.setMask = function (options) {
             maskGuid = options.maskGuid;
         } else if ("string" === typeof options.maskGuid) {
 
-            maskGuid = vscp.strToGuid(options.maskGuid);
+            maskGuid = options.maskGuid;
 
             if (16 !== maskGuid.length) {
                 console.error(vscp.getTime() + " GUID mask is invalid.");
@@ -2235,9 +2235,8 @@ Client.prototype.setGUID = async function (options) {
 
     } else if ("string" === typeof options.guid) {
 
-        guid = vscp.strToGuid(options.guid);
-
-        if (16 !== guid.length) {
+        guidArray = vscp.strToGuid(options.guid);
+        if (16 !== guidArray.length) {
             console.error(vscp.getTime() + " GUID is invalid.");
             reject(Error("GUID is invalid."));
             return;

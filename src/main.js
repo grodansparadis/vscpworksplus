@@ -19,17 +19,45 @@ let connections = {};   // Defined connections
 let mainWindow;         // Initial window
 let childWindows = [];
 
-let home = path.join(app.getPath('home'), ".vscpworks");
-console.log('Homefolder :' + home);
+let pathHome = path.join(app.getPath('home'), ".vscpworks");
+console.log('Homefolder :' + pathHome);
+
+let pathVSCP = '';
+
+console.log("Platform: " + os.platform() );
+switch (os.platform()) {
+
+  case "aix":
+    break;
+
+  case "darwin":
+    break;
+
+  case "linux":
+    pathVSCP = "/srv/vscp/";
+    break;
+
+  case "freebsd":
+    break;
+
+  case "openbsd":
+    break;
+
+  case "sunos":
+    break;
+
+  case "win32":
+    break;
+}
 
 // Create home folder if it does not exist
-if (!fs.existsSync(home)) {
-  fs.mkdir(home, { recursive: true }, (err) => {
+if (!fs.existsSync(pathHome)) {
+  fs.mkdir(pathHome, { recursive: true }, (err) => {
     if (err) throw err;
   });
 }
 
-let pathConnectConfig = path.join(home, 'connections.json');
+let pathConnectConfig = path.join(pathHome, 'connections.json');
 console.log(pathConnectConfig);
 // Read in connections if they are there
 try {
@@ -163,13 +191,7 @@ ipcMain.on("open-modal-dialog", (event, arg) => {
 
 //-----------------------------------------------------------------------------
 
-///////////////////////////////////////////////////////////////////////////////
-// Called by the application to open file select dialog
-//
 
-ipcMain.on("dialog-file-select", (event, w, options) => {
-  event.returnValue = dialog.showOpenDialog(dialogWindow, options);
-});
 
 ///////////////////////////////////////////////////////////////////////////////
 // Called by the application to get the connection object
@@ -186,7 +208,7 @@ ipcMain.on('get-connection-object', (event, arg) => {
 ipcMain.on('get-named-connection', (event, name) => {
   rv = null;
   for (let i = 0; i < connections.vscpinterface.length; i++) {
-    if ( "undefined" === typeof connections.vscpinterface[i].name ) continue;
+    if ("undefined" === typeof connections.vscpinterface[i].name) continue;
     if (name.toLowerCase() === connections.vscpinterface[i].name.toLowerCase()) {
       rv = connections.vscpinterface[i];
       console.log('MATCH');
@@ -208,11 +230,28 @@ ipcMain.on('add-connection', (event, item) => {
 });
 
 ///////////////////////////////////////////////////////////////////////////////
+// Called by the application to get the home folder
+//
+
+ipcMain.on('get-home-folder', (event) => {
+  event.returnValue = pathHome
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Called by the application to get the VSCP daemon folder
+//
+
+ipcMain.on('get-daemon-folder', (event) => {
+  event.returnValue = pathVSCP
+});
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Called by the application to get a named connection object
 //
 
 ipcMain.on('show-dialog-message', (event, parent, options) => {
-  dialog.showMessageBox( mainWindow, options, () => {
+  dialog.showMessageBox(mainWindow, options, () => {
 
   });
 });
