@@ -58,7 +58,7 @@
       </div>
 
       <div class="form-group">
-        <label class="font-weight-bold" for="pwd">GUID:</label>
+        <label class="font-weight-bold" for="pwd">GUID for connection (optional):</label>
         <input id="guid" type="text" class="form-control form-control-sm" placeholder="Enter optional GUID" name="guid">
       </div>
 
@@ -295,6 +295,11 @@
 
     var options = ipcRenderer.sendSync("dialog-open", "");
     var params = JSON.parse(options);
+    console.log(params);
+    if ( 'undefined' !== typeof params.connection ) {
+      // Fill in initial data
+      $("#connectionName").val(params.connection.name);
+    }
 
     // Context menu
     /* const myContextMenu = remote.Menu.buildFromTemplate([
@@ -412,10 +417,10 @@
     //
 
     $("#btnGetInterfaces").on('click', function (e) {
-      interface = ipcRenderer.sendSync("open-modal-dialog",
+      let result  = ipcRenderer.sendSync("open-modal-dialog",
         {
           title: "Get/Set interface",
-          width: 800, height: 460,
+          width: 900, height: 500,
           win: remote.getCurrentWindow(),
           url: '../dialog_get_interfaces.html',
           interface: $("#interface").val(),
@@ -423,6 +428,10 @@
           username: $("#username").val(),
           password: $("#password").val()
         });
+        console.log(result)
+        if (result.length) {
+          password: $("#interface").val(result)
+        }
     });
 
   });

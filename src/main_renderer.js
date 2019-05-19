@@ -2,6 +2,7 @@ const { remote, ipcRenderer } = require('electron');
 const { Menu, MenuItem, app } = remote;
 
 let tblMain = document.getElementById("main-table-id");
+let selected_name = '';
 
 const menu = new Menu()
 
@@ -83,12 +84,15 @@ $(document).ready(function ($) {
         var values = [];
         var count = 0;
 
+        selected_name = event.currentTarget.cells[0].innerHTML;
+        console.log(selected_name);
+
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
         $(this).find("td").each(function () {
             values[count] = $(this).text();
             count++;
         });
-
+        console.log(values)
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -112,7 +116,10 @@ $(document).ready(function ($) {
     //
 
     $('#btnEdit').on('click', function () {
-        editConnection();
+        console.log('btnEdit');
+        if ('' !== selected_name) {
+            editConnection(selected_name);
+        }
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -226,8 +233,8 @@ function addConnection() {
                     win: remote.getCurrentWindow(),
                     url: '../dialog_canal_device.html'
                 });
-                ipcRenderer.send("add-connection", answer );
-                addConnectionRow( answer.name, answer.type );
+            ipcRenderer.send("add-connection", answer);
+            addConnectionRow(answer.name, answer.type);
             break;
 
         case "tcpip":
@@ -238,8 +245,8 @@ function addConnection() {
                     win: remote.getCurrentWindow(),
                     url: '../dialog_tcpip_device.html',
                 });
-                ipcRenderer.send("add-connection", answer );
-                addConnectionRow( answer.name, answer.type );
+            ipcRenderer.send("add-connection", answer);
+            addConnectionRow(answer.name, answer.type);
             break;
 
         case "websocket":
@@ -250,8 +257,8 @@ function addConnection() {
                     win: remote.getCurrentWindow(),
                     url: '../dialog_websocket_device.html'
                 });
-                ipcRenderer.send("add-connection", answer );
-                addConnectionRow( answer.name, answer.type );
+            ipcRenderer.send("add-connection", answer);
+            addConnectionRow(answer.name, answer.type);
             break;
 
         case "rest":
@@ -262,8 +269,8 @@ function addConnection() {
                     win: remote.getCurrentWindow(),
                     url: '../dialog_rest_device.html'
                 });
-                ipcRenderer.send("add-connection", answer );
-                addConnectionRow( answer.name, answer.type );
+            ipcRenderer.send("add-connection", answer);
+            addConnectionRow(answer.name, answer.type);
             break;
 
         default:
@@ -278,16 +285,48 @@ function addConnection() {
 //
 // @return answer - Structure or string containing the answer
 
-function editConnection() {
+function editConnection(name) {
+
+    console.log('aaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+
+    let conn = ipcRenderer.sendSync('get-named-connection',name);
+
     let answer = ipcRenderer.sendSync("open-modal-dialog",
         {
             title: "Edit connection",
-            width: 600, height: 340,
+            width: 600, height: 750,
             win: remote.getCurrentWindow(),
-            url: '../dialog_new_connection.html'
+            url: '../dialog_tcpip_device.html',
+            connection: conn
         });
     return answer;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// removeConnection
+//
+// Remove a new connection
+//
+// @return answer - Structure or string containing the answer
+//
+
+function removeConnection() {
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// cloneConnection
+//
+// Clone a new connection
+//
+// @return answer - Structure or string containing the answer
+//
+
+function cloneConnection() {
+
+}
+
 
 // function openModalCanalDialog() {
 
@@ -320,13 +359,11 @@ var addConnectionRow = function (name, type) {
     let cellName = row.insertCell(0);
     cellName.innerHTML = name;
     cellName.style.width = "800px";
-    //cellName.classList.add("ctext");
 
     // Type
     let cellDescription = row.insertCell(1);
     cellDescription.innerHTML = type;
     cellDescription.style.width = "20%";
-    //cellDescription.classList.add("ctext");
 
     adjustListHeader();
 }

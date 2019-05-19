@@ -211,7 +211,6 @@ ipcMain.on('get-named-connection', (event, name) => {
     if ("undefined" === typeof connections.vscpinterface[i].name) continue;
     if (name.toLowerCase() === connections.vscpinterface[i].name.toLowerCase()) {
       rv = connections.vscpinterface[i];
-      console.log('MATCH');
       break;
     }
   };

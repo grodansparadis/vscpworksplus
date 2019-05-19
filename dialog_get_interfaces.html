@@ -10,24 +10,82 @@
     <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
     <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
     <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
+    <style>
+        table.scroll {
+            width: 100%;
+            /* Optional */
+            border-collapse: collapse;
+            border-spacing: 0;
+            border: 1px solid black;
+        }
+
+        table.scroll tbody,
+        table.scroll thead {
+            display: block;
+            width: 100%;
+        }
+
+        thead tr th {
+            height: 30px;
+            line-height: 30px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.scroll tbody {
+            height: 300px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        table.scroll td.ctext,
+        table.scroll th.ctext {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody {
+            border-top: 1px solid black;
+        }
+
+        tbody td,
+        thead th {
+            /*width: 40%;*/
+            /* Optional */
+            border-right: 1px solid black;
+            /* white-space: nowrap; */
+        }
+
+        tbody td:last-child,
+        thead th:last-child {
+            border-right: none;
+        }
+    </style>
 </head>
 
 <body class="bg-light">
 
-    <div class="container">
-        <div class="col-sm-12 text-center">
-            <h2>Remote interfaces</h2>
-        </div>
-        <div id="hostname"></div>
-        <form action="#" class="needs-validation" novalidate>
+    <div class="container-fluid">
 
-            <div class="form-group">
-                <table id="interface-table-id" class="table table-striped table-hover " id="interface-table">
-                    <thead>
+        <div class="row">
+            <div class="col-sm-12 text-center">
+                <h2>Remote interfaces</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 vh-75 overflow">
+
+                <div id="hostname"></div>
+
+                <table id="interface-table-id"
+                    class="table scroll table-sm table-responsive-md table-hover table-striped table-hover "
+                    id="interface-table">
+                    <thead class="thead-light" style="width: 100%;">
                         <tr>
-                            <th>Name</th>
-                            <th>GUID</th>
-                            <th>Type</th>
+                            <th id="id-head-name" style="width:5000px">Name</th>
+                            <th id="id-head-guid" style="width:40%">GUID</th>
+                            <th id="id-head-type" style="width:20%">Type</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -44,25 +102,28 @@
                         <tr class="clickable-row" style="cursor: pointer">
                             <td>Dooley</td>
                             <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
-                            <td>Type=, super driver hghh ghgh hgghg ghhgh ghgh</td>
+                            <td>Type</td>
                         </tr> -->
                     </tbody>
                 </table>
+
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-sm-12 text-center">
-
                 <div>
                     <hr />
                 </div>
 
                 <div class="row">
                     <div class="col-sm-12" text-center">
-                        <button type="submit" class="btn-sm btn-default">Cancel</button>
-                        <button type="submit" class="btn-sm btn-default">OK</button>
+                        <button id="btnCancel" class="btn-sm btn-default">Cancel</button>
+                        <button id="btnSubmit" type="submit" class="btn-sm btn-default">OK</button>
                     </div>
                 </div>
-        </form>
+            </div>
+        </div>
 
     </div>
 
@@ -187,16 +248,27 @@
         // Name
         let cellName = row.insertCell(0);
         cellName.innerHTML = name;
+        cellName.style.width = "40%";
 
         // GUID
         let cellGuid = row.insertCell(1);
         cellGuid.innerHTML = guid;
+        cellGuid.style.width = "40%";
 
         // Type
         let cellType = row.insertCell(2);
         cellType.innerHTML = type;
         cellType.classList.add("ctext");
+        cellType.style.width = "20%";
+
+        adjustListHeader();
     }
+
+    function adjustListHeader() {
+    document.getElementById('id-head-name').style.width = "5000px";
+    document.getElementById('id-head-guid').style.width = "40%";
+    document.getElementById('id-head-type').style.width = "20%";
+}
 
     ///////////////////////////////////////////////////////////////////////////
     // Document ready
@@ -223,7 +295,8 @@
         //
 
         $("#btnSubmit").on('click', function (e) {
-            e.preventDefault();
+            //e.preventDefault();
+            console.log('submit')
             ipcRenderer.send("dialog-close", guid);
             remote.getCurrentWindow().close();
         });
@@ -232,7 +305,7 @@
         $('#interface-table-id').on('click', '.clickable-row', function (event) {
             $(this).addClass('bg-info').siblings().removeClass('bg-info');
             guid = event.currentTarget.cells[1].innerHTML;
-            console.log(event.currentTarget.cells[1].innerHTML);
+            //console.log(event.currentTarget.cells[1].innerHTML);
         });
 
 
