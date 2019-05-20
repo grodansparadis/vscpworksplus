@@ -265,10 +265,10 @@
     }
 
     function adjustListHeader() {
-    document.getElementById('id-head-name').style.width = "5000px";
-    document.getElementById('id-head-guid').style.width = "40%";
-    document.getElementById('id-head-type').style.width = "20%";
-}
+        document.getElementById('id-head-name').style.width = "5000px";
+        document.getElementById('id-head-guid').style.width = "40%";
+        document.getElementById('id-head-type').style.width = "20%";
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Document ready
@@ -305,9 +305,21 @@
         $('#interface-table-id').on('click', '.clickable-row', function (event) {
             $(this).addClass('bg-info').siblings().removeClass('bg-info');
             guid = event.currentTarget.cells[1].innerHTML;
-            //console.log(event.currentTarget.cells[1].innerHTML);
         });
 
+        // double click table row
+        $('#interface-table-id').on('dblclick', '.clickable-row', function (event) {
+            guid = event.currentTarget.cells[1].innerHTML;
+            $(this).addClass('bg-info').siblings().removeClass('bg-info');
+            ipcRenderer.send("dialog-close", guid);
+            remote.getCurrentWindow().close();
+        });
+
+
+
+        ///////////////////////////////////////////////////////////////////////////////
+        // getInterfaces
+        //
 
         getInterfaces({
             host: params.host,

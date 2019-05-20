@@ -17,6 +17,10 @@
     .connerr {
       background-color: rgb(250, 8, 8) !important;
     }
+
+    body.busy-cursor {
+      cursor: progress;
+    }
   </style>
 </head>
 
@@ -126,6 +130,7 @@
   const vscp_class = require('node-vscp-class');
   const vscp_type = require('node-vscp-type');
 
+  let bAdd = true;        // Add record (false for edit)
   let testProgress = '';  // Holds progress for the connection test
 
   let filter = {
@@ -168,11 +173,13 @@
     }
 
     // Is name already used
-    if (null != ipcRenderer.sendSync("get-named-connection", $("#connectionName").val().trim())) {
-      console.log('Name is already used: [' + $("#connectionName").val().trim() + ']');
-      $("#errorName").html("Name must be unique and this name is already used.");
-      $("#errorName").addClass("d-block");
-      rv = false;
+    if (bAdd) {
+      if (null != ipcRenderer.sendSync("get-named-connection", $("#connectionName").val().trim())) {
+        console.log('Name is already used: [' + $("#connectionName").val().trim() + ']');
+        $("#errorName").html("Name must be unique and this name is already used.");
+        $("#errorName").addClass("d-block");
+        rv = false;
+      }
     }
 
     // Test host
@@ -285,6 +292,7 @@
     }
 
     $("#btnTestConnection").removeClass('connerr').addClass('active ');
+
   }
 
   ///////////////////////////////////////////////////////////////////////////
@@ -296,9 +304,19 @@
     var options = ipcRenderer.sendSync("dialog-open", "");
     var params = JSON.parse(options);
     console.log(params);
-    if ( 'undefined' !== typeof params.connection ) {
+    if ('undefined' !== typeof params.connection) {
+      bAdd = false; // edit
       // Fill in initial data
       $("#connectionName").val(params.connection.name);
+      $("#connectionName").prop("readonly", true);
+      $("#remoteHost").val(params.connection.host);
+      $("#username").val(params.connection.username);
+      $("#password").val(params.connection.password);
+      $("#guid").val(params.connection.guid);
+      $("#interface").val(params.connection.interface);
+      filter = params.connection.filter;
+      $('#bLevel2').prop('checked', params.connection.bLevel2);
+      $('#bSSL').prop('checked', params.connection.bSSL);
     }
 
     // Context menu
@@ -371,7 +389,7 @@
     //
 
     $("#btnSetFilter").on('click', function (e) {
-      filter = ipcRenderer.sendSync("open-modal-dialog",
+      response = ipcRenderer.sendSync("open-modal-dialog",
         {
           title: "Set/Edit filter",
           width: 800, height: 650,
@@ -379,6 +397,9 @@
           url: '../dialog_set_filter.html',
           filter: filter
         });
+      if (null !== response) {
+        filter = response;
+      }
     });
 
     ///////////////////////////////////////////////////////////////////////////
@@ -387,28 +408,38 @@
 
     $("#btnTestConnection").on('click', function (e) {
 
-      testConnection().catch(err => {
+      document.body.classList.add('busy-cursor');
 
-        let options = {
-          type: 'error',
-          buttons: ['OK'],
-          title: 'Host failure',
-          message: 'Failed to connect to remote host/device',
-          detail: 'Error: ' + err.message + ' \n' + testProgress
-        }
-        dialog.showMessageBox(remote.getCurrentWindow(), options);
+      testConnection()
+        .then(() => {
+          document.body.classList.remove('busy-cursor');
+        })
+        .catch(err => {
 
-        console.log("Test failed");
-        console.log(err);
+          let options = {
+            type: 'error',
+            buttons: ['OK'],
+            title: 'Host failure',
+            message: 'Failed to connect to remote host/device',
+            detail: 'Error: ' + err.message + ' \n' + testProgress
+          }
+          dialog.showMessageBox(remote.getCurrentWindow(), options);
 
-        $(this).removeClass('active').addClass('connerr ');
+          console.log("Test failed");
+          console.log(err);
 
-        $("#errorHost").addClass("d-block");
-        $("#errorHost").html(err.message);
+          $(this).removeClass('active').addClass('connerr ');
 
-        console.log('d-block');
+          $("#errorHost").addClass("d-block");
+          $("#errorHost").html(err.message);
 
-      });
+          console.log('d-block');
+
+          document.body.classList.remove('busy-cursor');
+
+        });
+
+      //document.body.classList.remove('busy-cursor');
 
     });
 
@@ -417,7 +448,7 @@
     //
 
     $("#btnGetInterfaces").on('click', function (e) {
-      let result  = ipcRenderer.sendSync("open-modal-dialog",
+      let result = ipcRenderer.sendSync("open-modal-dialog",
         {
           title: "Get/Set interface",
           width: 900, height: 500,
@@ -428,10 +459,10 @@
           username: $("#username").val(),
           password: $("#password").val()
         });
-        console.log(result)
-        if (result.length) {
-          password: $("#interface").val(result)
-        }
+      console.log(result)
+      if (result.length) {
+        password: $("#interface").val(result)
+      }
     });
 
   });

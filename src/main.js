@@ -24,7 +24,7 @@ console.log('Homefolder :' + pathHome);
 
 let pathVSCP = '';
 
-console.log("Platform: " + os.platform() );
+console.log("Platform: " + os.platform());
 switch (os.platform()) {
 
   case "aix":
@@ -63,9 +63,9 @@ console.log(pathConnectConfig);
 try {
   if (fs.existsSync(pathConnectConfig)) {
     let rawdata = fs.readFileSync(pathConnectConfig);
-    console.log(connections);
     connections = JSON.parse(rawdata);
-    //console.log(connections);
+
+    connections.vscpinterface = sortConnections(connections);
   }
 }
 catch (err) {
@@ -73,6 +73,26 @@ catch (err) {
   console.error(err);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// sortConnections
+//
+
+function sortConnections(conn) {
+  nameArray = [];
+  conn.vscpinterface.forEach((item) => {
+    nameArray.push(item.name.toLowerCase());
+  });
+  nameArray.sort();
+
+  newConnections = [];
+  nameArray.forEach((name) => {
+    newConnections.push(conn.vscpinterface.find((element) => {
+      return element.name.toLowerCase() == name;
+    }));
+  });
+
+  return newConnections;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // createMainWindow
@@ -85,6 +105,7 @@ function createMainWindow() {
     show: false,
     height: 420,
     width: 800,
+    icon: path.join(__dirname, 'assets/icons/png/logo_64.png'),
     webPreferences: {
       nodeIntegration: true,
     },
@@ -189,6 +210,8 @@ ipcMain.on("open-modal-dialog", (event, arg) => {
   });
 });
 
+
+
 //-----------------------------------------------------------------------------
 
 
@@ -218,7 +241,7 @@ ipcMain.on('get-named-connection', (event, name) => {
 });
 
 ///////////////////////////////////////////////////////////////////////////////
-// Called by the application to get a named connection object
+// Called to add a new connection object
 //
 
 ipcMain.on('add-connection', (event, item) => {
@@ -227,6 +250,105 @@ ipcMain.on('add-connection', (event, item) => {
 
   }
 });
+
+///////////////////////////////////////////////////////////////////////////////
+// Called to change an existing connection object
+//
+
+ipcMain.on('edit-connection', (event, item) => {
+  //connections.vscpinterface.push(item);
+  for (let i = 0; i < connections.vscpinterface.length; i++) {
+    if (item.name === connections.vscpinterface[i].name) {
+      connections.vscpinterface[i] = item;
+      break;
+    }
+  }
+  if (!saveConnections()) {
+
+  }
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Called to remove a connection object
+//
+
+ipcMain.on('remove-connection', (event, name) => {
+  for (let i = 0; i < connections.vscpinterface.length; i++) {
+    if (name === connections.vscpinterface[i].name) {
+      connections.vscpinterface.splice(i, 1); // Remove it
+      break;
+    }
+  }
+  if (!saveConnections()) {
+
+  }
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Called to clone a connection object
+//
+
+ipcMain.on('clone-connection', (event, name) => {
+
+  let clone = {};
+
+  // Find interface
+  for (let i = 0; i < connections.vscpinterface.length; i++) {
+    if (name === connections.vscpinterface[i].name) {
+      // Alternative clone: var cloneOfA = JSON.parse(JSON.stringify(a));
+      clone = cloneObj(connections.vscpinterface[i]);
+      break;
+    }
+  }
+
+  // Create new unique name
+  let idx = 0;
+  let bFound = true;
+  let newname = '';
+  while (bFound) {
+
+    if (idx) {
+      newname = "clone of " + clone.name + ' ' + idx;
+    }
+    else {
+      newname = "clone of " + clone.name;
+    }
+
+    bFound = false;
+    for (let i = 0; i < connections.vscpinterface.length; i++) {
+      if (newname.toLowerCase() === connections.vscpinterface[i].name.toLowerCase()) {
+        idx++;
+        bFound = true;
+        break;
+      }
+    }
+
+    // Add the clone if not found
+    if (!bFound) {
+      clone.name = newname;
+      connections.vscpinterface.push(clone);
+    }
+
+  }
+
+  if (!saveConnections()) {
+
+  }
+
+});
+
+///////////////////////////////////////////////////////////////////////////////
+  // Clone object
+  //
+
+function cloneObj(obj) {
+  if (null == obj || "object" != typeof obj) return obj;
+  var copy = obj.constructor();
+  for (var attr in obj) {
+    if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+  }
+  return copy;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Called by the application to get the home folder
@@ -320,6 +442,9 @@ function ttt() {
 
 let saveConnections = function () {
   try {
+    // Sort
+    connections.vscpinterface = sortConnections(connections);
+    // Save
     fs.writeFileSync(pathConnectConfig, JSON.stringify(connections), 'utf-8');
     console.log("Saved connection config file");
     return true;

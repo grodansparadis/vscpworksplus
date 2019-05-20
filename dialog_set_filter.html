@@ -416,7 +416,7 @@
         var options = ipcRenderer.sendSync("dialog-open", "");
         var params = JSON.parse(options);
         filter = params.filter;
-
+        console.log(filter);
         $("#filterName").val(filter.name);
         $("#filterClass").val(sprintf('0x%04x', filter.filterClass));
         $("#filterType").val(sprintf('0x%04x', filter.filterType));
@@ -447,8 +447,9 @@
         // Cancel
         //
 
-        $("#btnCancel").on('click', function (e) {
-            ipcRenderer.send("dialog-close", '');
+        $("#btnCancel").on('click', function (e)
+        {
+            ipcRenderer.send("dialog-close", null);
             remote.getCurrentWindow().close();
         });
 

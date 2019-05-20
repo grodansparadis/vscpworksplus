@@ -84,6 +84,7 @@
     const path = require('path');
     const vscp = require('./src/vscp');
 
+    let bAdd = true;        // Add record (false for edit)
 
     ///////////////////////////////////////////////////////////////////////////
     // validate
@@ -106,11 +107,13 @@
         }
 
         // Is name already used
-        if (null != ipcRenderer.sendSync("get-named-connection", $("#driverName").val().trim())) {
-            console.log('Name is already used: [' + $("#driverName").val().trim() + ']');
-            $("#errorName").html("Name must be unique and this name is already used.");
-            $("#errorName").addClass("d-block");
-            rv = false;
+        if (bAdd) {
+            if (null != ipcRenderer.sendSync("get-named-connection", $("#driverName").val().trim())) {
+                console.log('Name is already used: [' + $("#driverName").val().trim() + ']');
+                $("#errorName").html("Name must be unique and this name is already used.");
+                $("#errorName").addClass("d-block");
+                rv = false;
+            }
         }
 
         // Test path
@@ -147,6 +150,19 @@
     // Document is fully loaded
     $(document).ready(function ($) {
 
+        var options = ipcRenderer.sendSync("dialog-open", "");
+        var params = JSON.parse(options);
+        console.log(params);
+        if ('undefined' !== typeof params.connection) {
+            bAdd = false; // edit
+            // Fill in initial data
+            $("#driverName").val(params.connection.name);
+            $("#driverName").prop("readonly", true);
+            $("#driverPath").val(params.connection.path);
+            $("#driverConfig").val(params.connection.config);
+            $("#driverFlags").val(params.connection.flags);
+        }
+
         // Cancel
         $("#btnCancel").on('click', (e) => {
             e.preventDefault();
@@ -180,7 +196,7 @@
 
             let drvpath = ipcRenderer.sendSync("get-daemon-folder");
             console.log(drvpath);
-            drvpath = path.join( drvpath, "/drivers/level1" );
+            drvpath = path.join(drvpath, "/drivers/level1");
             console.log(drvpath);
 
             remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
