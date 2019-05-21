@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>Remote interfaces</title>
+    <title>Add event</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap CSS -->
@@ -12,7 +12,6 @@
     <style>
         table.scroll {
             width: 100%;
-            /* Optional */
             border-collapse: collapse;
             border-spacing: 0;
             border: 1px solid black;
@@ -25,14 +24,22 @@
         }
 
         thead tr th {
-            height: 30px;
-            line-height: 30px;
+            height: 25px;
+            line-height: 15px;
             text-align: left;
             vertical-align: top;
         }
 
-        table.scroll tbody {
-            height: 300px;
+        table.scroll tbody.vscpclass {
+            height: 30vh;
+            background-color: white;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        table.scroll tbody.vscptype {
+            height: 30vh;
+            background-color: white;
             overflow-y: auto;
             overflow-x: hidden;
         }
@@ -49,63 +56,96 @@
 
         tbody td,
         thead th {
-            /*width: 40%;*/
-            /* Optional */
+            overflow: hidden;
+            height: 22px;
+            line-height: 15px;
             border-right: 1px solid black;
-            /* white-space: nowrap; */
+            white-space: nowrap;
         }
 
         tbody td:last-child,
         thead th:last-child {
             border-right: none;
         }
+
+        body {
+            margin-right: 10px;
+        }
     </style>
 </head>
 
-<body class="bg-light">
+<body class="bg-light" style="padding-top: 20px;">
 
     <div class="container-fluid">
 
         <div class="row">
-            <div class="col-sm-12 text-center">
-                <h2>Remote interfaces</h2>
+            <div id="selectHeader" class="col-10">
+                <h4>Add event</h4>
             </div>
+
+            <div class="col-2">
+            </div>
+
         </div>
 
         <div class="row">
-            <div class="col-12 vh-75 overflow">
 
-                <div id="hostname"></div>
+            <div class="col-10">
 
-                <table id="interface-table-id"
-                    class="table scroll table-sm table-responsive-md table-hover table-striped table-hover "
-                    id="interface-table">
-                    <thead class="thead-light" style="width: 100%;">
-                        <tr>
-                            <th id="id-head-name" style="width:5000px">Name</th>
-                            <th id="id-head-guid" style="width:40%">GUID</th>
-                            <th id="id-head-type" style="width:20%">Type</th>
+                <table id="table-vscpclass"
+                    class="table scroll table-sm table-responsive table-hover table-striped table-hover ">
+                    <thead class="thead-light">
+                        <tr class="d-flex">
+                            <th class="col-12 ctext">VSCP classes</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <!-- <tr class="clickable-row" style="cursor: pointer">
-                            <td>CAN4VSCP</td>
-                            <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
-                            <td>Type=2 CANAL DRIVER</td>
+                    <tbody class="vscpclass">
+                        <tr class="d-flex clickable-row" style="cursor: pointer">
+                            <td class="col-10"><strong>class1.measurement</strong>
+                                <span class="text-monospace" style="color:darkgreen;">(0x000a 10)</span></td>
                         </tr>
-                        <tr class="clickable-row" style="cursor: pointer">
-                            <td>Ethernet</td>
-                            <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
-                            <td>Type=2, Level II driver</td>
+                        <tr class="d-flex clickable-row" style="cursor: pointer">
+                            <td class="col-10"><strong>class1.control</strong>
+                                <span class="text-monospace" style="color:darkgreen;">(0x001e 30)</span></td>
                         </tr>
-                        <tr class="clickable-row" style="cursor: pointer">
-                            <td>Dooley</td>
-                            <td>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</td>
-                            <td>Type</td>
-                        </tr> -->
                     </tbody>
                 </table>
 
+            </div>
+            <div class="col-2">
+                <button id="btnAddAllowEvent" type="button" class="btn btn-sm btn-warning rounded">
+                    <strong>Search class</strong></button>
+            </div>
+        </div>
+
+
+        <div class="row">
+
+            <div class="col-10">
+
+                <table id="table-filter"
+                    class="table scroll filter table-sm table-responsive table-hover table-striped table-hover "
+                    id="table-filter">
+                    <thead class="thead-light">
+                        <tr class="d-flex">
+                            <th class="col-12 ctext">VSCP types for selected class</th>
+                        </tr>
+                    </thead>
+                    <tbody class="vscptype">
+                        <tr class="d-flex clickable-row" style="cursor: pointer">
+                            <td class="col-10"><strong>All types</strong></td>
+                        </tr>
+                        <tr class="d-flex clickable-row" style="cursor: pointer">
+                            <td class="col-10"><strong>Temperature</strong>
+                                <span class="text-monospace" style="color:darkgreen;">(0x0006 6)</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+            <div class="col-2">
+                <button id="btnAddFilterEvent" type="button" class="btn btn-sm btn-warning rounded">
+                    <strong>Search type</strong></button>
             </div>
         </div>
 

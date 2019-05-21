@@ -80,7 +80,7 @@ $(document).ready(function ($) {
     // Select table row
     //
 
-    $('#main-table-id > tbody > tr').on('click', function (e) {
+    $('#table-rx > tbody > tr').on('click', function (e) {
         selected_name = e.currentTarget.cells[0].innerHTML;
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });
@@ -89,7 +89,7 @@ $(document).ready(function ($) {
     // Select table row
     //
 
-    $('#main-table-id > tbody > tr').on('click', function (e) {
+    $('#table-tx > tbody > tr').on('click', function (e) {
         selected_name = e.currentTarget.cells[0].innerHTML;
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });

@@ -146,7 +146,7 @@
             <div class="col-9">
                 <kbd>Rx</kbd>
                 <div class="table-responsive">
-                    <table id="rx-table-id" class="table-sm scroll table-bordered table-hover table-striped">
+                    <table id="table-rx" class="table-sm scroll table-bordered table-hover table-striped">
                         <thead class="thead-warning">
                             <tr class="d-flex">
                                 <th class="col-1 ctext" id="id-head-dir">&nbsp;Dir</th>
@@ -202,97 +202,98 @@
                     </p>
                     <p>
                         <div><strong>Data count: </strong>
-                            <span class="text-monospace">3</span></div>
-                        <div class="text-monospace">0x01,0x22,0x01</div>
+                            <span class="text-monospace" style="color:darkgreen;">3</span></div>
+                        <div class="text-monospace" style="color:darkgreen;">0x01,0x22,0x01</div>
                         <div><strong>Unit: </strong>
-                            <span class="text-monospace">1</span></div>
+                            <span class="text-monospace" style="color:darkgreen;">1</span></div>
                         <div><strong>Sensor: </strong>
-                            <span class="text-monospace">0</span></div>
+                            <span class="text-monospace" style="color:darkgreen;">0</span></div>
                         <div><strong>Coding: </strong>
-                            <span class="text-monospace">Normalized integer</span></div>
+                            <span class="text-monospace" style="color:darkgreen;">Normalized integer</span></div>
                         <div><strong>Value: </strong>
-                            <span class="text-monospace">-68.580000 C</span>
+                            <span class="text-monospace" style="color:darkgreen;">-68.580000 C</span>
                         </div>
-                </div>
-                </p>
-                <p>
-                    <div><strong>From GUID: </strong></div>
-                    <div class="text-monospace">00:00:00:00 00:00:00:00 00:00:00:00 00:01:00:03</div>
-                </p>
-                <p>
-                    <div><strong>Head: </strong>60</div>
-                    <div><strong>Timestamp: </strong>AAE77267</div>
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-
-        <div class="col-11">
-            <kbd>Tx</kbd>
-            <div class="table-responsive">
-                <table id="tx-table" class="table-sm scroll table-bordered table-hover table-striped ">
-                    <thead>
-                        <tr class="d-flex" style="width: 100%;">
-                            <th class="col-1 ctext" id="id-head-auto">Active</th>
-                            <th class="col-3" id="id-head-name">&nbsp;Name</th>
-                            <th class="col-1 ctext" id="id-head-period">&nbsp;Period</th>
-                            <th class="col-1 ctext" id="id-head-count">&nbsp;Count</th>
-                            <th class="col-1 ctext" id="id-head-trigger">&nbsp;Trigger</th>
-                            <th class="col-5" id="id-head-event">&nbsp;Event</th>
-                        </tr>
-                    </thead>
-                    <tbody class="tx">
-
-                        <tr class="d-flex">
-                            <td class="col-1 ctext"><kbd>ON</kbd></th>
-                            <td class="col-3">Test 1</th>
-                            <td class="col-1 ctext">0</th>
-                            <td class="col-1 ctext">0</th>
-                            <td class="col-1 ctext">0</th>
-                            <td class="col-5">Class=0, Type=0, Size=8, Data=1,2,3,4,5,6,7,8</th>
-                        </tr>
-                        <tr class="d-flex">
-                            <td class="col-1 ctext">OFF</th>
-                            <td class="col-3">Test 2</th>
-                            <td class="col-1 ctext">0</th>
-                            <td class="col-1 ctext">0</th>
-                            <td class="col-1 ctext">0</th>
-                            <td class="col-5">Class=0, Type=0, Size=4, Data=1,2,3,4</th>
-                        </tr>
-
-                </table>
-            </div>
-        </div>
-
-        <div class="col-1" style="padding-left: 0px; padding-right: 2px;">
-            <div></div>
-            <div class="txcmdarea" style="padding-left: 10px; padding-top: 15px;">
-                <!-- Toolbar -->
-                <div class="btn-group-vertical btn-group" role="group">
-                    <button id="btnSend" type="button" class="btn btn-sm btn-success rounded"
-                        style="margin-top: 10px; margin-bottom: 10px;"><strong>Send</strong></button>
-                    <button id="btnAdd" type="button" class="btn btn-sm btn-warning rounded"
-                        style="margin-bottom: 3px;"><strong>Add...</strong></button>
-                    <button id="btnEdit" type="button" class="btn btn-sm btn-warning rounded"
-                        style="margin-bottom: 3px;"><strong>Edit...</strong></button>
-                    <button id="btnRemove" type="button" class="btn btn-sm btn-warning rounded"
-                        style="margin-bottom: 10px;"><strong>Remove</strong></button>
-                    <button id="btnLoad" type="button" class="btn btn-sm btn-warning rounded"
-                        style="margin-bottom: 3px;"><strong>Load</strong></button>
-                    <button id="btnSave" type="button" class="btn btn-sm btn-warning rounded"
-                        style="margin-bottom: 10px;"><strong>Save</strong></button>
-
+                    </p>
+                    <p>
+                        <div><strong>From GUID: </strong></div>
+                        <div class="text-monospace" style="color:darkgreen;">00:00:00:00 00:00:00:00 00:00:00:00 00:01:00:03</div>
+                    </p>
+                    <p>
+                        <div><strong>Head: </strong>
+                            <span class="text-monospace" style="color:darkgreen;">60</span></div>
+                        <div><strong>Timestamp: </strong>
+                            <span class="text-monospace" style="color:darkgreen;">AAE77267</span></div>
+                    </p>
                 </div>
             </div>
         </div>
 
-        <!-- <div class="col-3">
+        <div class="row">
+
+            <div class="col-11">
+                <kbd>Tx</kbd>
+                <div class="table-responsive">
+                    <table id="table-tx" class="table-sm scroll table-bordered table-hover table-striped ">
+                        <thead>
+                            <tr class="d-flex" style="width: 100%;">
+                                <th class="col-1 ctext" id="id-head-auto">Active</th>
+                                <th class="col-3" id="id-head-name">&nbsp;Name</th>
+                                <th class="col-1 ctext" id="id-head-period">&nbsp;Period</th>
+                                <th class="col-1 ctext" id="id-head-count">&nbsp;Count</th>
+                                <th class="col-1 ctext" id="id-head-trigger">&nbsp;Trigger</th>
+                                <th class="col-5" id="id-head-event">&nbsp;Event</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tx">
+
+                            <tr class="d-flex">
+                                <td class="col-1 ctext"><kbd>on</kbd></th>
+                                <td class="col-3">Test 1</th>
+                                <td class="col-1 ctext">0</th>
+                                <td class="col-1 ctext">0</th>
+                                <td class="col-1 ctext">0</th>
+                                <td class="col-5">Class=0, Type=0, Size=8, Data=1,2,3,4,5,6,7,8</th>
+                            </tr>
+                            <tr class="d-flex">
+                                <td class="col-1 ctext">off</th>
+                                <td class="col-3">Test 2</th>
+                                <td class="col-1 ctext">0</th>
+                                <td class="col-1 ctext">0</th>
+                                <td class="col-1 ctext">0</th>
+                                <td class="col-5">Class=0, Type=0, Size=4, Data=1,2,3,4</th>
+                            </tr>
+
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-1" style="padding-left: 0px; padding-right: 2px;">
+                <div></div>
+                <div class="txcmdarea" style="padding-left: 10px; padding-top: 15px;">
+                    <!-- Toolbar -->
+                    <div class="btn-group-vertical btn-group" role="group">
+                        <button id="btnSend" type="button" class="btn btn-sm btn-success rounded"
+                            style="margin-top: 10px; margin-bottom: 10px;"><strong>Send</strong></button>
+                        <button id="btnAdd" type="button" class="btn btn-sm btn-warning rounded"
+                            style="margin-bottom: 3px;"><strong>Add...</strong></button>
+                        <button id="btnEdit" type="button" class="btn btn-sm btn-warning rounded"
+                            style="margin-bottom: 3px;"><strong>Edit...</strong></button>
+                        <button id="btnRemove" type="button" class="btn btn-sm btn-warning rounded"
+                            style="margin-bottom: 10px;"><strong>Remove</strong></button>
+                        <button id="btnLoad" type="button" class="btn btn-sm btn-warning rounded"
+                            style="margin-bottom: 3px;"><strong>Load</strong></button>
+                        <button id="btnSave" type="button" class="btn btn-sm btn-warning rounded"
+                            style="margin-bottom: 10px;"><strong>Save</strong></button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="col-3">
 
             </div> -->
 
-    </div>
+        </div>
 
     </div>
 
@@ -305,8 +306,7 @@
 </body>
 
 <script>
-    // You can also require other files to run in this process
-    require('./src/main_renderer.js');
+    require('./src/session_renderer.js');
 </script>
 
 </html>
