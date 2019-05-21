@@ -105,7 +105,7 @@ function createMainWindow() {
     show: false,
     height: 420,
     width: 800,
-    icon: path.join(__dirname, 'assets/icons/png/logo_64.png'),
+    icon: path.join(__dirname, '/assets/icons/png/logo_64.png'),
     webPreferences: {
       nodeIntegration: true,
     },

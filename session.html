@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>VSCP session window</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
+    <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
+    <style>
+        table.scroll {
+            width: 100%;
+            /* Optional */
+            border-collapse: collapse;
+            border-spacing: 0;
+            border: 1px solid black;
+        }
+
+        table.scroll tbody,
+        table.scroll thead {
+            display: block;
+            width: 100%;
+        }
+
+        thead tr th {
+            height: 25px;
+            line-height: 15px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.scroll tbody.rx {
+            height: 50vh;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        table.scroll tbody.tx {
+            height: 25vh;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        table.scroll td.ctext,
+        table.scroll th.ctext {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody {
+            border-top: 1px solid black;
+        }
+
+        tbody td,
+        thead th {
+            overflow: hidden;
+            height: 22px;
+            line-height: 15px;
+            border-right: 1px solid black;
+            white-space: nowrap;
+        }
+
+        tbody td:last-child,
+        thead th:last-child {
+            border-right: none;
+        }
+
+        th {
+            background-color: rgb(178, 173, 241);
+        }
+
+        body {
+            margin-right: 10px;
+        }
+
+        .infoarea {
+            height: 50vh;
+            padding-left: 4px;
+            border-top: 1px solid rgb(10, 13, 161);
+            border-left: 1px solid rgb(10, 13, 161);
+            border-right: 1px solid rgb(10, 13, 161);
+            border-bottom: 1px solid rgb(10, 13, 161);
+            background-color: rgb(246, 247, 229);
+            overflow-y: scroll;
+        }
+
+        .txcmdarea {
+            height: 30vh;
+
+            border-top: 0px solid rgb(10, 13, 161);
+            border-left: 0px solid rgb(10, 13, 161);
+            border-right: 0px solid rgb(10, 13, 161);
+            border-bottom: 0px solid rgb(10, 13, 161);
+            background-color: rgb(249, 250, 250);
+        }
+    </style>
+
+    <title>VSCP Works + - Session window</title>
+</head>
+
+<body class="bg-light" style="padding-top: 70px;">
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;">
+
+                <div class=" navbar-header">
+                    <a class="navbar-brand animated bounce delay-2s" href="#">VSCP <span
+                            class="badge badge-warning  rounded-lg">works+</span></a>
+                </div>
+                <ul id="myTab" class="nav nav-tabs">
+
+                    <li class="nav-item">
+                        <button id="btnSave" type="button" class="btn btn-sm btn-success rounded-pill">
+                            <strong>Connection ON</strong></button>
+                    </li>
+                    <li class="nav-item">
+                        <button id="btnSave" type="button" class="btn btn-sm btn-danger rounded-pill">
+                            <strong>Connection OFF</strong></button>
+                    </li>
+                    <li class="nav-item">
+                        <button id="btnSave" type="button" class="btn btn-sm btn-primary rounded-pill">
+                            <strong>Filter ON <span class="badge badge-secondary">123</span></strong></button>
+                    </li>
+                    <li class="nav-item">
+                        <button id="btnSave" type="button" class="btn btn-sm btn-dark rounded-pill">
+                            <strong>Filter OFF</strong></button>
+                    </li>
+                    <li class="nav-item">
+                        <button id="btnSave" type="button" class="btn btn-sm btn-primary rounded-pill">
+                            <strong>Auto-reply ON <span class="badge badge-secondary">123</span></strong></button>
+                    </li>
+
+                </ul>
+
+            </nav>
+
+        </div>
+
+        <div class="row">
+
+            <div class="col-9">
+                <kbd>Rx</kbd>
+                <div class="table-responsive">
+                    <table id="rx-table-id" class="table-sm scroll table-bordered table-hover table-striped">
+                        <thead class="thead-warning">
+                            <tr class="d-flex">
+                                <th class="col-1 ctext" id="id-head-dir">&nbsp;Dir</th>
+                                <th class="col-3" id="id-head-class">&nbsp;Class</th>
+                                <th class="col-2" id="id-head-type">&nbsp;Type</th>
+                                <th class="col-1 ctext" id="id-head-id">&nbsp;Id</th>
+                                <th class="col-5" id="id-head-guid">&nbsp;GUID</th>
+                            </tr>
+                        </thead>
+                        <tbody class="rx">
+                            <tr class="d-flex">
+                                <td class="col-1 ctext">rx</td>
+                                <td class="col-3"><strong>class1.control</strong>
+                                    <span class="text-monospace" style="color:darkgreen;">(0x001e 30)abh12345</span>
+                                </td>
+                                <td class="col-2"><strong>turnon</strong>
+                                    <span class="text-monospace" style="color:darkgreen;">(0x0006 6)</span></td>
+                                <td class="col-1 ctext">1</td>
+                                <td class="col-5">FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05
+                                </td>
+                            </tr>
+                            <tr class="d-flex">
+                                <td class="col-1 ctext">rx</td>
+                                <td class="col-3"><strong>class1.control</strong>
+                                    <span class="text-monospace" style="color:darkgreen;">(0x001e 30)</span></td>
+                                <td class="col-2"><strong>turnoff</strong>
+                                    <span class="text-monospace" style="color:darkgreen;">(0x0005 5)</span></td>
+                                <td class="col-1 ctext">1</td>
+                                <td class="col-5">FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Information area -->
+            <div class="col-3" style="padding-left: 0px; padding-right: 2px;">
+                <kbd>info</kbd>
+                <div class="infoarea">
+                    <div class="ctext"><strong>Received Event</strong></div>
+                    <div><strong>Time: </strong>
+                        <span class="text-monospace" style="color:darkgreen;">2021-05-20 17:33:12</span>
+                    </div>
+                    <p class="text-monospace">
+                        <div><strong>Class: </strong>
+                            <kbd>class1.measurement</kbd>
+                            <div class="text-monospace" style="color:darkgreen;">0x000a, 10</div>
+                        </div>
+                        <div><strong>Type: </strong><kbd>temperature</kbd>
+                            <div class="text-monospace" style="color:darkgreen;">0x0006, 6</div>
+                        </div>
+                    </p>
+                    <p>
+                        <div><strong>Data count: </strong>
+                            <span class="text-monospace">3</span></div>
+                        <div class="text-monospace">0x01,0x22,0x01</div>
+                        <div><strong>Unit: </strong>
+                            <span class="text-monospace">1</span></div>
+                        <div><strong>Sensor: </strong>
+                            <span class="text-monospace">0</span></div>
+                        <div><strong>Coding: </strong>
+                            <span class="text-monospace">Normalized integer</span></div>
+                        <div><strong>Value: </strong>
+                            <span class="text-monospace">-68.580000 C</span>
+                        </div>
+                </div>
+                </p>
+                <p>
+                    <div><strong>From GUID: </strong></div>
+                    <div class="text-monospace">00:00:00:00 00:00:00:00 00:00:00:00 00:01:00:03</div>
+                </p>
+                <p>
+                    <div><strong>Head: </strong>60</div>
+                    <div><strong>Timestamp: </strong>AAE77267</div>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <div class="col-11">
+            <kbd>Tx</kbd>
+            <div class="table-responsive">
+                <table id="tx-table" class="table-sm scroll table-bordered table-hover table-striped ">
+                    <thead>
+                        <tr class="d-flex" style="width: 100%;">
+                            <th class="col-1 ctext" id="id-head-auto">Active</th>
+                            <th class="col-3" id="id-head-name">&nbsp;Name</th>
+                            <th class="col-1 ctext" id="id-head-period">&nbsp;Period</th>
+                            <th class="col-1 ctext" id="id-head-count">&nbsp;Count</th>
+                            <th class="col-1 ctext" id="id-head-trigger">&nbsp;Trigger</th>
+                            <th class="col-5" id="id-head-event">&nbsp;Event</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tx">
+
+                        <tr class="d-flex">
+                            <td class="col-1 ctext"><kbd>ON</kbd></th>
+                            <td class="col-3">Test 1</th>
+                            <td class="col-1 ctext">0</th>
+                            <td class="col-1 ctext">0</th>
+                            <td class="col-1 ctext">0</th>
+                            <td class="col-5">Class=0, Type=0, Size=8, Data=1,2,3,4,5,6,7,8</th>
+                        </tr>
+                        <tr class="d-flex">
+                            <td class="col-1 ctext">OFF</th>
+                            <td class="col-3">Test 2</th>
+                            <td class="col-1 ctext">0</th>
+                            <td class="col-1 ctext">0</th>
+                            <td class="col-1 ctext">0</th>
+                            <td class="col-5">Class=0, Type=0, Size=4, Data=1,2,3,4</th>
+                        </tr>
+
+                </table>
+            </div>
+        </div>
+
+        <div class="col-1" style="padding-left: 0px; padding-right: 2px;">
+            <div></div>
+            <div class="txcmdarea" style="padding-left: 10px; padding-top: 15px;">
+                <!-- Toolbar -->
+                <div class="btn-group-vertical btn-group" role="group">
+                    <button id="btnSend" type="button" class="btn btn-sm btn-success rounded"
+                        style="margin-top: 10px; margin-bottom: 10px;"><strong>Send</strong></button>
+                    <button id="btnAdd" type="button" class="btn btn-sm btn-warning rounded"
+                        style="margin-bottom: 3px;"><strong>Add...</strong></button>
+                    <button id="btnEdit" type="button" class="btn btn-sm btn-warning rounded"
+                        style="margin-bottom: 3px;"><strong>Edit...</strong></button>
+                    <button id="btnRemove" type="button" class="btn btn-sm btn-warning rounded"
+                        style="margin-bottom: 10px;"><strong>Remove</strong></button>
+                    <button id="btnLoad" type="button" class="btn btn-sm btn-warning rounded"
+                        style="margin-bottom: 3px;"><strong>Load</strong></button>
+                    <button id="btnSave" type="button" class="btn btn-sm btn-warning rounded"
+                        style="margin-bottom: 10px;"><strong>Save</strong></button>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- <div class="col-3">
+
+            </div> -->
+
+    </div>
+
+    </div>
+
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = jQuery = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
+
+</body>
+
+<script>
+    // You can also require other files to run in this process
+    require('./src/main_renderer.js');
+</script>
+
+</html>
