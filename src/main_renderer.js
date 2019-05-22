@@ -1,7 +1,7 @@
 const { remote, ipcRenderer } = require('electron');
 const { Menu, MenuItem, app } = remote;
 
-let tblMain = document.getElementById("main-table-id");
+let tblMain = document.getElementById("mainTable");
 let selected_name = '';
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,11 +58,6 @@ menu.append(new MenuItem({
     }
 }));
 
-// electron.ipcRenderer.on('reply-connection-object', (event, arg) => {
-//     console.log(arg) // prints "pong"
-// })
-
-// electron.ipcRenderer.send('asynchronous-message', 'ping');
 
 ///////////////////////////////////////////////////////////////////////////////
 // Document ready
@@ -83,7 +78,7 @@ $(document).ready(function ($) {
     //
 
     addSavedConnections = function () {
-        $("#main-table-id > tbody").empty();
+        $("#mainTable > tbody").empty();
         let connections = ipcRenderer.sendSync('get-connection-object');
         connections.vscpinterface.forEach((item) => {
             addConnectionRow(item.name, item.type);
@@ -94,7 +89,7 @@ $(document).ready(function ($) {
     // Select table row
     //
 
-    $('#main-table-id > tbody > tr').on('click', function (e) {
+    $('#mainTable > tbody > tr').on('click', function (e) {
         selected_name = e.currentTarget.cells[0].innerHTML;
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });
@@ -103,7 +98,7 @@ $(document).ready(function ($) {
     // Open table row
     //
 
-    $('#main-table-id > tbody > tr').on('dblclick', function () {
+    $('#mainTable > tbody > tr').on('dblclick', function () {
         console.log("Row double-click");
     });
 
@@ -111,7 +106,7 @@ $(document).ready(function ($) {
     // right button down
     //
 
-    $('#main-table-id > tbody > tr').mousedown(function (e) {
+    $('#mainTable > tbody > tr').mousedown(function (e) {
         switch (event.which) {
             case 2:
                 console.log('Middle mouse button is pressed');
@@ -139,6 +134,14 @@ $(document).ready(function ($) {
         if ('' !== selected_name) {
             editConnection(selected_name);
         }
+        else {
+            let options = {
+                type: 'error',
+                buttons: ['OK'],
+                title: 'No connection selected,',
+            }
+            dialog.showMessageBox(remote.getCurrentWindow(), options);
+        }
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -146,7 +149,17 @@ $(document).ready(function ($) {
     //
 
     $('#btnRemove').on('click', function () {
-        removeConnection();
+        if ('' !== selected_name) {
+            removeConnection();
+        }
+        else {
+            let options = {
+                type: 'error',
+                buttons: ['OK'],
+                title: 'No connection selected,',
+            }
+            dialog.showMessageBox(remote.getCurrentWindow(), options);
+        }
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -154,7 +167,17 @@ $(document).ready(function ($) {
     //
 
     $('#btnClone').on('click', function () {
-        cloneConnection();
+        if ('' !== selected_name) {
+            cloneConnection();
+        }
+        else {
+            let options = {
+                type: 'error',
+                buttons: ['OK'],
+                title: 'No connection selected,',
+            }
+            dialog.showMessageBox(remote.getCurrentWindow(), options);
+        }
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -198,7 +221,6 @@ function addConnection() {
                     url: '../dialog_canal_device.html'
                 });
             ipcRenderer.send("add-connection", answer);
-            //addConnectionRow(answer.name, answer.type);
             break;
 
         case "tcpip":
@@ -210,7 +232,6 @@ function addConnection() {
                     url: '../dialog_tcpip_device.html',
                 });
             ipcRenderer.send("add-connection", answer);
-            //addConnectionRow(answer.name, answer.type);
             break;
 
         case "websocket":
@@ -222,7 +243,6 @@ function addConnection() {
                     url: '../dialog_websocket_device.html'
                 });
             ipcRenderer.send("add-connection", answer);
-            addConnectionRow(answer.name, answer.type);
             break;
 
         case "rest":
@@ -234,7 +254,6 @@ function addConnection() {
                     url: '../dialog_rest_device.html'
                 });
             ipcRenderer.send("add-connection", answer);
-            addConnectionRow(answer.name, answer.type);
             break;
 
         default:
@@ -243,7 +262,7 @@ function addConnection() {
 
     addSavedConnections();
     selected_name = answer.name;
-    $('#main-table-id tr').filter(function () {
+    $('#mainTable tr').filter(function () {
         return $.trim($('td', this).eq(0).text()) == answer.name;
     }).addClass('bg-info').siblings().removeClass('bg-info');
 }
@@ -354,70 +373,42 @@ function removeConnection() {
 function cloneConnection() {
     ipcRenderer.send("clone-connection", selected_name);
     addSavedConnections();
-    $('#main-table-id tr').filter(function () {
+    $('#mainTable tr').filter(function () {
         return $.trim($('td', this).eq(0).text()) == selected_name;
     }).addClass('bg-info').siblings().removeClass('bg-info');
 }
 
-
-// function openModalCanalDialog() {
-
-//     let win = new remote.BrowserWindow({
-//         parent: remote.getCurrentWindow(),
-//         'show': false,
-//         'modal': true,
-//         'alwaysOnTop': true,
-//         'title': options.title,
-//         'autoHideMenuBar': true,
-//         'webPreferences': {
-//             "nodeIntegration": true,
-//             "sandbox": false
-//         }
-//     })
-
-//     // app.getAppPath or app.getPath(name) instead.
-//     var theUrl = 'file://' + __dirname + '/../dialog_canal_device.html'
-//     win.loadURL(theUrl);
-// }
-
+///////////////////////////////////////////////////////////////////////////////
+// addConnectionRow
+//
 // Add a row to the Wizard table
+//
+
 var addConnectionRow = function (name, type) {
 
     let tableRef = tblMain.getElementsByTagName('tbody')[0];
     let row = tableRef.insertRow(-1);
     row.style.cursor = "pointer";
+    row.setAttribute('class', "d-flex");
 
     // Name
     let cellName = row.insertCell(0);
     cellName.innerHTML = name;
-    cellName.style.width = "800px";
+    cellName.setAttribute('class', "col-8");
 
     // Type
     let cellDescription = row.insertCell(1);
     cellDescription.innerHTML = type;
-    cellDescription.style.width = "20%";
-
-    adjustListHeader();
+    cellDescription.setAttribute('class', "col-4");
 
     // Must do this here to be able to select newly added row
-    $('#main-table-id > tbody > tr').unbind('click');
-    $('#main-table-id > tbody > tr').on('click', function (e) {
+    $('#mainTable > tbody > tr').unbind('click');
+    $('#mainTable > tbody > tr').on('click', function (e) {
         selected_name = e.currentTarget.cells[0].innerHTML;
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });
 }
 
-function adjustListHeader() {
-    document.getElementById('id-head-name').style.width = "800px";
-    document.getElementById('id-head-type').style.width = "20%";
-}
-
-
-// $(document).ready(function ($) {
-//     $(".table-row").click(function () {
-//         console.log("new-click");
-//     });
-// });
 
 $(function () {
     $(".nav-link").on("click", "li", function (event) {

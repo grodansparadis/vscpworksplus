@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Known GUID's</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
+    <link rel="stylesheet" href="./contents/bootstrap/4.3.1/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
+    <style>
+        table.scroll {
+            width: 100%;
+            /* Optional */
+            border-collapse: collapse;
+            border-spacing: 0;
+            border: 1px solid black;
+        }
+
+        table.scroll tbody,
+        table.scroll thead {
+            display: block;
+            width: 100%;
+        }
+
+        thead tr th {
+            height: 25px;
+            line-height: 15px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.scroll tbody {
+            height: 70vh;
+            background-color: rgb(247, 248, 231);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        table.scroll td.ctext,
+        table.scroll th.ctext {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        tbody {
+            border-top: 1px solid black;
+        }
+
+        tbody td,
+        thead th {
+            overflow: hidden;
+            height: 22px;
+            line-height: 15px;
+            border-right: 1px solid black;
+            white-space: nowrap;
+        }
+
+        tbody td:last-child,
+        thead th:last-child {
+            border-right: none;
+        }
+
+        body {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body class="bg-light" style="padding-top: 20px;">
+
+    <div class="container-fluid">
+
+        <div class="row">
+
+            <div class="col-10">
+
+                <table id="table-guid"
+                    class="table scroll table-sm table-responsive table-hover table-striped table-hover ">
+                    <thead class="thead-light">
+                        <tr class="d-flex">
+                            <th class="col-12 ctext">Known GUID's</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="d-flex clickable-row" style="cursor: pointer">
+                            <td class="col-12"><strong>Temperature sensor 1</strong>
+                                <span class="text-monospace"
+                                    style="color:darkgreen;">[FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05]</span>
+                            </td>
+                        </tr>
+                        <tr class="d-flex clickable-row" style="cursor: pointer">
+                            <td class="col-12"><strong>Fridge power cord with test circit</strong>
+                                <span class="text-monospace"
+                                    style="color:darkgreen;">[FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05]</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+            <div class="col-2">
+                <!-- Toolbar -->
+                <div class="btn-group-vertical btn-group" role="group">
+                    <button id="btnAdd" type="button" class="btn btn-sm btn-success rounded"
+                        style="margin-bottom: 3px;">
+                        <strong>Add...</strong></button>
+                    <button id="btnClear" type="button" class="btn btn-sm btn-danger rounded"
+                        style="margin-bottom: 3px;">
+                        <strong>Clear</strong></button>
+                    <button id="btnLoad" type="button" class="btn btn-sm btn-warning rounded"
+                        style="margin-bottom: 3px;">
+                        <strong>Load</strong></button>
+                    <button id="btnSave" type="button" class="btn btn-sm btn-warning rounded"
+                        style="margin-bottom: 3px;">
+                        <strong>Save</strong></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row ctext">
+            <div class="col-12">
+
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 text-center">
+                <div>
+                    <hr />
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-12" text-center">
+                        <button id="btnCancel" class="btn-sm btn-default">Cancel</button>
+                        <button id="btnSubmit" type="submit" class="btn-sm btn-default">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script>let $ = jQuery = require('jquery');</script>
+    <script>require('popper.js');</script>
+    <script>require('bootstrap');</script>
+
+</body>
+
+<script>
+    const { remote, ipcRenderer } = require('electron');
+    const { app, dialog } = remote;
+    const win = remote.getCurrentWindow();
+    const vscp = require('./src/vscp');                // TODO: use module
+    const vscp_tcp_Client = require('./src/vscptcp');  // TODO: use module
+
+    let guid = '';
+    let testProgress = '';
+    let vscpif = [];
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // addGuidRow
+    //
+
+    var addGuidRow = function (name, guid) {
+
+        let tblInterface = document.getElementById("interface-table-id");
+        let tableRef = tblInterface.getElementsByTagName('tbody')[0];
+
+        let row = tableRef.insertRow(-1);
+        row.classList.add("clickable-row");
+        row.style.cursor = "pointer";
+
+        // Name
+        let cellName = row.insertCell(0);
+        cellName.innerHTML = name;
+        cellName.style.width = "40%";
+
+        // GUID
+        let cellGuid = row.insertCell(1);
+        cellGuid.innerHTML = guid;
+        cellGuid.style.width = "40%";
+
+        // Type
+        let cellType = row.insertCell(2);
+        cellType.innerHTML = type;
+        cellType.classList.add("ctext");
+        cellType.style.width = "20%";
+
+        adjustListHeader();
+    }
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Document ready
+    //
+
+    $(document).ready(function ($) {
+
+        var options = ipcRenderer.sendSync("dialog-open", "");
+        var params = JSON.parse(options);
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Cancel
+        //
+
+        $("#btnCancel").on('click', function (e) {
+            ipcRenderer.send("dialog-close", '');
+            remote.getCurrentWindow().close();
+        });
+
+        ///////////////////////////////////////////////////////////////////////////
+        // Save selected interface
+        //
+
+        $("#btnSubmit").on('click', function (e) {
+            ipcRenderer.send("dialog-close", guid);
+            remote.getCurrentWindow().close();
+        });
+
+        // Select table row
+        $('#interface-table-id').on('click', '.clickable-row', function (event) {
+            $(this).addClass('bg-info').siblings().removeClass('bg-info');
+            guid = event.currentTarget.cells[1].innerHTML;
+        });
+
+        // double click table row
+        $('#interface-table-id').on('dblclick', '.clickable-row', function (event) {
+            guid = event.currentTarget.cells[1].innerHTML;
+            $(this).addClass('bg-info').siblings().removeClass('bg-info');
+            ipcRenderer.send("dialog-close", guid);
+            remote.getCurrentWindow().close();
+        });
+
+    });
+</script>
+
+</html>

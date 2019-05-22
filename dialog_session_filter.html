@@ -83,7 +83,7 @@
 
             <div class="col-10">
 
-                <table id="table-allow"
+                <table id="tableAllow"
                     class="table scroll table-sm table-responsive table-hover table-striped table-hover "
                     id="table-allow">
                     <thead class="thead-light">
@@ -92,17 +92,17 @@
                         </tr>
                     </thead>
                     <tbody class="allow">
-                            <tr class="d-flex clickable-row" style="cursor: pointer">
-                                    <td class="col-6"><strong>class1.measurement</strong>
-                                        <span class="text-monospace" style="color:darkgreen;">(0x000a 10)</span></td>
-                                    <td class="col-6"><strong>Temperature</strong>
-                                        <span class="text-monospace" style="color:darkgreen;">(0x0006 6)</span></td>
-                                </tr>
-                                <tr class="d-flex clickable-row" style="cursor: pointer">
-                                    <td class="col-6"><strong>class1.control</strong>
-                                        <span class="text-monospace" style="color:darkgreen;">(0x001e 30)</span></td>
-                                        <td class="col-6"><strong>All types</strong></td>
-                                </tr>
+                        <tr class="d-flex clickable-row" style="cursor: pointer">
+                            <td class="col-6"><strong>class1.measurement</strong>
+                                <span class="text-monospace" style="color:darkgreen;">(0x000a 10)</span></td>
+                            <td class="col-6"><strong>Temperature</strong>
+                                <span class="text-monospace" style="color:darkgreen;">(0x0006 6)</span></td>
+                        </tr>
+                        <tr class="d-flex clickable-row" style="cursor: pointer">
+                            <td class="col-6"><strong>class1.control</strong>
+                                <span class="text-monospace" style="color:darkgreen;">(0x001e 30)</span></td>
+                            <td class="col-6"><strong>All types</strong></td>
+                        </tr>
                     </tbody>
                 </table>
 
@@ -123,7 +123,7 @@
 
             <div class="col-10">
 
-                <table id="table-filter"
+                <table id="tableFilter"
                     class="table scroll filter table-sm table-responsive table-hover table-striped table-hover "
                     id="table-filter">
                     <thead class="thead-light">
@@ -141,7 +141,7 @@
                         <tr class="d-flex clickable-row" style="cursor: pointer">
                             <td class="col-6"><strong>class1.control</strong>
                                 <span class="text-monospace" style="color:darkgreen;">(0x001e 30)</span></td>
-                                <td class="col-6"><strong>All types</strong></td>
+                            <td class="col-6"><strong>All types</strong></td>
                         </tr>
                         <!-- <tr class="clickable-row" style="cursor: pointer">
                                 <td>CAN4VSCP</td>
@@ -205,6 +205,7 @@
 <script>
     const { remote, ipcRenderer } = require('electron');
     const { app, dialog } = remote;
+    const sprintf = require('sprintf-js').sprintf;
     const win = remote.getCurrentWindow();
     const vscp = require('./src/vscp');                // TODO: use module
     const vscp_tcp_Client = require('./src/vscptcp');  // TODO: use module
@@ -213,129 +214,42 @@
     let testProgress = '';
     let vscpif = [];
 
-    ///////////////////////////////////////////////////////////////////////////
-    // getInterfaces
-    //
 
-    const getInterfaces = async (options) => {
-
-        // Defaults
-        let remoteHost = '';
-        let remotePort = 9598;
-        let user = '';
-        let password = '';
-
-        if ('undefined' === typeof options) {
-            throw new Error("options is not defined.");
-        }
-
-        if ('string' !== typeof options.host) {
-            throw new Error("options.host is not defined.");
-        }
-
-        if (-1 == options.host.search(':')) {
-            // No port given - use default
-            remoteHost = options.host;
-        }
-        else {
-            let sep = options.host.split(':');
-            remoteHost = sep[0];
-            if (sep.length > 1) remotePort = parseInt(sep[1], 10);
-        }
-
-        if ('string' === typeof options.username) {
-            user = options.username;
-        }
-
-        if ('string' === typeof options.password) {
-            password = options.password;
-        }
-
-        let response = {};
-        let vscp_tcp_client = new vscp_tcp_Client();
-
-        response = await vscp_tcp_client.connect(
-            {
-                host: remoteHost,
-                port: remotePort,
-                timeout: 10000,
-                onSuccess: null
-            });
-        console.log(response);
-        if ('success' === response.result) {
-            testProgress = "connection OK\n";
-        }
-
-        if (user.length) {
-            response = await vscp_tcp_client.user({ username: user });
-            console.log(response);
-            if ('success' === response.result) {
-                testProgress += "user OK\n";
-            }
-        }
-
-        if (password.length) {
-            response = await vscp_tcp_client.password({ password: password });
-            console.log(response);
-            if ('success' === response.result) {
-                testProgress += "pass OK\n";
-            }
-        }
-
-        vscpif = response = await vscp_tcp_client.getInterfaces();
-        console.log(response);
-        if ('success' === response.result) {
-            testProgress += "interface OK\n";
-        }
-
-        response = await vscp_tcp_client.disconnect();
-        console.log(response);
-        if ('success' === response.result) {
-            testProgress += "disconnect OK\n"
-        }
-
-        $("#btnTestConnection").removeClass('connerr').addClass('active ');
-        console.log(testProgress);
-
-    }
 
     ///////////////////////////////////////////////////////////////////////////
-    // addInterfaceRow
+    // addFilterRow
     //
 
-    var addInterfaceRow = function (name, guid, type) {
+    var addInterfaceRow = function (vscpclass, vscptype) {
 
-        let tblInterface = document.getElementById("interface-table-id");
-        let tableRef = tblInterface.getElementsByTagName('tbody')[0];
+        // Ask for symbolic names
+        let vscpclasstxt = '';
+        let vscptypetxt = '';
+
+        let tbl = document.getElementById("tableFilter");
+        let tableRef = tbl.getElementsByTagName('tbody')[0];
 
         let row = tableRef.insertRow(-1);
         row.classList.add("clickable-row");
+        row.classList.add("d-flex");
         row.style.cursor = "pointer";
 
-        // Name
-        let cellName = row.insertCell(0);
-        cellName.innerHTML = name;
-        cellName.style.width = "40%";
+        // VSCP Class
+        let cellClass = row.insertCell(0);
+        cellClass.innerHTML = '<strong>' + vscpclasstxt +
+            '</strong> <span class="text-monospace" style="color:darkgreen;">'+
+                sprintf('(0x%04x %d)', vscpclass, vscpclass ) + '</span>';
+        cellClass.classList.add("col-6");
 
-        // GUID
-        let cellGuid = row.insertCell(1);
-        cellGuid.innerHTML = guid;
-        cellGuid.style.width = "40%";
-
-        // Type
-        let cellType = row.insertCell(2);
-        cellType.innerHTML = type;
-        cellType.classList.add("ctext");
-        cellType.style.width = "20%";
-
-        adjustListHeader();
+        // VSCP Type
+        let cellType = row.insertCell(0);
+        cellType.innerHTML = '<strong>' + vscptypetxt +
+            '</strong> <span class="text-monospace" style="color:darkgreen;">'+
+                sprintf('(0x%04x %d)', vscptype, vscptype ) + '</span>';
+        cellType.classList.add("col-6");
     }
 
-    function adjustListHeader() {
-        document.getElementById('id-head-name').style.width = "5000px";
-        document.getElementById('id-head-guid').style.width = "40%";
-        document.getElementById('id-head-type').style.width = "20%";
-    }
+
 
     ///////////////////////////////////////////////////////////////////////////
     // Document ready

@@ -4,6 +4,8 @@ const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
+const request = require('request');
+const axios = require('axios');
 const expat = require('node-expat');
 const { DOMParser } = require('xmldom');
 const xmlToJSON = require('xml2json');
@@ -11,11 +13,13 @@ const ref = require("ref");
 const ArrayType = require('ref-array')
 const ffi = require("ffi");
 var Struct = require('ref-struct');
+const dates = require('./dates.js');
 
 //const homeDir = os.homedir();
 //readOldConfig(homedir);
 
 let connections = {};   // Defined connections
+let all_events = {};    // All defined classes/types
 let mainWindow;         // Initial window
 let childWindows = [];
 
@@ -57,15 +61,132 @@ if (!fs.existsSync(pathHome)) {
   });
 }
 
+// Create events folder in home folder if it does not exist
+// already
+if (!fs.existsSync(path.join(pathHome, 'events'))) {
+  fs.mkdir(path.join(pathHome, 'events'), { recursive: true }, (err) => {
+    if (err) throw err;
+  });
+}
+
 let pathConnectConfig = path.join(pathHome, 'connections.json');
 console.log(pathConnectConfig);
-// Read in connections if they are there
+
+let pathEvents = path.join(pathHome, 'events');
+console.log(pathEvents);
+
+// let ws1 = fs.createWriteStream(path.join(pathEvents, 'version.json'));
+// let ws2 = fs.createWriteStream(path.join(pathEvents, 'vscp_events.json'));
+
+///////////////////////////////////////////////////////////////////////////////
+// checkForNewClassDefs
+//
+// Check if there are newer VSCP class/type definitions available and if
+// so download. Directory used for the checks is '~/.vscpworks/events'
+//
+
+//checkForNewClassDefs = async function () {
+
+let rawdata = '';
+let data = '';
+let dateLocal = new Date('1923-03-11T13:45:10');
+let dateServer = new Date('2021-11-02T13:45:10');
+
+// Fetch always if one or both files are missing
+if (fs.existsSync(path.join(pathEvents, 'version.json')) &&
+  fs.existsSync(path.join(pathEvents, 'vscp_events.json'))) {
+  rawdata = fs.readFileSync(path.join(pathEvents, 'version.json'));
+  let data = JSON.parse(rawdata);
+  let dateLocal = new Date(data.generated);
+}
+
+axios.get('http://vscp.org/events/version.json')
+  .then((response) => {
+    console.dir(response.data);
+    dateServer = new Date(response.data.generated);
+    console.log(data, dateServer);
+    console.log(dateServer.toISOString());
+    if (-1 !== dates.compare(dateLocal, dateServer)) {
+      console.log('Event files are up to date.');
+    }
+    else {
+      console.log('There is a new version of the event file - downloading.');
+
+      fs.writeFileSync(path.join(pathEvents, 'version.json'), JSON.stringify(response.data), 'utf-8');
+
+      axios.get('http://vscp.org/events/vscp_events.json')
+        .then((response) => {
+          console.dir(response.data);
+          fs.writeFileSync(path.join(pathEvents, 'vscp_events.json'), JSON.stringify(response.data), 'utf-8');
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      }
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+
+// request('https://vscp.org/events/version.json', function (error, response, body) {
+
+//   console.log('Checking: https://vscp.org/events/version.json');
+//   console.log('error:', error); // Print the error if one occurred
+//   console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+//   console.log('body:', body); // Print the HTML for the Google homepage.
+//   if (null === error) {
+//     rawdata = JSON.parse(body);
+//     dateServer = new Date(rawdata.generated);
+//     // console.log(data, dateServer);
+//     console.log(dateLocal.toISOString());
+//     console.log(dateServer.toISOString());
+//     if (-1 !== dates.compare(dateLocal, dateServer)) {
+//       console.log('Event files are up to date.');
+//     }
+//     else {
+
+//       console.log('There is a new version of the event file - downloading.');
+
+//       request
+//         .get('https://vscp.org/events/version.json')
+//         .on('error', function (err) {
+//           console.log(err)
+//         })
+//         .pipe(ws1);
+
+//       request
+//         .get('https://vscp.org/events/vscp_events.json')
+//         .on('error', function (err) {
+//           console.log(err)
+//         })
+//         .pipe(ws2);
+//     }
+//   }
+// });
+//}
+
+//checkForNewEvents();
+
+// Read in defined connections if they are there
 try {
   if (fs.existsSync(pathConnectConfig)) {
     let rawdata = fs.readFileSync(pathConnectConfig);
     connections = JSON.parse(rawdata);
 
     connections.vscpinterface = sortConnections(connections);
+  }
+}
+catch (err) {
+  console.error("Failed to fetch predefined connections from " + pathConnectConfig);
+  console.error(err);
+}
+
+// Read in class/type definitions if they are there
+try {
+  if (fs.existsSync(path.join(pathEvents, 'vscp_events.json'))) {
+    let rawdata = fs.readFileSync(path.join(pathEvents, 'vscp_events.json'));
+    all_events = JSON.parse(rawdata);
+    //console.log(all_events);
   }
 }
 catch (err) {
@@ -103,7 +224,7 @@ function createMainWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     show: false,
-    height: 420,
+    height: 450,
     width: 800,
     icon: path.join(__dirname, '/assets/icons/png/logo_64.png'),
     webPreferences: {
@@ -117,9 +238,6 @@ function createMainWindow() {
   // Show main window when it's ready to be displayed
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
-    // console.log(dialog.showOpenDialog({
-    //   properties: ['openFile', 'openDirectory', 'multiSelections']
-    // }));
   });
 
   // Emitted when the window is closed.
@@ -338,8 +456,8 @@ ipcMain.on('clone-connection', (event, name) => {
 });
 
 ///////////////////////////////////////////////////////////////////////////////
-  // Clone object
-  //
+// Clone object
+//
 
 function cloneObj(obj) {
   if (null == obj || "object" != typeof obj) return obj;

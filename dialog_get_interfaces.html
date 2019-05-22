@@ -12,7 +12,6 @@
     <style>
         table.scroll {
             width: 100%;
-            /* Optional */
             border-collapse: collapse;
             border-spacing: 0;
             border: 1px solid black;
@@ -21,18 +20,19 @@
         table.scroll tbody,
         table.scroll thead {
             display: block;
+            overflow-x: hidden;
             width: 100%;
         }
 
         thead tr th {
-            height: 30px;
-            line-height: 30px;
+            height: 25px;
+            line-height: 15px;
             text-align: left;
             vertical-align: top;
         }
 
         table.scroll tbody {
-            height: 300px;
+            height: 60vh;
             overflow-y: auto;
             overflow-x: hidden;
         }
@@ -49,10 +49,9 @@
 
         tbody td,
         thead th {
-            /*width: 40%;*/
-            /* Optional */
+            overflow: hidden;
             border-right: 1px solid black;
-            /* white-space: nowrap; */
+            white-space: nowrap;
         }
 
         tbody td:last-child,
@@ -73,18 +72,18 @@
         </div>
 
         <div class="row">
-            <div class="col-12 vh-75 overflow">
+            <div class="col-12 overflow">
 
                 <div id="hostname"></div>
 
                 <table id="interface-table-id"
                     class="table scroll table-sm table-responsive-md table-hover table-striped table-hover "
                     id="interface-table">
-                    <thead class="thead-light" style="width: 100%;">
-                        <tr>
-                            <th id="id-head-name" style="width:5000px">Name</th>
-                            <th id="id-head-guid" style="width:40%">GUID</th>
-                            <th id="id-head-type" style="width:20%">Type</th>
+                    <thead class="thead-light">
+                        <tr class="d-flex">
+                            <th class="col-4" id="id-head-name">Name</th>
+                            <th class="col-7" id="id-head-guid">GUID</th>
+                            <th class="col-1" id="id-head-type">Type</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -241,33 +240,30 @@
         let tableRef = tblInterface.getElementsByTagName('tbody')[0];
 
         let row = tableRef.insertRow(-1);
-        row.classList.add("clickable-row");
         row.style.cursor = "pointer";
+        row.classList.add("clickable-row");
+        row.classList.add("d-flex");
 
         // Name
         let cellName = row.insertCell(0);
         cellName.innerHTML = name;
-        cellName.style.width = "40%";
+        cellName.classList.add("col-4");
 
         // GUID
         let cellGuid = row.insertCell(1);
         cellGuid.innerHTML = guid;
-        cellGuid.style.width = "40%";
+        cellGuid.classList.add("col-7");
+        cellGuid.classList.add("text-monospace");
+        cellGuid.style.color = "darkgreen";
 
         // Type
         let cellType = row.insertCell(2);
         cellType.innerHTML = type;
+        cellType.classList.add("col-1");
         cellType.classList.add("ctext");
-        cellType.style.width = "20%";
-
-        adjustListHeader();
+        //cellType.setAttribute('class', "col-2");
     }
 
-    function adjustListHeader() {
-        document.getElementById('id-head-name').style.width = "5000px";
-        document.getElementById('id-head-guid').style.width = "40%";
-        document.getElementById('id-head-type').style.width = "20%";
-    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Document ready
