@@ -32,202 +32,159 @@
 
         <form action="/action_page.php" class="needs-validation" novalidate>
 
+            <!-- Active checkbox -->
             <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">ghgh</div>
-                    <div class="form-check col-sm-9">
-                        <input id="bActive" class="form-check-input" type="checkbox" value="" >
-                        <label class="form-check-label" for="defaultCheck1">
-                            active
-                        </label>
-                    </div>
-            </div>
-
-            <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">Name:</div>
-                <div class="col-sm-9">
-                    <input id="txName" type="text" class="form-input form-control-sm col-sm-9" name="name"
-                        placeholder="Enter name of tx row" />
+                <div class="col-3 font-weight-bold text-right">
+                </div>
+                <div class="form-check form-check-inline font-weight-bold col-2">
+                    <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                    <label class="form-check-label" for="inlineCheckbox1">Active</label>
                 </div>
             </div>
 
+            <!-- Name -->
             <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">Event:</div>
-                <div class="col-sm-9">
-                    <input class="form-control" type="text" placeholder="Event to send is here…" readonly>
+                <div class="col-3 font-weight-bold text-right">
+                    Name:
+                </div>
+                <div class="col-9">
+                    <input id="name" type="text" class="form-input form-control-sm col-9" name="name"
+                        placeholder="Enter a name for this transmit row" />
                 </div>
             </div>
 
-            <div class="row">
-
-            </div>
-
-            <!-- Class -->
+            <!-- Event -->
             <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Class filter:
+                <div class="col-3 font-weight-bold text-right">
+                    Event:
                 </div>
-                <div class="col-sm-3">
-                    <input id="filterClass" class="form-input form-control-sm col-sm-6" type="text" name="class_filter"
-                        value="0x0000" />
-                    <div id="errorFilterClass" class="invalid-feedback">Wrong format</div>
+                <div class="col-7">
+                    <input id="event" class="form-control" size="36" type="text"
+                     placeholder="No event defined yet…"
+                        readonly>
                 </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Class mask:
-                </div>
-                <div class="col-sm-3">
-                    <input id="maskClass" class="form-input form-control-sm col-sm-6" type="text" name="class_mask"
-                        value="0x0000" />
-                    <div id="errorMaskClass" class="invalid-feedback">Wrong format</div>
-                </div>
-            </div>
-
-            <!-- Type -->
-            <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Type filter:
-                </div>
-                <div class="col-sm-3">
-                    <input id="filterType" class="form-input form-control-sm col-sm-6" type="text" name="type_filter"
-                        value="0x0000" />
-                    <div id="errorFilterType" class="invalid-feedback">Wrong format</div>
-                </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Type mask:</div>
-                <div class="col-sm-3">
-                    <input id="maskType" class="form-input form-control-sm col-sm-6" type="text" name="type_mask"
-                        value="0x0000" />
-                    <div id="errorMaskType" class="invalid-feedback">Wrong format</div>
+                <div class="col-2">
+                    <button type="submit" class="btn btn-warning">Select</button>
                 </div>
             </div>
 
             <!-- Priority -->
-            <div class="form-group form-inline ">
-                <div class="col-sm-3 text-right font-weight-bold text-right">
-                    Priority filter:
-                </div>
-                <div class="col-sm-3 ">
-                    <input id="filterPriority" class="form-input form-control-sm col-sm-6" type="text"
-                        name="priority_filter" value="0" />
-                    <div id="errorFilterPriority" class="invalid-feedback">Wrong format</div>
-                </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Priority mask:
-                </div>
-                <div class="col-sm-3">
-                    <input id="maskPriority" class="form-input form-control-sm col-sm-6" type="text"
-                        name="priority_mask" value="0" />
-                    <div id="errorMaskPriority" class="invalid-feedback">Wrong format</div>
-                </div>
-            </div>
-
-            <!-- Index -->
-            <div class="form-group form-inline ">
-                <div class="col-sm-3  font-weight-bold text-right">
-                    Index filter:
-                </div>
-                <div class="col-sm-3 ">
-                    <input id="filterIndex" class="form-input form-control-sm col-sm-6" type="text" name="index_filter"
-                        value="0x00" />
-                    <div id="errorFilterIndex" class="invalid-feedback">Wrong format</div>
-                </div>
-                <div class="col-sm-3  font-weight-bold text-right">
-                    Index mask:
-                </div>
-                <div class="col-sm-3">
-                    <input id="maskIndex" class="form-input form-control-sm col-sm-6" type="text" name="index_mask"
-                        value="0x00" />
-                    <div id="errorMaskIndex" class="invalid-feedback">Wrong format</div>
-                </div>
-            </div>
-
-            <!-- Zone -->
-            <div class="form-group form-inline ">
-                <div class="col-sm-3  font-weight-bold text-right">
-                    Zone filter:
-                </div>
-                <div class="col-sm-3 ">
-                    <input id="filterZone" class="form-input form-control-sm col-sm-6" type="text" name="zone_filter"
-                        value="0x00" />
-                    <div id="errorFilterZone" class="invalid-feedback">Wrong format</div>
-                </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Zone mask:
-                </div>
-                <div class="col-sm-3">
-                    <input id="maskZone" class="form-input form-control-sm col-sm-6" type="text" name="zone_mask"
-                        value="0x00" />
-                    <div id="errorMaskZone" class="invalid-feedback">Wrong format</div>
-                </div>
-            </div>
-
-            <!-- Subzone -->
             <div class="form-group form-inline">
-                <div class="col-sm-3  font-weight-bold text-right">
-                    Subzone filter:
+                <div class="col-3 font-weight-bold text-right">
+                    Priority:
                 </div>
-                <div class="col-sm-3 ">
-                    <input id="filterSubzone" class="form-input form-control-sm col-sm-6" type="text"
-                        name="subzone_filter" value="0x00" />
-                    <div id="errorFilterSubzone" class="invalid-feedback">Wrong format</div>
-                </div>
-                <div class="col-sm-3 font-weight-bold text-right">
-                    Zone mask:
-                </div>
-                <div class="col-sm-3">
-                    <input id="maskSubzone" class="form-input form-control-sm col-sm-6" type="text" name="subzone_mask"
-                        value="0x00" />
-                    <div id="errorMaskSubzone" class="invalid-feedback">Wrong format</div>
-                </div>
-            </div>
-
-            <!-- GUID filter -->
-            <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">GUID filter:</div>
-                <div class="col-sm-9">
-                    <input id="filterGuid" class="form-input form-control-sm col-sm-8" type="text" name="GUID_filter"
-                        placeholder="Enter GUID filter" name="description"
-                        value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" required />
-                    <div id="errorFilterGuid" class="invalid-feedback">There must be a valid (or empty) GUID filter
-                        defined.</div>
-                </div>
-            </div>
-
-            <!-- GUID mask -->
-            <div class="form-group form-inline">
-                <div class="col-sm-3 font-weight-bold text-right">GUID mask:</div>
-                <div class="col-sm-9">
-                    <input id="maskGuid" class="form-input form-control-sm col-sm-8" type="text" name="GUID_mask"
-                        placeholder="Enter GUID mask" name="description"
-                        value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" required />
-                    <div id="errorMaskGuid" class="invalid-feedback">There must be a valid (or empty) GUID mask
-                        defined.
+                <div class="col-9 form-inline">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="priority" type="radio" id="optPriority0" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">0 (highest)</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="priority" type="radio" id="optPriority1" value="option2">
+                        <label class="form-check-label" for="inlineCheckbox2">1</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="priority" type="radio" id="optPriority2" value="option3">
+                        <label class="form-check-label" for="inlineCheckbox3">2</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input checked class="form-check-input" name="priority" type="radio" id="optPriority3" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">3</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="priority" type="radio" id="optPriority4" value="option2">
+                        <label class="form-check-label" for="inlineCheckbox2">4</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="priority" type="radio" id="optPriority5" value="option3">
+                        <label class="form-check-label" for="inlineCheckbox3">5</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="priority" type="radio" id="optPriority6" value="option3">
+                        <label class="form-check-label" for="inlineCheckbox3">6</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="priority" type="radio" id="optPriority7" value="option3">
+                        <label class="form-check-label" for="inlineCheckbox3">7 (lowest)</label>
                     </div>
                 </div>
             </div>
 
-            <div>
-                <hr />
+            <!-- GUID -->
+            <div class="form-group form-inline">
+                <div class="col-3 font-weight-bold text-right">
+                        Originating GUID:
+                </div>
+                <div class="col-7 form-inline">
+                    <input id="filterType" class="form-input form-control-sm" size="40" type="text" name="type_filter"
+                        value="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00" />
+                    <div id="errorFilterType" class="invalid-feedback">Wrong format</div>
+                </div>
+                <div class="col-2">
+                    <button type="submit" class="btn btn-warning">Default</button>
+                </div>
             </div>
 
-            <div class="col-sm-12 text-center">
-                <button id="btnLoad" type="button" class="btn-sm btn-warning">Load filter...</button>
-                <button id="btnSave" type="button" class="btn-sm btn-warning">Save filter...</button>
-                <button id="btnGuidFilterWiz" type="button" class="btn-sm btn-warning">GUID filter
-                    wizard...</button>
-                <button id="btnWizard" type="button" class="btn-sm btn-warning">Setup wizard...</button>
-                <button id="btnClear" type="button" class="btn-sm btn-warning">Clear</button></div>
+            <!-- Data -->
+            <div class="form-group form-inline">
+                <div class="col-3 font-weight-bold text-right">
+                    Data:
+                </div>
+                <div class="col-9 form-inline">
+                    <textarea id="filterType" class="form-input form-control-sm d-flex" style="height:50px;" cols="40"
+                        type="text" name="type_filter"
+                        placeholder="Enter comma separated event data (decimal/hex)" value=""></textarea>
+                </div>
+            </div>
+
+            <!-- Count -->
+            <div class="form-group form-inline">
+                <div class="col-3 font-weight-bold text-right">
+                    Count:
+                </div>
+                <div class="col-3">
+                    <input id="count" type="text" class="form-input form-control-sm" size="4" name="name"
+                        placeholder="0" />
+                </div>
+            </div>
+
+            <!-- Period -->
+            <div class="form-group form-inline">
+                <div class="col-3 font-weight-bold text-right">
+                    Period:
+                </div>
+                <div class="col-9">
+                    <input id="period" type="text" class="form-input form-control-sm" size="4" name="name"
+                        placeholder="0" />
+                </div>
+            </div>
+
+            <!-- Trigger -->
+            <div class="form-group form-inline">
+                <div class="col-3 font-weight-bold text-right">
+                    Trigger:
+                </div>
+                <div class="col-9">
+                        <select id="inputState" class="form-control" style="width:300px">
+                                <option selected>Choose...</option>
+                                <option>Not available yet</option>
+                              </select>
+                </div>
+            </div>
+
             <div>
                 <hr />
             </div>
 
             <div class="row">
-                <div class="col-sm-12 text-center">
+                <div class="col-12 text-center">
                     <button id="btnCancel" type="submit" class="btn-sm">Cancel</button>
                     <button id="btnSubmit" type="submit" class="btn-sm btn-default"><span class="octicon octicon-check"
                             aria-hidden="true"></span>OK</button>
                     <i class="opticon octicon-mark-github"></i>
                 </div>
             </div>
+
+
 
         </form>
 
