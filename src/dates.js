@@ -1,5 +1,31 @@
 // Source: http://stackoverflow.com/questions/497790
 // https://stackoverflow.com/questions/492994/compare-two-dates-with-javascript
+/*
+dates.compare(a,b)
+
+Returns a number:
+
+-1 if a < b
+0 if a = b
+1 if a > b
+NaN if a or b is an illegal date
+dates.inRange (d,start,end)
+
+Returns a boolean or NaN:
+
+true if d is between the start and end (inclusive)
+false if d is before start or after end.
+NaN if one or more of the dates are illegal.
+dates.convert
+
+Used by the other functions to convert their input to a date object. The input can be
+
+a date-object : The input is returned as is.
+an array: Interpreted as [year,month,day]. NOTE month is 0-11.
+a number : Interpreted as number of milliseconds since 1 Jan 1970 (a timestamp)
+a string : Several different formats is supported, like "YYYY/MM/DD", "MM/DD/YYYY", "Jan 31 2009" etc.
+an object: Interpreted as an object with year, month and date attributes. NOTE month is 0-11.
+*/
 module.exports = dates = {
     convert:function(d) {
         // Converts the date in d to a date-object. The input can be:

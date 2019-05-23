@@ -67,5 +67,16 @@
                 "MaskGuid": "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"
             }
         }
+    ],
+    "sessions": [
+        {
+            "connection": "pi4",
+            "filter": "gold",
+            "tx": [
+                "path1",
+                "path2",
+                "path3"
+            ]
+        }
     ]
 }

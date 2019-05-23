@@ -1,7 +1,6 @@
 const { remote, ipcRenderer } = require('electron');
-const { Menu, MenuItem, app } = remote;
+const { Menu, MenuItem, app, dialog } = remote;
 
-let tblMain = document.getElementById("main-table-id");
 let selected_name = '';
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -58,11 +57,31 @@ menu.append(new MenuItem({
     }
 }));
 
-// electron.ipcRenderer.on('reply-connection-object', (event, arg) => {
-//     console.log(arg) // prints "pong"
-// })
+///////////////////////////////////////////////////////////////////////////////
+// getVscpClassObj
+//
+// 'undefined' is returned if VSCP class is not found
+//
 
-// electron.ipcRenderer.send('asynchronous-message', 'ping');
+getVscpClassObj = function (vscpclass) {
+    // Find VSCP class
+    return remote.getGlobal('classDefs').find((element) => element.class === vscpclass);
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// getVscpTypeObj
+//
+// 'undefined' is returned if VSCP class and/or VSCP type is not found
+//
+
+getVscpTypeObj = function (vscpclass) {
+    // Find VSCP class
+    let foundClass = remote.getGlobal('classDefs').find((element) =>
+        element.class === vscpclass);
+
+    // Find type in class
+    return foundClass.types.find((element) => element.type === vscptype);
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Document ready

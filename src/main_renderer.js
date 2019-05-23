@@ -1,23 +1,27 @@
 const { remote, ipcRenderer } = require('electron');
-const { Menu, MenuItem, app } = remote;
+const { Menu, MenuItem, app, shell } = remote;
+const is = require('electron-is')
 
 let tblMain = document.getElementById("mainTable");
 let selected_name = '';
+console.log(remote.getGlobal('pathHome'));
+//console.log(remote.getGlobal('ppp')(10));
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // context menu
 //
 
-const menu = new Menu()
+const menu_context = new Menu()
 
 // Build menu one item at a time, unlike
-menu.append(new MenuItem({
+menu_context.append(new MenuItem({
     label: 'Add...',
     click() {
         addConnection();
     }
 }));
-menu.append(new MenuItem({
+menu_context.append(new MenuItem({
     label: 'Edit...',
     click() {
         if ('' !== selected_name) {
@@ -25,39 +29,358 @@ menu.append(new MenuItem({
         }
     }
 }));
-menu.append(new MenuItem({
+menu_context.append(new MenuItem({
     label: 'Delete',
     click() {
         removeConnection();
     }
 }));
-menu.append(new MenuItem({
+menu_context.append(new MenuItem({
     label: 'Clone',
     click() {
         cloneConnection();
     }
 }));
-menu.append(new MenuItem({ type: 'separator' }))
-menu.append(new MenuItem({ label: 'Session', type: 'checkbox', checked: true }))
-menu.append(new MenuItem({
-    label: 'Configure',
+
+menu_context.append(new MenuItem({ type: 'separator' }))
+
+menu_context.append(new MenuItem({
+    label: 'Device session',
     click() {
-        console.log('Configure clicked')
-    }
-}));
-menu.append(new MenuItem({
-    label: 'Scan',
-    click() {
-        console.log('Scan clicked')
-    }
-}));
-menu.append(new MenuItem({
-    label: 'Bootloader',
-    click() {
-        console.log('Bootloader clicked')
+        openSessionWindow();
     }
 }));
 
+menu_context.append(new MenuItem({
+    label: 'Device Configuration',
+    click() {
+        openDeviceConfigWindow();
+    }
+}));
+
+menu_context.append(new MenuItem({
+    label: 'Device scan',
+    click() {
+        openScanWindow();
+    }
+}));
+
+menu_context.append(new MenuItem({
+    label: 'Device firmware load',
+    click() {
+        openFirmwareLoadWindow();
+    }
+}));
+
+menu_context.append(new MenuItem({ type: 'separator' }));
+
+menu_context.append(new MenuItem({
+    label: 'Remote variables',
+    click() {
+        openRemoteVariableWindow();
+    }
+}));
+
+menu_context.append(new MenuItem({
+    label: 'Tables',
+    click() {
+        openRemoteTablesWindow();
+    }
+}));
+
+menu_context.append(new MenuItem({
+    label: 'MDF editor',
+    click() {
+        openMdfEditorWindow();
+    }
+}));
+
+menu_context.append(new MenuItem({ type: 'separator' }))
+
+menu_context.append(new MenuItem({ label: 'option', type: 'checkbox', checked: true }))
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Window menu
+//
+
+const template = [
+    // { role: 'appMenu' }
+    ...(is.osx() ? [{
+        label: app.getName(),
+        submenu: [
+            { role: 'about' },
+            { type: 'separator' },
+            { role: 'services' },
+            { type: 'separator' },
+            { role: 'hide' },
+            { role: 'hideothers' },
+            { role: 'unhide' },
+            { type: 'separator' },
+            { role: 'quit' }
+        ]
+    }] : []),
+    // { role: 'fileMenu' }
+    {
+        label: 'File',
+        submenu: [
+            is.osx() ? { role: 'close' } : { role: 'quit' }
+        ]
+    },
+    // { role: 'editMenu' }
+    {
+        label: 'Edit',
+        submenu: [
+            { role: 'undo' },
+            { role: 'redo' },
+            { type: 'separator' },
+            { role: 'cut' },
+            { role: 'copy' },
+            { role: 'paste' },
+            ...(is.osx() ? [
+                { role: 'pasteAndMatchStyle' },
+                { role: 'delete' },
+                { role: 'selectAll' },
+                { type: 'separator' },
+                {
+                    label: 'Speech',
+                    submenu: [
+                        { role: 'startspeaking' },
+                        { role: 'stopspeaking' }
+                    ]
+                }
+            ] : [
+                    { role: 'delete' },
+                    { type: 'separator' },
+                    { role: 'selectAll' }
+                ])
+        ]
+    },
+    // Device
+    {
+        label: 'Device',
+        submenu: [
+            {
+                label: 'Device session',
+                click() {
+                    openSessionWindow();
+                }
+            },
+            {
+                label: 'Device configuration',
+                click() {
+                    openDeviceConfigWindow();
+                }
+            },
+            {
+                label: 'Device scan',
+                click() {
+                    openScanWindow();
+                }
+            },
+            {
+                label: 'Device firmware load',
+                click() {
+                    openFirmwareLoadWindow();
+                }
+            },
+            { label: 'separator' },
+            {
+                label: 'Remote variables',
+                click() {
+                    openRemoteVariableWindow();
+                }
+            },
+            {
+                label: 'Tables',
+                click() {
+                    openRemoteTablesWindow();
+                }
+            },
+            {
+                label: 'Decision Matrix (Level II)',
+                click() {
+                    openDecisionMatrixEdit();
+                }
+            },
+        ]
+    },
+    {
+        label: 'Tools',
+        submenu: [
+            {
+                label: 'MDF editor',
+                click() {
+                    openMdfEditorWindow();
+                }
+            },
+            { type: 'separator' },
+            {
+                label: 'Add connection',
+                click() {
+                    addConnection();
+                }
+            },
+            {
+                label: 'Edit connection',
+                click() {
+                    editConnection();
+                }
+            },
+            {
+                label: 'Remove connection',
+                click() {
+                    removeConnection();
+                }
+            },
+            {
+                label: 'Clone connection',
+                click() {
+                    cloneConnection();
+                }
+            },
+            { type: 'separator' },
+
+        ]
+    },
+    {
+        label: 'Settings',
+        submenu: [
+            {
+                label: 'General Settings',
+                click() {
+                    ;
+                }
+            },
+            {
+                label: 'Load class/type definitions',
+                click() {
+                    ;
+                }
+            },
+            {
+                label: "Handle known GUID's",
+                click() {
+                    ;
+                }
+            },
+        ]
+    },
+    // { role: 'viewMenu' }
+    {
+        label: 'View',
+        submenu: [
+            { role: 'reload' },
+            { role: 'forcereload' },
+            { role: 'toggledevtools' },
+            { type: 'separator' },
+            { role: 'resetzoom' },
+            { role: 'zoomin' },
+            { role: 'zoomout' },
+            { type: 'separator' },
+            { role: 'togglefullscreen' }
+        ]
+    },
+    // { role: 'windowMenu' }
+    {
+        label: 'Window',
+        submenu: [
+            { role: 'minimize' },
+            { role: 'zoom' },
+            ...(is.osx() ? [
+                { type: 'separator' },
+                { role: 'front' },
+                { type: 'separator' },
+                { role: 'window' }
+            ] : [
+                    { role: 'close' }
+                ])
+        ]
+    },
+    {
+        role: 'help',
+        submenu: [
+            {
+                label: 'VSCP site',
+                click() { remote.shell.openExternal('https://vscp.org') }
+            },
+            {
+                label: 'VSCP Works documentation',
+                click() { remote.shell.openExternal('https://vscp.org') }
+            },
+            {
+                label: 'VSCP documentation',
+                click() { remote.shell.openExternal('https://www.vscp.org/#documentation') }
+            }
+            ,
+            {
+                label: 'About',
+                click() { remote.shell.openExternal('https://www.vscp.org/#sponsors') }
+            }
+        ]
+    }
+]
+
+const menu_main = remote.Menu.buildFromTemplate(template)
+Menu.setApplicationMenu(menu_main)
+
+//const menu_main = new Menu()
+
+///////////////////////////////////////////////////////////////////////////////
+// openSessionWindow
+//
+
+openSessionWindow = function () {
+    ipcRenderer.send('open-new-session-window');
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// openDeviceConfigWindow
+//
+
+openDeviceConfigWindow = function () {
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// openScanWindow
+//
+
+openScanWindow = function () {
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// openFirmwareLoadWindow
+//
+
+openFirmwareLoadWindow = function () {
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// openRemoteVariableWindow
+//
+
+openRemoteVariableWindow = function () {
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// openRemoteTablesWindow
+//
+
+openRemoteTablesWindow = function () {
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// openMdfEditorWindow
+//
+
+openMdfEditorWindow = function () {
+
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Document ready
@@ -68,7 +391,7 @@ $(document).ready(function ($) {
     // Prevent default action of right click in chromium. Replace with our menu.
     window.addEventListener('contextmenu', (e) => {
         e.preventDefault()
-        menu.popup(remote.getCurrentWindow())
+        menu_context.popup(remote.getCurrentWindow())
     }, false);
 
     ///////////////////////////////////////////////////////////////////////////
@@ -80,7 +403,7 @@ $(document).ready(function ($) {
     addSavedConnections = function () {
         $("#mainTable > tbody").empty();
         let connections = ipcRenderer.sendSync('get-connection-object');
-        connections.vscpinterface.forEach((item) => {
+        connections.interface.forEach((item) => {
             addConnectionRow(item.name, item.type);
         });
     }
@@ -188,8 +511,57 @@ $(document).ready(function ($) {
         $(this).parent().removeClass("show").hide();
     });
 
+    ///////////////////////////////////////////////////////////////////////////////
+    // Session
+    //
+
+    $("#btnSession").on("click", function () {
+        openSessionWindow();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Configuration
+    //
+
+    $("#btnConfiguration").on("click", function () {
+        openDeviceConfigWindow();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Scan
+    //
+
+    $("#btnScan").on("click", function () {
+        openScanWindow();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Firmware
+    //
+
+    $("#btnFirmware").on("click", function () {
+        openFirmwareLoadWindow();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Variables
+    //
+
+    $("#btnVariables").on("click", function () {
+        openRemoteVariableWindow();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // btnTables
+    //
+
+    $("#btnTables").on("click", function () {
+        openRemoteTablesWindow();
+    });
+
     addSavedConnections();
-});
+
+}); // Windows loaded
 
 
 ///////////////////////////////////////////////////////////////////////////////

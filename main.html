@@ -26,13 +26,14 @@
 
         thead tr th {
             height: 25px;
-            line-height: 15px;
+            line-height: 10px;
             text-align: left;
             vertical-align: top;
         }
 
         table.scroll tbody {
             height: 60vh;
+            background-color: rgb(247, 248, 231);
             overflow-y: auto;
             overflow-x: hidden;
         }
@@ -49,10 +50,8 @@
 
         tbody td,
         thead th {
-            width: 20%;
-            /* Optional */
             border-right: 1px solid black;
-            /* white-space: nowrap; */
+            white-space: nowrap;
         }
 
         tbody td:last-child,
@@ -77,21 +76,31 @@
                             class="badge badge-warning">works+</span></a>
                 </div>
                 <ul id="myTab" class="nav nav-tabs">
+
                     <!-- Dropdown -->
-                    <li id="main-session-id" class="nav-item active">
-                        <a class="nav-link" href="#session">Session</a>
+                    <li id="btnSession" class="nav-item active">
+                            <button id="btnSession" type="button" class="btn btn-sm btn-secondary rounded" style="margin-right: 2px;">
+                                    <strong>Session</strong></button>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#configuration">Configuration</a>
+                    <li id="btnConfiguration" class="nav-item">
+                            <button id="btnConfiguration" type="button" class="btn btn-sm btn-secondary rounded" style="margin-right: 2px;">
+                                    <strong>Configuration</strong></button>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#scan">Scan</a>
+                    <li id="btnScan" class="nav-item">
+                            <button id="btnScan" type="button" class="btn btn-sm btn-secondary rounded" style="margin-right: 2px;">
+                                    <strong>Scan</strong></button>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#bootlosder">Bootloader</a>
+                    <li id="btnFirmware" class="nav-item">
+                            <button id="btnFirmware" type="button" class="btn btn-sm btn-secondary rounded" style="margin-right: 2px;">
+                                    <strong>Firmware</strong></button>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#">Info</a>
+                    <li id="btnVariables" class="nav-item">
+                            <button id="btnVariables" type="button" class="btn btn-sm btn-secondary rounded" style="margin-right: 2px;">
+                                    <strong>Variables</strong></button>
+                    </li>
+                    <li id="btnTables" class="nav-item">
+                            <button id="btnTables" type="button" class="btn btn-sm btn-secondary rounded" style="margin-right: 2px;">
+                                    <strong>Tables</strong></button>
                     </li>
                 </ul>
 
@@ -105,7 +114,7 @@
                 <kbd>Connections</kbd>
                 <div class="tab-content" id="pages-tabContent">
                     <table id="mainTable"
-                        class="table-sm scroll table-bordered table-hover table-striped">
+                        class="table scroll table-sm table-responsive table-hover table-striped">
                         <thead class="thead-light">
                             <tr class="d-flex" >
                                 <th class="col-8" id="id-head-name" style="width: 80%">&nbsp;Name</th>
