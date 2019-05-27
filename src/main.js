@@ -18,15 +18,15 @@ const classdef = require('./classdef.js');
 //const homeDir = os.homedir();
 //readOldConfig(homedir);
 
-global.connections = {};   // Defined connections
-global.classDefs = {};     // All defined classes/types
-global.childWindows = [];
-global.pathHome = path.join(app.getPath('home'), ".vscpworks");
-global.pathVSCP = '';
+connections = {};   // Defined connections
+classDefs = {};     // All defined classes/types
+childWindows = [];  // All child windows
+pathHome = path.join(app.getPath('home'), ".vscpworks");
+pathVSCP = '';
 
 let mainWindow;         // Initial window
 
-console.log('Homefolder: ' + global.pathHome);
+console.log('Homefolder: ' + pathHome);
 
 
 console.log("Platform: " + os.platform());
@@ -39,7 +39,7 @@ switch (os.platform()) {
     break;
 
   case "linux":
-    global.pathVSCP = "/srv/vscp/";
+    pathVSCP = "/srv/vscp/";
     break;
 
   case "freebsd":
@@ -56,33 +56,33 @@ switch (os.platform()) {
 }
 
 // Create home folder if it does not exist
-if (!fs.existsSync(global.pathHome)) {
-  fs.mkdir(global.pathHome, { recursive: true }, (err) => {
+if (!fs.existsSync(pathHome)) {
+  fs.mkdir(pathHome, { recursive: true }, (err) => {
     if (err) throw err;
   });
 }
 
 // Create events folder in home folder if it does not exist
 // already
-if (!fs.existsSync(path.join(global.pathHome, 'events'))) {
-  fs.mkdir(path.join(global.pathHome, 'events'), { recursive: true }, (err) => {
+if (!fs.existsSync(path.join(pathHome, 'events'))) {
+  fs.mkdir(path.join(pathHome, 'events'), { recursive: true }, (err) => {
     if (err) throw err;
   });
 }
 
-let pathConnectConfig = path.join(global.pathHome, 'connections.json');
+let pathConnectConfig = path.join(pathHome, 'connections.json');
 console.log('Path to connections: ' + pathConnectConfig);
 
-let pathEvents = path.join(global.pathHome, 'events');
+let pathEvents = path.join(pathHome, 'events');
 console.log('Path to class/type definitions: ' + pathEvents);
 
 // Read in defined connections if they are there
 try {
   if (fs.existsSync(pathConnectConfig)) {
     let rawdata = fs.readFileSync(pathConnectConfig);
-    global.connections = JSON.parse(rawdata);
+    connections = JSON.parse(rawdata);
 
-    global.connections.interface = sortConnections(global.connections);
+    connections.interface = sortConnections(connections);
   }
 }
 catch (err) {
@@ -94,11 +94,11 @@ catch (err) {
 // Check if there is new class definitions available
 // and download them if so.
 classdef.checkForNewClassDefs(pathEvents, (cdef) => {
-  global.classDefs = cdef;
+  classDefs = cdef;
   // Find class
-  var foundClass = global.classDefs.find( (element) => element.class === 10);
+  var foundClass = classDefs.find((element) => element.class === 10);
   // Find type in class
-  var foundType = foundClass.types.find( (element) => element.type === 10);
+  var foundType = foundClass.types.find((element) => element.type === 10);
 });
 
 
@@ -165,7 +165,7 @@ function createMainWindow() {
 // newSessionWindow
 //
 
-function newSessionWindow() {
+function newSessionWindow(connection_name) {
 
   // Create the browser window.
   let win = new BrowserWindow({
@@ -180,11 +180,9 @@ function newSessionWindow() {
   childWindows.push({
     id: win.id,
     window: win,
-    type: 'session'
+    type: 'session',
+    connection_name: connection_name
   });
-
-  // Open the DevTools.
-  win.webContents.openDevTools();
 
   // Open the DevTools.
   win.webContents.openDevTools();
@@ -195,10 +193,10 @@ function newSessionWindow() {
   });
 
   win.on("close", () => {
-    for ( let i=0; i<childWindows.length; i++ ) {
-      if (win.id === childWindows[i].id ) {
+    for (let i = 0; i < childWindows.length; i++) {
+      if (win.id === childWindows[i].id) {
         // Remove
-        childWindows.splice(i,1);
+        childWindows.splice(i, 1);
         break;
       }
     }
@@ -300,7 +298,7 @@ ipcMain.on("open-modal-dialog", (event, arg) => {
 //
 
 ipcMain.on('get-connection-object', (event, arg) => {
-  event.returnValue = global.connections
+  event.returnValue = connections
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -309,10 +307,10 @@ ipcMain.on('get-connection-object', (event, arg) => {
 
 ipcMain.on('get-named-connection', (event, name) => {
   rv = null;
-  for (let i = 0; i < global.connections.interface.length; i++) {
-    if ("undefined" === typeof global.connections.interface[i].name) continue;
-    if (name.toLowerCase() === global.connections.interface[i].name.toLowerCase()) {
-      rv = global.connections.interface[i];
+  for (let i = 0; i < connections.interface.length; i++) {
+    if ("undefined" === typeof connections.interface[i].name) continue;
+    if (name.toLowerCase() === connections.interface[i].name.toLowerCase()) {
+      rv = connections.interface[i];
       break;
     }
   };
@@ -324,7 +322,7 @@ ipcMain.on('get-named-connection', (event, name) => {
 //
 
 ipcMain.on('add-connection', (event, item) => {
-  global.connections.interface.push(item);
+  connections.interface.push(item);
   if (!saveConnections()) {
 
   }
@@ -336,9 +334,9 @@ ipcMain.on('add-connection', (event, item) => {
 
 ipcMain.on('edit-connection', (event, item) => {
   //connections.interface.push(item);
-  for (let i = 0; i < global.connections.interface.length; i++) {
-    if (item.name === global.connections.interface[i].name) {
-      global.connections.interface[i] = item;
+  for (let i = 0; i < connections.interface.length; i++) {
+    if (item.name === connections.interface[i].name) {
+      connections.interface[i] = item;
       break;
     }
   }
@@ -352,9 +350,9 @@ ipcMain.on('edit-connection', (event, item) => {
 //
 
 ipcMain.on('remove-connection', (event, name) => {
-  for (let i = 0; i < global.connections.interface.length; i++) {
-    if (name === global.connections.interface[i].name) {
-      global.connections.interface.splice(i, 1); // Remove it
+  for (let i = 0; i < connections.interface.length; i++) {
+    if (name === connections.interface[i].name) {
+      connections.interface.splice(i, 1); // Remove it
       break;
     }
   }
@@ -375,7 +373,7 @@ ipcMain.on('clone-connection', (event, name) => {
   for (let i = 0; i < connections.interface.length; i++) {
     if (name === connections.interface[i].name) {
       // Alternative clone: var cloneOfA = JSON.parse(JSON.stringify(a));
-      clone = cloneObj(global.connections.interface[i]);
+      clone = cloneObj(connections.interface[i]);
       break;
     }
   }
@@ -394,8 +392,8 @@ ipcMain.on('clone-connection', (event, name) => {
     }
 
     bFound = false;
-    for (let i = 0; i < global.connections.interface.length; i++) {
-      if (newname.toLowerCase() === global.connections.interface[i].name.toLowerCase()) {
+    for (let i = 0; i < connections.interface.length; i++) {
+      if (newname.toLowerCase() === connections.interface[i].name.toLowerCase()) {
         idx++;
         bFound = true;
         break;
@@ -405,7 +403,7 @@ ipcMain.on('clone-connection', (event, name) => {
     // Add the clone if not found
     if (!bFound) {
       clone.name = newname;
-      global.connections.interface.push(clone);
+      connections.interface.push(clone);
     }
 
   }
@@ -434,7 +432,7 @@ function cloneObj(obj) {
 //
 
 ipcMain.on('get-home-folder', (event) => {
-  event.returnValue = global.pathHome
+  event.returnValue = pathHome
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -442,7 +440,7 @@ ipcMain.on('get-home-folder', (event) => {
 //
 
 ipcMain.on('get-daemon-folder', (event) => {
-  event.returnValue = global.pathVSCP
+  event.returnValue = pathVSCP
 });
 
 
@@ -463,7 +461,7 @@ ipcMain.on('show-dialog-message', (event, parent, options) => {
 //
 
 ipcMain.on('get-classdefs', (event) => {
-  event.sender.send('reply-classdefs', global.classDefs);
+  event.sender.send('reply-classdefs', classDefs);
 });
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -474,30 +472,53 @@ ipcMain.on('get-classdefs', (event) => {
 
 ipcMain.on('get-vscpclass-obj', (event, vscpclass) => {
   // Find VSCP class
-  event.returnValue = global.classDefs.find( (element) => element.class === vscpclass);
+  event.returnValue = classDefs.find((element) => element.class === vscpclass);
 });
 
 ///////////////////////////////////////////////////////////////////////////////
 // Called by the application to get a specific VSCP type object for a specific
 // VSCP class
 //
-// 'undefined' is returned if VSCP class and/or VSCP type is not found
+// Object with vscpClass and vscpType objects are retured on success.
+// 'undefined' is returned if VSCP class and/or VSCP type is not found.
 //
 
 ipcMain.on('get-vscptype-obj', (event, vscpclass, vscptype) => {
   // Find VSCP class
-  let foundClass = global.classDefs.find( (element) => element.class === vscpclass);
+  let foundClass = classDefs.find((element) => element.class === vscpclass);
 
   // Find type in class
-  event.returnValue = foundClass.types.find( (element) => element.type === vscptype);
+  let foundType = foundClass.types.find((element) => element.type === vscptype);
+
+  event.returnValue = {vscpClass: foundClass, vscpType: foundType};
 });
 
 ///////////////////////////////////////////////////////////////////////////////
 // Called by the application to get the connection object
 //
+// connection_name - Selected connection
 
-ipcMain.on('open-new-session-window', (event, arg) => {
-  newSessionWindow();
+ipcMain.on('open-new-session-window', (event, connection_name) => {
+  newSessionWindow(connection_name);
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Called by the application to get the child window object for a child window
+// with a specific id
+//
+// connection_name - Selected connection
+//
+
+ipcMain.on('get-named-child-window-record', (event, id) => {
+  rv = null;
+  for (let i=0; i<childWindows.length;i++ ) {
+    if ( id === childWindows[i].id ) {
+      rv = childWindows[i];
+      break;
+    }
+  }
+  console.log(rv);
+  event.returnValue = rv;
 });
 
 
@@ -568,9 +589,9 @@ function ttt() {
 let saveConnections = function () {
   try {
     // Sort
-    global.connections.interface = sortConnections(global.connections);
+    connections.interface = sortConnections(connections);
     // Save
-    fs.writeFileSync(pathConnectConfig, JSON.stringify(global.connections), 'utf-8');
+    fs.writeFileSync(pathConnectConfig, JSON.stringify(connections), 'utf-8');
     console.log("Saved connection config file");
     return true;
   }

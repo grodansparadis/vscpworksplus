@@ -1,9 +1,11 @@
 const { remote, ipcRenderer } = require('electron');
-const { Menu, MenuItem, app, shell } = remote;
-const is = require('electron-is')
+const { Menu, MenuItem, app, shell,dialog } = remote;
+const is = require('electron-is');
 
 let tblMain = document.getElementById("mainTable");
 let selected_name = '';
+
+
 console.log(remote.getGlobal('pathHome'));
 //console.log(remote.getGlobal('ppp')(10));
 
@@ -96,7 +98,6 @@ menu_context.append(new MenuItem({
 }));
 
 menu_context.append(new MenuItem({ type: 'separator' }))
-
 menu_context.append(new MenuItem({ label: 'option', type: 'checkbox', checked: true }))
 
 
@@ -321,8 +322,8 @@ const template = [
     }
 ]
 
-const menu_main = remote.Menu.buildFromTemplate(template)
-Menu.setApplicationMenu(menu_main)
+const menu_main = remote.Menu.buildFromTemplate(template);
+Menu.setApplicationMenu(menu_main);
 
 //const menu_main = new Menu()
 
@@ -331,7 +332,17 @@ Menu.setApplicationMenu(menu_main)
 //
 
 openSessionWindow = function () {
-    ipcRenderer.send('open-new-session-window');
+    if ( selected_name.trim().length ) {
+        ipcRenderer.send('open-new-session-window', selected_name );
+    }
+    else {
+        let options = {
+            type: 'info',
+            buttons: ['OK'],
+            title: 'No connection selected.',
+        }
+        dialog.showMessageBox(remote.getCurrentWindow(), options);
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -459,9 +470,9 @@ $(document).ready(function ($) {
         }
         else {
             let options = {
-                type: 'error',
+                type: 'info',
                 buttons: ['OK'],
-                title: 'No connection selected,',
+                title: 'No connection selected-',
             }
             dialog.showMessageBox(remote.getCurrentWindow(), options);
         }
@@ -477,9 +488,9 @@ $(document).ready(function ($) {
         }
         else {
             let options = {
-                type: 'error',
+                type: 'info',
                 buttons: ['OK'],
-                title: 'No connection selected,',
+                title: 'No connection selected.',
             }
             dialog.showMessageBox(remote.getCurrentWindow(), options);
         }
@@ -495,9 +506,9 @@ $(document).ready(function ($) {
         }
         else {
             let options = {
-                type: 'error',
+                type: 'info',
                 buttons: ['OK'],
-                title: 'No connection selected,',
+                title: 'No connection selected.',
             }
             dialog.showMessageBox(remote.getCurrentWindow(), options);
         }
