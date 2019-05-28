@@ -206,7 +206,7 @@
     const { app, dialog } = remote;
     const sprintf = require('sprintf-js').sprintf;
     const win = remote.getCurrentWindow();
-    const vscp = require('./src/vscp');                // TODO: use module
+    const vscp = require('node-vscp');                // TODO: use module
     const vscp_tcp_Client = require('./src/vscptcp');  // TODO: use module
 
     let guid = '';

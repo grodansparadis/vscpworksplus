@@ -38,7 +38,7 @@
 const util = require('util');
 const events = require('events');
 const net = require('net');
-const vscp = require('./vscp');
+const vscp = require('node-vscp');
 
 /* ---------------------------------------------------------------------- */
 
@@ -870,7 +870,7 @@ Client.prototype.onSrvResponse = function (chunk) {
         } else if (this.state === this.states.RCVLOOP) {
 
             responseList = chunk.toString().split("\r\n");
-            responseList.pop();
+            responseList.pop(); // Remove last CR LF pair
 
             for (let idx = 0; idx < responseList.length; idx++) {
 
@@ -2178,10 +2178,9 @@ Client.prototype.getChannelID = async function (options) {
             onSuccess = options.onSuccess;
         }
 
-    }
-
-    if ("function" === typeof options.onError) {
-        onError = options.onError;
+        if ("function" === typeof options.onError) {
+            onError = options.onError;
+        }
     }
 
     const result = await this.sendCommand(

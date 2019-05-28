@@ -610,7 +610,7 @@ function addConnection() {
             var answer = ipcRenderer.sendSync("open-modal-dialog",
                 {
                     title: "Add tcp/ip connection",
-                    width: 600, height: 750,
+                    width: 600, height: 800,
                     win: remote.getCurrentWindow(),
                     url: '../dialog_tcpip_device.html',
                 });
@@ -688,7 +688,7 @@ function editConnection(name) {
         answer = ipcRenderer.sendSync("open-modal-dialog",
             {
                 title: "Edit connection",
-                width: 600, height: 750,
+                width: 600, height: 800,
                 win: remote.getCurrentWindow(),
                 url: '../dialog_tcpip_device.html',
                 connection: conn

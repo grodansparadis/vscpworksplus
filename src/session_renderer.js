@@ -1,13 +1,23 @@
 const { remote, ipcRenderer } = require('electron');
 const { Menu, MenuItem, app, dialog } = remote;
 const is = require('electron-is');
-const vscp = require('./vscp');
+const sprintf = require('sprintf-js').sprintf;
+const vscp = require('node-vscp');
 const vscp_tcp_Client = require('../src/vscptcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');
 
+// tcp/ip channel objects
+let vscp_tcp_client_talker;
+let vscp_tcp_client_listner;
+
 let session_win_obj = {};   // Our windows object
 let connection = {};        // Connection we should work on
+let activeConnection = {
+    talker: {},
+    listner: {}
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // context menu
@@ -243,6 +253,8 @@ const template = [
 
 const menu_session = remote.Menu.buildFromTemplate(template);
 
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // getVscpClassObj
 //
@@ -376,31 +388,61 @@ $(document).ready(function ($) {
 ///////////////////////////////////////////////////////////////////////////////
 // addRxRow
 // Add a row to the Wizard table
-//
+// e.vscpClass, e.vscpType, e.vscpGuid
 
-let addRxRow = function (name, type) {
+let addRxRow = function (dir, e) {
 
-    let tableRef = tblMain.getElementsByTagName('tbody')[0];
+    let evobj = ipcRenderer.sendSync('get-vscptype-obj',
+    e.vscpClass, e.vscpType);
+    //console.log(evobj.vscpClass.token, evobj.vscpType.token);
+
+    let tableRef = document.getElementById("table-rx").getElementsByTagName('tbody')[0];
     let row = tableRef.insertRow(-1);
+    row.classList.add("d-flex");
     row.style.cursor = "pointer";
 
-    // Name
+    // Direction
     let cellName = row.insertCell(0);
-    cellName.innerHTML = name;
-    cellName.style.width = "800px";
+    cellName.classList.add("col-1");
+    cellName.classList.add("ctext");
+    cellName.innerHTML = dir;
 
-    // Type
-    let cellDescription = row.insertCell(1);
-    cellDescription.innerHTML = type;
-    cellDescription.style.width = "20%";
+    // VSCP class
+    let cellClass = row.insertCell(1);
+    cellClass.classList.add("col-3");
+    cellClass.innerHTML = '<strong>' + evobj.vscpClass.token.toLowerCase() +
+        '</strong><span class="text-monospace" style="color:darkgreen;">' +
+        sprintf(" (0x%04x %d)", e.vscpClass, e.vscpClass) +
+        '</span>';
 
-    adjustListHeader();
+    // VSCP type
+    let cellType = row.insertCell(2);
+    cellType.classList.add("col-3");
+    cellType.innerHTML = '<strong>' + evobj.vscpType.name.toLowerCase() +
+        '</strong><span class="text-monospace" style="color:darkgreen;">' +
+        sprintf(" (0x%04x %d)", e.vscpType, e.vscpType) +
+        '</span>';
+
+    // nickname id
+    let cellId = row.insertCell(3);
+    cellId.classList.add("col-1");
+    cellId.classList.add("ctext");
+    cellId.innerHTML = vscp.getNodeId(e.vscpGuid);
+
+    // GUID
+    let cellGuid = row.insertCell(4);
+    cellGuid.classList.add("col");
+    cellGuid.innerHTML = e.vscpGuid;
+
+    let cellTimestamp = row.insertCell(5);
+    cellTimestamp.classList.add("hidden");
+    cellTimestamp.innerHTML = "4134";
 
     // Must do this here to be able to select newly added row
-    $('#main-table-id > tbody > tr').unbind('click');
-    $('#main-table-id > tbody > tr').on('click', function (e) {
-        selected_name = e.currentTarget.cells[0].innerHTML;
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
+    $('#table-rx > tbody > tr').unbind('click');
+    $('#table-rx > tbody > tr').on('click', function (e) {
+         selected_name = e.currentTarget.cells[0].innerHTML;
+         $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });
 }
 
@@ -410,55 +452,36 @@ let addRxRow = function (name, type) {
 
 let openConnection = async function (connection) {
 
-    let host = 'localhost';
-    let port = 9598;
+    activeConnection.listner.read_wcyd = connection.wcyd;
 
-    let sep = connection.host.split(':');
-    if ( sep.length > 1 ) {
-        host = sep[0];
-        port = parseInt(sep[1]);
+    if (connection.wcyd[7] & vscp.hostCapabilities.TWO_CONNECTIONS) {
+        activeConnection.talker.twoConnectionsAllowed = true;
     }
     else {
-        host = connection.host;
+        activeConnection.talker.twoConnectionsAllowed = false;
     }
 
-    console.log('Open Connection');
+    await openTcpipTalkerConnection(connection);
 
-    let vscp_tcp_client = new vscp_tcp_Client();
+    // Get capabilities
+    //   If more than one channel can be open we open
+    //   a separate listening channel
+    let wcyd_fetched = await vscp_tcp_client_talker.getWhatCanYouDo()
+        .catch(err => {
+            console.log('No wcyd command', err);
+        });
 
-    vscp_tcp_client.addEventListener((e) => {
-        console.log("Event received");
-        //console.log(e,e.vscpClass,e.vscpType);
-        let evobj = ipcRenderer.sendSync('get-vscptype-obj',
-        e.vscpClass,e.vscpType);
-        console.log(evobj.vscpClass.name,evobj.vscpType.name);
-    });
+    if ('undefined' !== typeof wcyd_fetched) {
+        activeConnection.talker.read_wcyd = wcyd_fetched;
+        if (wcyd[7] & vscp.hostCapabilities.TWO_CONNECTIONS) {
+            activeConnection.talker.twoConnectionsAllowed = true;
+        }
+    }
 
-    console.log(connection,host, port);
-
-    const value1 = await vscp_tcp_client.connect(
-        {
-            host: host,
-            port: port,
-            timeout: 10000,
-            onSuccess: null
-        });
-    await vscp_tcp_client.sendCommand(
-        {
-            command: "noop"
-        });
-    const ttt = await vscp_tcp_client.sendCommand(
-        {
-            command: "user",
-            argument: connection.username
-        });
-    console.log(ttt);
-    await vscp_tcp_client.sendCommand(
-        {
-            command: "pass",
-            argument: connection.password
-        });
-    await vscp_tcp_client.startRcvLoop();
+    if (activeConnection.talker.twoConnectionsAllowed) {
+        console.log('Yes, can handle two or more connections');
+        openTcpipListnerConnection(connection, activeConnection.talker.chid);
+    }
 
 }
 
@@ -468,4 +491,192 @@ let openConnection = async function (connection) {
 
 let closeConnection = function (connection) {
     console.log('Close Connection');
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// openTcpipTalkerConnection
+//
+// The 'talker' connection is used to send events and other commands. On
+// a one channel device it is used also to pull for incoming events
+//
+
+let openTcpipTalkerConnection = async function (connection) {
+
+    let rv = false;
+
+    console.log('Open Talker Connection');
+
+    // Defaults
+    let host = 'localhost';
+    let port = 9598;
+
+    // Separate from 'host:port' form
+    let sep = connection.host.split(':');
+    if (sep.length > 1) {
+        host = sep[0];
+        port = parseInt(sep[1]);
+    }
+    else {
+        host = connection.host;
+    }
+
+    vscp_tcp_client_talker = new vscp_tcp_Client();
+
+    const value1 = await vscp_tcp_client_talker.connect(
+        {
+            host: host,
+            port: port,
+            timeout: connection.connTimeout,
+            onSuccess: null
+        });
+
+    await vscp_tcp_client_talker.user(
+        {
+            username: connection.username
+        });
+
+    await vscp_tcp_client_talker.password(
+        {
+            password: connection.password
+        });
+
+    // If the connection have an assigned GUID set it
+    let guid = vscp.strToGuid(connection.guid);
+    if (!isGuidZero(guid)) {
+        await setGUID(
+            {
+                guid: connection.guid
+            });
+    }
+
+    // Get host version
+    activeConnection.talker.hostVersion = await vscp_tcp_client_talker.getRemoteVersion();
+    console.log(activeConnection.talker.hostVersion);
+
+    // Get the channel id
+    activeConnection.talker.channelId = await vscp_tcp_client_talker.getChannelID();
+
+    // Get the channel guid
+    activeConnection.talker.channelGuid = await vscp_tcp_client_talker.getGUID();
+
+    return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isGuidZero
+//
+
+let isGuidZero = function (guid) {
+
+    if ("undefined" === typeof guid) {
+        return false;
+    }
+
+    if ("string" === typeof guid) {
+        guid = vscp.strToGuid(guid);
+    }
+
+    for (let i = 0; i < 16; i++) {
+        if (guid[i]) return false;
+    }
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// openTcpipListnerConnection
+//
+// The 'listner' connection is used to receive events from a remote host. This
+// is only possible if the remote can have more than one channel open at once.
+// This is checked with the 'wcyd' command.
+//
+
+let openTcpipListnerConnection = async function (connection, chid) {
+
+    console.log('Open Listner Connection');
+
+    // Defaults
+    let host = 'localhost';
+    let port = 9598;
+
+    // Separate from 'host:port' form
+    let sep = connection.host.split(':');
+    if (sep.length > 1) {
+        host = sep[0];
+        port = parseInt(sep[1]);
+    }
+    else {
+        host = connection.host;
+    }
+
+    vscp_tcp_client_listner = new vscp_tcp_Client();
+
+    // Add event handler for received events
+    vscp_tcp_client_listner.addEventListener((e) => {
+        let evobj = ipcRenderer.sendSync('get-vscptype-obj',
+             e.vscpClass, e.vscpType);
+        //console.log(e, evobj.vscpClass.token, evobj.vscpType.token);
+        addRxRow('rx', e );
+    });
+
+    const value1 = await vscp_tcp_client_listner.connect(
+        {
+            host: host,
+            port: port,
+            timeout: connection.connTimeout,
+            onSuccess: null
+        });
+
+    await vscp_tcp_client_listner.user(
+        {
+            username: connection.username
+        });
+
+    await vscp_tcp_client_listner.password(
+        {
+            password: connection.password
+        });
+
+    // Get the channel id
+    activeConnection.listner.channelId = await vscp_tcp_client_listner.getChannelID();
+
+    // Get the channel guid
+    activeConnection.listner.channelGuid = await vscp_tcp_client_listner.getGUID();
+
+    // Set filter/mask
+
+    await vscp_tcp_client_listner.startRcvLoop();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// closeTalkerConnection
+//
+
+let closeTakerConnection = async function (connection) {
+
+    console.log('Close Taker Connection');
+
+    // Disconnect connection
+    await vscp_tcp_client_talker.disconnect();
+
+    // Throw to the garbage collector
+    vscp_tcp_client_talker = null;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// closeListnerConnection
+//
+
+let closeListnerConnection = async function (connection) {
+
+    console.log('Close ListnerConnection');
+
+    // Terminate receive loop
+    await vscp_tcp_client_listner.stopRcvLoop();
+
+    // Disconnect connection
+    await vscp_tcp_client_listner.disconnect();
+
+    // Throw to the garbage collector
+    vscp_tcp_client_listner = null;
 }

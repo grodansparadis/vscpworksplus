@@ -517,7 +517,7 @@ ipcMain.on('get-named-child-window-record', (event, id) => {
       break;
     }
   }
-  console.log(rv);
+
   event.returnValue = rv;
 });
 
@@ -639,7 +639,7 @@ process.on('uncaughtException', function (err) {
   console.log(err);
 });
 
-const vscp = require('./vscp');
+const vscp = require('node-vscp');
 const vscp_tcp_Client = require('../src/vscptcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');

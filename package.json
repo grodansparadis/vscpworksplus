@@ -34,7 +34,7 @@
   "devDependencies": {
     "@types/xml2js": "^0.4.4",
     "electron": "^4.2.2",
-    "electron-rebuild": "^1.8.4",
+    "electron-rebuild": "^1.8.5",
     "electron-reload": "^1.4.0"
   },
   "dependencies": {
@@ -53,6 +53,7 @@
     "floatthead": "^2.1.3",
     "flot": "^3.0.2",
     "jquery": "^3.4.1",
+    "jsep": "^0.3.4",
     "jsplumb": "^2.9.3",
     "jwt-simple": "^0.5.6",
     "knex": "^0.16.5",
@@ -61,6 +62,7 @@
     "mime": "^2.4.3",
     "node-addon-api": "^1.6.3",
     "node-expat": "^2.3.17",
+    "node-vscp": "^1.0.5",
     "node-vscp-class": "^1.0.2",
     "node-vscp-type": "^1.0.2",
     "npm": "^6.9.0",

@@ -49,16 +49,52 @@
           port is 9598 if not entered).</div>
       </div>
 
-      <div class="form-group">
-        <label class="font-weight-bold" for="username">Username:</label>
-        <input id="username" type="text" class="form-control form-control-sm" placeholder="Enter username"
-          name="username">
+      <div class="form-row">
+        <div class="col">
+          <div class="form-group">
+            <label class="font-weight-bold" for="username">Username:</label>
+            <input id="username" type="text" class="form-control form-control-sm" placeholder="Enter username"
+              name="username">
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="form-group">
+            <label class="font-weight-bold" for="pwd">Password:</label>
+            <input id="password" type="password" class="form-control form-control-sm" placeholder="Enter password"
+              name="password">
+          </div>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label class="font-weight-bold" for="pwd">Password:</label>
-        <input id="password" type="password" class="form-control form-control-sm" placeholder="Enter password"
-          name="pswd">
+      <div class="form-row">
+        <div class="col-6">
+          <div class="form-group">
+            <label class="font-weight-bold" for="contimeout">Connection timeout (ms):</label>
+            <input id="connTimeout" type="text" class="form-control form-control-sm"
+              placeholder="Enter connection timeout in ms" name="connTimeout">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col">
+            <label class="font-weight-bold" for="wcyd">Default wcyd:</label>
+            <input id="wcyd" type="text" class="form-control form-control-sm" placeholder="Enter default wcyd code"
+              name="wcyd">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="col-6">
+          <div class="form-group">
+            <label class="font-weight-bold" for="resptimeout">Response timeout (ms):</label>
+            <input id="respTimeout" type="text" class="form-control form-control-sm"
+              placeholder="Enter respons timeout in ms" name="respTimeout">
+          </div>
+        </div>
+
+
       </div>
 
       <div class="form-group">
@@ -67,27 +103,26 @@
       </div>
 
       <div class="form-group">
-        <label class="font-weight-bold" for="interface">Interface:</label>
+        <label class="font-weight-bold" for="interface">Interface (optional):</label>
         <input id="interface" type="text" class="form-control form-control-sm" placeholder="Enter interface GUID"
           name="interface">
       </div>
 
       <div class="form-group form-check form-inline">
         <label class="font-weight-bold" for="pwd">Options:</label>
-        <div class="col-sm-2">
+        <div class="col">
           <label class="font-weight-bold" class="form-check-label">
             <input id="bSSL" class="form-check-input form-control-sm" type="checkbox" name="bssl"> SSL </label>
         </div>
 
-        <div class="col-sm-5">
+        <div class="col">
           <label class="font-weight-bold" class="form-check-label">
             <input id="bLevel2" class="form-check-input" type="checkbox" name="blevel2"> Full level II
           </label>
         </div>
 
-        <div class="col-sm-5">
-        </div>
       </div>
+
       <div>
         <hr />
       </div>
@@ -125,7 +160,7 @@
   const { remote, ipcRenderer } = require('electron');
   const { app, dialog } = remote;
   const win = remote.getCurrentWindow();
-  const vscp = require('./src/vscp');                // TODO: use module
+  const vscp = require('node-vscp');                // TODO: use module
   const vscp_tcp_Client = require('./src/vscptcp'); // TODO: use module
   const vscp_class = require('node-vscp-class');
   const vscp_type = require('node-vscp-type');
@@ -252,7 +287,7 @@
       {
         host: host,
         port: port,
-        timeout: 10000,
+        timeout: vscp.readValue($("#connTimeout").val()),
         onSuccess: null
       });
     console.log(response);
@@ -305,32 +340,48 @@
     var params = JSON.parse(options);
     console.log(params);
     if ('undefined' !== typeof params.connection) {
+
       bAdd = false; // edit
+
       // Fill in initial data
       $("#connectionName").val(params.connection.name);
       $("#connectionName").prop("readonly", true);
       $("#remoteHost").val(params.connection.host);
       $("#username").val(params.connection.username);
       $("#password").val(params.connection.password);
+
+      if ('undefined' == typeof params.connection.connTimeout) {
+        params.connection.connTimeout = 10000;
+      }
+      $("#connTimeout").val(params.connection.connTimeout);
+
+      console.log(params.connection.wcyd);
+      if ('undefined' == typeof params.connection.wcyd) {
+        params.connection.wcyd = [];
+        for (let i = 0; i < 8; i++) {
+          params.connection.wcyd[i] = 0;
+        }
+      }
+      $("#wcyd").val(params.connection.wcyd.join(','));
+
+      if ('undefined' == typeof params.connection.respTimeout) {
+        params.connection.respTimeout = 3000;
+      }
+      $("#respTimeout").val(params.connection.respTimeout);
+
+
       $("#guid").val(params.connection.guid);
       $("#interface").val(params.connection.interface);
       filter = params.connection.filter;
       $('#bLevel2').prop('checked', params.connection.bLevel2);
       $('#bSSL').prop('checked', params.connection.bSSL);
+
     }
-
-    // Context menu
-    /* const myContextMenu = remote.Menu.buildFromTemplate([
-      { label: 'Exit', role: 'quit' },
-      { label: 'Minimize', role: 'minimize' },
-      { type: 'separator' },
-      { label: 'Start', click() { console.log('Start the app') } }
-    ])
-
-    window.addEventListener('contextmenu', (event) => {
-      event.preventDefault();
-      myContextMenu.popup();
-    }) */
+    else {
+      $("#connTimeout").val('10000');
+      $("#wcyd").val('0,0,0,0,0,0,0,0');
+      $("#respTimeout").val('2000');
+    }
 
     ///////////////////////////////////////////////////////////////////////////
     // Remove active class
@@ -363,6 +414,23 @@
         result.host = $("#remoteHost").val().trim();
         result.username = $("#username").val().trim();
         result.password = $("#password").val().trim();
+        result.connTimeout = vscp.readValue($("#connTimeout").val());
+        result.respTimeout = vscp.readValue($("#respTimeout").val());
+        result.wcyd = [0,0,0,0,0,0,0,0];
+        let wcyd = [];
+        wcyd = $("#wcyd").val().split(',');
+        let idx = 0;
+        wcyd.forEach((item) => {
+          result.wcyd[idx++] = vscp.readValue(item);
+        });
+        // Make sure we have eight entries
+        while (result.wcyd < 8) {
+          result.wcyd.push(0);
+        }
+        // Make sure we don't have more than eight entries
+        while (result.wcyd > 8) {
+          result.wcyd.pop();
+        }
         result.guid = $("#guid").val().trim();
         result.interface = $("#interface").val().trim();
         if ($("#bLevel2").is(":checked")) {
