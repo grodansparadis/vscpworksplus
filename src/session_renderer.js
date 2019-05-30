@@ -7,9 +7,30 @@ const vscp_tcp_Client = require('../src/vscptcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');
 
+let bPause = false;         // True of pause is active
+let bFilter = false;        // True if filter is active
+let bAutoReply = false;     // True if auto-reply is active
+let bNoRxAutoScroll = false // True if auto scrolling
+let eventDiff = 0;          // Used by timestamp diffs
+
+let rxArray = [];           // Receive events shown in rx table
+let rxArrayPause = [];      // Receive events go here during pause
+
+let selectedRow = {
+    vscpEvent: null
+};
+
+// RX table constants
+const rxFieldDir = 0;		// Rx table filed direction
+const rxFieldVscpClass = 1;	// VSCP Class
+const rxFieldVscpType = 2;	// VSCP Type
+const rxFieldNickname = 3;	// Nickname
+const rxFieldGuid = 4;		// GUID
+const rxFieldRefId = 5;		// Reference id into RX array table
+
 // tcp/ip channel objects
-let vscp_tcp_client_talker;
-let vscp_tcp_client_listner;
+let vscp_tcp_client_talker = null;
+let vscp_tcp_client_listner = null;
 
 let session_win_obj = {};   // Our windows object
 let connection = {};        // Connection we should work on
@@ -304,7 +325,7 @@ $(document).ready(function ($) {
     }, false);
 
     ///////////////////////////////////////////////////////////////////////////////
-    // Select table row
+    // Select table row in rx table
     //
 
     $('#table-rx > tbody > tr').on('click', function (e) {
@@ -313,13 +334,16 @@ $(document).ready(function ($) {
     });
 
     ///////////////////////////////////////////////////////////////////////////////
-    // Select table row
+    // Select table row in tx table
     //
 
     $('#table-tx > tbody > tr').on('click', function (e) {
-        selected_name = e.currentTarget.cells[0].innerHTML;
+        refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
+        selectedRow.vscpEvent = rxArray[refid];
+        console.log(selectedRow.vscpEvent);
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });
+
 
     ///////////////////////////////////////////////////////////////////////////////
     // Open table row
@@ -346,11 +370,42 @@ $(document).ready(function ($) {
     });
 
     ///////////////////////////////////////////////////////////////////////////////
-    // Add new connection
+    // Connection button
     //
 
-    $('#btnAdd').on('click', function () {
-        addConnection();
+    $('#btnConnect').on('click', function () {
+        handleConnection();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Pause button
+    //
+
+    $('#btnPause').on('click', function () {
+        handlePause();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Filter button
+    //
+
+    $('#btnFilter').on('click', function () {
+        handleFilter();
+    });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Auto reply button
+    //
+
+    $('#btnAutoReply').on('click', function () {
+        handleAutoReply();
+    });
+
+
+    $("#contain-rx").mouseover(function () {
+        bNoRxAutoScroll = true;
+    }).mouseout(function () {
+        bNoRxAutoScroll = false;
     });
 
     // Get data for session connection
@@ -383,7 +438,52 @@ $(document).ready(function ($) {
 
     openConnection(connection);
 
-});
+}); // document ready
+
+///////////////////////////////////////////////////////////////////////////////
+// hoverEnter
+//
+
+hoverEnter = function (e) {
+    // Enter
+    refid = parseInt(e.currentTarget.cells[5].innerHTML);
+    //console.log(rxArray[refid]);
+    let head = rxArray[refid].vscpHead;
+    let ipv6 = vscp.isGuidIpv6(head) ? " <strong>ipv6</strong>" : "";
+    let dumb = vscp.isDumbNode(head) ? " <strong>d</strong>" : "";
+    let hard = vscp.isHardCoded(head) ? " <strong>hrd</strong>" : "";
+    let nocrc = vscp.isNoCrc(head) ? " <strong>nc</strong>" : "";
+    let tsDiff = (null != selectedRow.vscpEvent) ? (rxArray[refid].vscpTimeStamp -
+        selectedRow.vscpEvent.vscpTimeStamp).toString() : '?';
+
+    let status = " <strong>id:</strong>" + vscp.getNodeId(rxArray[refid].vscpGuid) +
+        " <strong>dt:</strong>" + rxArray[refid].vscpDateTime.toISOString() +
+        " <strong>ts:</strong>" + sprintf("0x%08x", rxArray[refid].vscpTimeStamp) +
+        " <strong>obid:</strong>" + rxArray[refid].vscpObId +
+        " <strong>head:</strong>" + rxArray[refid].vscpHead +
+        " <strong>(p:</strong>" + vscp.getPriority(head) +
+        " <strong>ri:</strong>" + vscp.getRollingIndex(head) +
+        ipv6 + dumb + hard + nocrc + ") " +
+        " <strong>&Delta;:</strong>" + tsDiff + "&micro;S";
+    $("#rowstatus").html(status);
+    //e.currentTarget.css("background", "yellow");
+    //e.currentTarget.attr("background", "yellow");
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// hoverLeave
+//
+
+hoverLeave = function (e) {
+    // Leave
+    $(this).css("background", "");
+}
+
+tblClickHandler = function (item, e) {
+    refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
+    selectedRow.vscpEvent = rxArray[refid];
+    $(item).addClass('bg-info').siblings().removeClass('bg-info');
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // addRxRow
@@ -392,23 +492,45 @@ $(document).ready(function ($) {
 
 let addRxRow = function (dir, e) {
 
-    let evobj = ipcRenderer.sendSync('get-vscptype-obj',
-    e.vscpClass, e.vscpType);
+    // If we are paused save received events in the pause
+    // array
+    if (bPause) {
+        rxArrayPause.push(e);
+        $("#cntPause").text(rxArrayPause.length);
+        return;
+    }
+
+    let newLength = rxArray.push(e);
+    $("#rxCount").text(rxArray.length);
+
+    //let evobj = ipcRenderer.sendSync('get-vscptype-obj',
+    //    e.vscpClass, e.vscpType);
     //console.log(evobj.vscpClass.token, evobj.vscpType.token);
+    let evobj = {
+        vscpClass: {
+            name: 'aaaaa',
+            token: 'yyyyyy'
+        },
+        vscpType: {
+            name: 'bbbbb',
+            token: 'zzzzzz'
+        },
+    };
 
     let tableRef = document.getElementById("table-rx").getElementsByTagName('tbody')[0];
-    let row = tableRef.insertRow(-1);
+    //let row = tableRef.insertRow(-1);
+    let row = document.createElement('tr');
     row.classList.add("d-flex");
     row.style.cursor = "pointer";
 
     // Direction
-    let cellName = row.insertCell(0);
+    let cellName = row.insertCell(rxFieldDir);
     cellName.classList.add("col-1");
     cellName.classList.add("ctext");
     cellName.innerHTML = dir;
 
     // VSCP class
-    let cellClass = row.insertCell(1);
+    let cellClass = row.insertCell(rxFieldVscpClass);
     cellClass.classList.add("col-3");
     cellClass.innerHTML = '<strong>' + evobj.vscpClass.token.toLowerCase() +
         '</strong><span class="text-monospace" style="color:darkgreen;">' +
@@ -416,7 +538,7 @@ let addRxRow = function (dir, e) {
         '</span>';
 
     // VSCP type
-    let cellType = row.insertCell(2);
+    let cellType = row.insertCell(rxFieldVscpType);
     cellType.classList.add("col-3");
     cellType.innerHTML = '<strong>' + evobj.vscpType.name.toLowerCase() +
         '</strong><span class="text-monospace" style="color:darkgreen;">' +
@@ -424,33 +546,138 @@ let addRxRow = function (dir, e) {
         '</span>';
 
     // nickname id
-    let cellId = row.insertCell(3);
+    let cellId = row.insertCell(rxFieldNickname);
     cellId.classList.add("col-1");
     cellId.classList.add("ctext");
     cellId.innerHTML = vscp.getNodeId(e.vscpGuid);
 
     // GUID
-    let cellGuid = row.insertCell(4);
+    let cellGuid = row.insertCell(rxFieldGuid);
     cellGuid.classList.add("col");
     cellGuid.innerHTML = e.vscpGuid;
 
-    let cellTimestamp = row.insertCell(5);
+    let cellTimestamp = row.insertCell(rxFieldRefId);
     cellTimestamp.classList.add("hidden");
-    cellTimestamp.innerHTML = "4134";
+    cellTimestamp.innerHTML = (newLength - 1).toString();
 
-    // Must do this here to be able to select newly added row
-    $('#table-rx > tbody > tr').unbind('click');
-    $('#table-rx > tbody > tr').on('click', function (e) {
-         selected_name = e.currentTarget.cells[0].innerHTML;
-         $(this).addClass('bg-info').siblings().removeClass('bg-info');
+    tableRef.appendChild(row);
+
+    $("#table-rx > tbody > tr:last").on('click', function (e) {
+        tblClickHandler(this, e);
+        // refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
+        // selectedRow.vscpEvent = rxArray[refid];
+        // $(this).addClass('bg-info').siblings().removeClass('bg-info');
     });
+
+    ///////////////////////////////////////////////////////////////////////////////
+    // Hover over table row event
+    //
+
+    //$("#table-rx > tbody > tr").not(':first').unbind('mouseenter').unbind('mouseleave')
+    $("#table-rx > tbody > tr").hover((e) => hoverEnter(e),
+        (e) => hoverLeave(e));
+
+    // Make the newly added row visible but not if
+    // mouse is over the table
+    if (!bNoRxAutoScroll) {
+        row.scrollIntoView(true);
+    }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// handleConnection
+//
+
+handleConnection = function () {
+
+    console.log(typeof vscp_tcp_client_talker);
+
+    if (null === vscp_tcp_client_talker) {
+        $("#btnConnect").removeClass('badge-danger').addClass('badge-success');
+        $("#btnConnect").html('<strong>Connection ON </strong><span id="rxCount" class="badge badge-secondary">0</span>');
+        openConnection(connection);
+    }
+    else {
+        $("#btnConnect").removeClass('badge-success').addClass('badge-danger');
+        $("#btnConnect").html('<strong>Connection OFF </strong><span id="rxCount" class="badge badge-secondary">0</span>');
+        closeConnection();
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// handlePause
+//
+
+handlePause = function () {
+    if (bPause) {
+        bPause = false;
+        $("body").css("cursor", "progress");
+        $("#btnPause").removeClass('badge-danger').addClass('badge-success');
+        //rxArrayPause.forEach((e) => {
+        rxArrayPause.reverse();
+        while (rxArrayPause.length) {
+            e = rxArrayPause.pop();
+            addRxRow('rx', e);
+            $("#cntPause").text(rxArrayPause.length);
+        };
+        rxArrayPause = [];
+        $("body").css("cursor", "default");
+        $("#btnPause").removeClass('badge-danger').addClass('badge-success');
+        $("#btnPause").text('Active');
+    }
+    else {
+        bPause = true;
+        $("#btnPause").removeClass('badge-success').addClass('badge-danger');
+        $("#btnPause").html('<strong>Pause </strong><span id="cntPause" class="badge badge-dark">0</span>');
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// handleFilter
+//
+
+handleFilter = function () {
+    if (bFilter) {
+        bFilter = false;
+        $("#btnFilter").removeClass('badge-primary').addClass('badge-dark');
+        $("#btnFilter").text('Filter OFF');
+    }
+    else {
+        bFilter = true;
+        $("#btnFilter").removeClass('badge-dark').addClass('badge-primary');
+        $("#btnFilter").html('<strong>Filter ON </strong><span id="cntFilter" class="badge badge-dark">0</span>');
+    }
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// handleAutoReply
+//
+
+handleAutoReply = function () {
+    if (bAutoReply) {
+        bAutoReply = false;
+        $("#btnAutoReply").removeClass('badge-primary').addClass('badge-dark');
+        $("#btnAutoReply").text('Auto-Reply OFF');
+    }
+    else {
+        bAutoReply = true;
+        $("#btnAutoReply").removeClass('badge-dark').addClass('badge-primary');
+        $("#btnAutoReply").html('<strong>Auto-Reply ON </strong><span id="cntFilter" class="badge badge-dark">0</span>');
+    }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // openConnection
 //
 
 let openConnection = async function (connection) {
+
+    if ('undefined' == typeof connection) {
+        console.error('Connection is not defined');
+        // TODO dialog
+    }
+
+    $("body").css("cursor", "progress");
 
     activeConnection.listner.read_wcyd = connection.wcyd;
 
@@ -483,6 +710,8 @@ let openConnection = async function (connection) {
         openTcpipListnerConnection(connection, activeConnection.talker.chid);
     }
 
+    $("body").css("cursor", "default");
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -490,7 +719,22 @@ let openConnection = async function (connection) {
 //
 
 let closeConnection = function (connection) {
-    console.log('Close Connection');
+
+    $("body").css("cursor", "progress");
+
+    if (null !== vscp_tcp_client_talker) {
+        closeTakerConnection();
+        console.log(vscp_tcp_client_talker);
+    }
+
+    if (null !== vscp_tcp_client_listner) {
+        closeListnerConnection()
+            .catch(err => {
+                console.log(err);
+            });
+    }
+
+    $("body").css("cursor", "default");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -614,9 +858,9 @@ let openTcpipListnerConnection = async function (connection, chid) {
     // Add event handler for received events
     vscp_tcp_client_listner.addEventListener((e) => {
         let evobj = ipcRenderer.sendSync('get-vscptype-obj',
-             e.vscpClass, e.vscpType);
+            e.vscpClass, e.vscpType);
         //console.log(e, evobj.vscpClass.token, evobj.vscpType.token);
-        addRxRow('rx', e );
+        addRxRow('rx', e);
     });
 
     const value1 = await vscp_tcp_client_listner.connect(

@@ -54,7 +54,9 @@
 
         tbody td,
         thead th {
+            max-width: 0;
             overflow: hidden;
+            text-overflow: ellipsis;
             height: 22px;
             line-height: 15px;
             border-right: 1px solid black;
@@ -94,6 +96,8 @@
             border-bottom: 0px solid rgb(10, 13, 161);
             background-color: rgb(249, 250, 250);
         }
+
+        .wait {cursor:wait}​
     </style>
 
 </head>
@@ -113,24 +117,24 @@
                 <ul id="myTab" class="nav nav-tabs">
 
                     <li class="nav-item">
-                        <button id="btnSave" type="button" class="btn btn-sm btn-success rounded-pill">
-                            <strong>Connection ON</strong></button>
+                        <button id="btnConnect" type="button" class="btn btn-sm badge-success rounded-pill">
+                            <strong>Connection ON </strong><span id="rxCount"
+                                class="badge badge-secondary">0</span></button>
                     </li>
+
                     <li class="nav-item">
-                        <button id="btnSave" type="button" class="btn btn-sm btn-danger rounded-pill">
-                            <strong>Connection OFF</strong></button>
+                        <button id="btnPause" type="button" class="btn btn-sm badge-success rounded-pill">
+                            <strong>Active</strong></button>
                     </li>
+
                     <li class="nav-item">
-                        <button id="btnSave" type="button" class="btn btn-sm btn-primary rounded-pill">
-                            <strong>Filter ON <span class="badge badge-secondary">123</span></strong></button>
-                    </li>
-                    <li class="nav-item">
-                        <button id="btnSave" type="button" class="btn btn-sm btn-dark rounded-pill">
+                        <button id="btnFilter" type="button" class="btn btn-sm badge-dark rounded-pill">
                             <strong>Filter OFF</strong></button>
                     </li>
+
                     <li class="nav-item">
-                        <button id="btnSave" type="button" class="btn btn-sm btn-primary rounded-pill">
-                            <strong>Auto-reply ON <span class="badge badge-secondary">123</span></strong></button>
+                        <button id="btnAutoReply" type="button" class="btn btn-sm badge-dark rounded-pill">
+                            <strong>Auto-reply OFF</strong></button>
                     </li>
 
                 </ul>
@@ -142,8 +146,8 @@
         <div class="row">
 
             <div class="col-9">
-                <kbd>Rx</kbd>
-                <div class="table-responsive">
+                <kbd>Rx</kbd> <span id="rowstatus" class="text-monospace" style="color:darkgreen;"></span>
+                <div id="contain-rx" class="table-responsive">
                     <table id="table-rx" class="table-sm scroll table-bordered table-hover table-striped">
                         <thead class="thead-warning">
                             <tr class="d-flex">
@@ -155,7 +159,7 @@
                             </tr>
                         </thead>
                         <tbody class="rx">
-                            <tr class="d-flex">
+                            <!-- <tr class="d-flex">
                                 <td class="col-1 ctext">rx</td>
                                 <td class="col-3"><strong>class1.control</strong>
                                     <span class="text-monospace" style="color:darkgreen;">(0x001e 30)abh12345</span>
@@ -175,7 +179,7 @@
                                 <td class="col-1 ctext">1</td>
                                 <td class="col">FF:FF:FF:FF:FF:FF:FF:FE:B8:27:EB:0A:00:02:00:05
                                 </td>
-                            </tr>
+                            </tr> -->
                         </tbody>
                     </table>
                 </div>

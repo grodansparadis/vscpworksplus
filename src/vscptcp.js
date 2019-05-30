@@ -1612,14 +1612,16 @@ Client.prototype.stopRcvLoop = async function (options) {
 
     }
 
+    this.state = this.states.CONNECTED;
+
     const result = await this.sendCommand(
         {
-            command: "rcvloop",
+            command: "quitloop",
             onSuccess: onSuccess,
             onError: onError,
         });
 
-    this.state = this.states.CONNECTED;
+
     return result;
 };
 
