@@ -1,5 +1,6 @@
 const { remote, ipcRenderer } = require('electron');
 const { Menu, MenuItem, app, dialog } = remote;
+const fs = require('fs');
 const is = require('electron-is');
 const sprintf = require('sprintf-js').sprintf;
 const vscp = require('node-vscp');
@@ -39,60 +40,40 @@ let activeConnection = {
     listner: {}
 }
 
+const homeFolder = ipcRenderer.sendSync('get-home-folder');
 
 ///////////////////////////////////////////////////////////////////////////////
-// context menu
+// context RX menu
 //
 
-const menu = new Menu()
+const crxmenu = new Menu()
 
 // Build menu one item at a time, unlike
-menu.append(new MenuItem({
-    label: 'Add...',
+crxmenu.append(new MenuItem({
+    label: 'Copy event to clipboard',
     click() {
-        addConnection();
+        copyRxEvent();
     }
 }));
-menu.append(new MenuItem({
-    label: 'Edit...',
+crxmenu.append(new MenuItem({
+    label: 'Clear all receive events',
     click() {
-        if ('' !== selected_name) {
-            editConnection(selected_name);
-        }
+        clearRxTable();
     }
 }));
-menu.append(new MenuItem({
-    label: 'Delete',
+crxmenu.append(new MenuItem({
+    label: 'Load events from file...',
     click() {
-        removeConnection();
+        loadRxRows();
     }
 }));
-menu.append(new MenuItem({
-    label: 'Clone',
+crxmenu.append(new MenuItem({
+    label: 'Save events to file...',
     click() {
-        cloneConnection();
+        saveRxRows();
     }
 }));
-menu.append(new MenuItem({ type: 'separator' }))
-menu.append(new MenuItem({ label: 'Session', type: 'checkbox', checked: true }))
-menu.append(new MenuItem({
-    label: 'Configure',
-    click() {
-        console.log('Configure clicked')
-    }
-}));
-menu.append(new MenuItem({
-    label: 'Scan',
-    click() {
-        console.log('Scan clicked')
-    }
-}));
-menu.append(new MenuItem({
-    label: 'Bootloader',
-    click() {
-        console.log('Bootloader clicked')
-    }
-}));
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Window menu
@@ -316,33 +297,38 @@ closeSession = function () {
 
 $(document).ready(function ($) {
 
+
+
     remote.getCurrentWindow().setMenu(menu_session);
 
     // Prevent default action of right click in chromium. Replace with our menu.
-    window.addEventListener('contextmenu', (e) => {
-        e.preventDefault()
-        menu.popup(remote.getCurrentWindow())
-    }, false);
+    // window.addEventListener('contextmenu', (e) => {
+    //     e.preventDefault();
+    //     console.log("id",e,$(e.target), e.target.getAttribute('id') );
+    //     crxmenu.popup({
+    //         window: remote.getCurrentWindow(),
+    //     })
+    // }, false);
 
     ///////////////////////////////////////////////////////////////////////////////
     // Select table row in rx table
     //
 
-    $('#table-rx > tbody > tr').on('click', function (e) {
-        selected_name = e.currentTarget.cells[0].innerHTML;
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
-    });
+    // $('#table-rx > tbody > tr').on('click', function (e) {
+    //     selected_name = e.currentTarget.cells[0].innerHTML;
+    //     $(this).addClass('bg-info').siblings().removeClass('bg-info');
+    // });
 
     ///////////////////////////////////////////////////////////////////////////////
     // Select table row in tx table
     //
 
-    $('#table-tx > tbody > tr').on('click', function (e) {
-        refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
-        selectedRow.vscpEvent = rxArray[refid];
-        console.log(selectedRow.vscpEvent);
-        $(this).addClass('bg-info').siblings().removeClass('bg-info');
-    });
+    // $('#table-tx > tbody > tr').on('click', function (e) {
+    //     refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
+    //     selectedRow.vscpEvent = rxArray[refid];
+    //     console.log(selectedRow.vscpEvent);
+    //     $(this).addClass('bg-info').siblings().removeClass('bg-info');
+    // });
 
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -441,10 +427,91 @@ $(document).ready(function ($) {
 }); // document ready
 
 ///////////////////////////////////////////////////////////////////////////////
+// copyRxEvent
+//
+
+copyRxEvent = function () {
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// clearRxTable
+//
+
+clearRxTable = function () {
+    $("#table-rx tr").remove();
+    rxArray = [];
+    $("#rxCount").text(rxArray.length);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// loadRxRows
+//
+
+loadRxRows = function () {
+    dialog.showOpenDialog(remote.getCurrentWindow(),
+        {
+            title: "Select file to load events from",
+            properties: ['openFile', 'showHiddenFiles'],
+            defaultPath: homeFolder,
+            filters: [
+                { name: 'VSCP events', extensions: ['events', 'json'] },
+                { name: 'All Files', extensions: ['*'] }
+            ]
+        },
+        (fileNames) => {
+        // fileNames is an array that contains all the selected
+        if (fileNames === undefined) {
+            return;
+        }
+
+        fs.readFile(filepath, 'utf-8', (err, data) => {
+            if (err) {
+                alert("An error ocurred reading the file :" + err.message);
+                return;
+            }
+
+            // Change how to handle the file content
+            console.log("The file content is : " + data);
+        });
+    });
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// saveRxRows
+//
+
+saveRxRows = function () {
+
+    dialog.showSaveDialog(remote.getCurrentWindow(),
+    {
+        title: "Select file to save events to",
+        defaultPath: homeFolder,
+        filters: [
+            { name: 'VSCP events', extensions: ['events', 'json'] },
+            { name: 'All Files', extensions: ['*'] }
+        ]
+    },(fileName) => {
+
+        if (fileName === undefined) {
+            return;
+        }
+
+        fs.writeFile(fileName, content, (err) => {
+            if (err) {
+                alert("An error ocurred creating the file " + err.message)
+            }
+
+            alert("The file has been successfully saved");
+        });
+    });
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // hoverEnter
 //
 
-hoverEnter = function (e) {
+hoverEnter = function (item, e) {
     // Enter
     refid = parseInt(e.currentTarget.cells[5].innerHTML);
     //console.log(rxArray[refid]);
@@ -466,7 +533,8 @@ hoverEnter = function (e) {
         ipv6 + dumb + hard + nocrc + ") " +
         " <strong>&Delta;:</strong>" + tsDiff + "&micro;S";
     $("#rowstatus").html(status);
-    //e.currentTarget.css("background", "yellow");
+    //$(item).css("background", "yellow");
+    $(item).css("background", "yellow");
     //e.currentTarget.attr("background", "yellow");
 };
 
@@ -474,12 +542,13 @@ hoverEnter = function (e) {
 // hoverLeave
 //
 
-hoverLeave = function (e) {
+hoverLeave = function (item, e) {
     // Leave
-    $(this).css("background", "");
+    $(item).css("background", "");
 }
 
-tblClickHandler = function (item, e) {
+rxtblClickHandler = function (item, e) {
+    console.log("click");
     refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
     selectedRow.vscpEvent = rxArray[refid];
     $(item).addClass('bg-info').siblings().removeClass('bg-info');
@@ -488,7 +557,7 @@ tblClickHandler = function (item, e) {
 ///////////////////////////////////////////////////////////////////////////////
 // addRxRow
 // Add a row to the Wizard table
-// e.vscpClass, e.vscpType, e.vscpGuid
+//
 
 let addRxRow = function (dir, e) {
 
@@ -503,22 +572,21 @@ let addRxRow = function (dir, e) {
     let newLength = rxArray.push(e);
     $("#rxCount").text(rxArray.length);
 
-    //let evobj = ipcRenderer.sendSync('get-vscptype-obj',
-    //    e.vscpClass, e.vscpType);
+    let evobj = ipcRenderer.sendSync('get-vscptype-obj',
+        e.vscpClass, e.vscpType);
     //console.log(evobj.vscpClass.token, evobj.vscpType.token);
-    let evobj = {
-        vscpClass: {
-            name: 'aaaaa',
-            token: 'yyyyyy'
-        },
-        vscpType: {
-            name: 'bbbbb',
-            token: 'zzzzzz'
-        },
-    };
+    // let evobj = {
+    //     vscpClass: {
+    //         name: 'aaaaa',
+    //         token: 'yyyyyy'
+    //     },
+    //     vscpType: {
+    //         name: 'bbbbb',
+    //         token: 'zzzzzz'
+    //     },
+    // };
 
     let tableRef = document.getElementById("table-rx").getElementsByTagName('tbody')[0];
-    //let row = tableRef.insertRow(-1);
     let row = document.createElement('tr');
     row.classList.add("d-flex");
     row.style.cursor = "pointer";
@@ -560,22 +628,30 @@ let addRxRow = function (dir, e) {
     cellTimestamp.classList.add("hidden");
     cellTimestamp.innerHTML = (newLength - 1).toString();
 
+    // Add row to table
     tableRef.appendChild(row);
 
-    $("#table-rx > tbody > tr:last").on('click', function (e) {
-        tblClickHandler(this, e);
-        // refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
-        // selectedRow.vscpEvent = rxArray[refid];
-        // $(this).addClass('bg-info').siblings().removeClass('bg-info');
-    });
+    // Add click event to row
+    row.onclick = function (e) {
+        rxtblClickHandler(this, e);
+    };
 
-    ///////////////////////////////////////////////////////////////////////////////
-    // Hover over table row event
-    //
+    // Add hover
+    row.onmouseenter = function (e) {
+        hoverEnter(this, e);
+    }
 
-    //$("#table-rx > tbody > tr").not(':first').unbind('mouseenter').unbind('mouseleave')
-    $("#table-rx > tbody > tr").hover((e) => hoverEnter(e),
-        (e) => hoverLeave(e));
+    row.onmouseleave = function (e) {
+        hoverLeave(this, e);
+    }
+
+    row.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        console.log("id", e, $(e.target), e.target.getAttribute('id'));
+        crxmenu.popup({
+            window: remote.getCurrentWindow(),
+        })
+    }, false);
 
     // Make the newly added row visible but not if
     // mouse is over the table
