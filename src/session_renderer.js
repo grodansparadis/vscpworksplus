@@ -449,6 +449,7 @@ clearRxTable = function () {
 //
 
 loadRxRows = function () {
+
     dialog.showOpenDialog(remote.getCurrentWindow(),
         {
             title: "Select file to load events from",
@@ -459,22 +460,33 @@ loadRxRows = function () {
                 { name: 'All Files', extensions: ['*'] }
             ]
         },
-        (fileNames) => {
-        // fileNames is an array that contains all the selected
-        if (fileNames === undefined) {
-            return;
-        }
+        (fileName) => {
 
-        fs.readFile(filepath, 'utf-8', (err, data) => {
-            if (err) {
-                alert("An error ocurred reading the file :" + err.message);
+
+            if (fileName === undefined) {
+                console.log("What!");
                 return;
             }
 
-            // Change how to handle the file content
-            console.log("The file content is : " + data);
+            try {
+                newEvents = [];
+                if (fs.existsSync(fileName[0])) {
+                    let rawdata = fs.readFileSync(fileName[0]);
+                    newEvents = JSON.parse(rawdata);
+                    newEvents.forEach( ( item ) => {
+                        addRxRow('load', item);
+                    });
+                }
+                else {
+                    console.log("File does not appear to exist." + fileName[0] );
+                }
+            }
+            catch (err) {
+                console.error("Failed to fetch saved events from " + fileName);
+                console.error(err);
+            }
+
         });
-    });
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -484,27 +496,43 @@ loadRxRows = function () {
 saveRxRows = function () {
 
     dialog.showSaveDialog(remote.getCurrentWindow(),
-    {
-        title: "Select file to save events to",
-        defaultPath: homeFolder,
-        filters: [
-            { name: 'VSCP events', extensions: ['events', 'json'] },
-            { name: 'All Files', extensions: ['*'] }
-        ]
-    },(fileName) => {
+        {
+            title: "Select file to save events to",
+            defaultPath: homeFolder,
+            filters: [
+                { name: 'VSCP events', extensions: ['events', 'json'] },
+                { name: 'All Files', extensions: ['*'] }
+            ]
+        }, (fileName) => {
 
-        if (fileName === undefined) {
-            return;
-        }
-
-        fs.writeFile(fileName, content, (err) => {
-            if (err) {
-                alert("An error ocurred creating the file " + err.message)
+            if (fileName === undefined) {
+                return;
             }
 
-            alert("The file has been successfully saved");
+            fs.open(fileName, 'w', (err, fd) => {
+
+                if (err) {
+
+                    if (err.code === 'EEXIST') {
+                        console.error('file already exists');
+                        return;
+                    }
+
+                    throw err;
+
+                }
+
+                fs.writeSync(fd, "[");
+                for ( let i=0; i<rxArray.length; i++) {
+                    //console.log(rxArray[i],JSON.stringify(rxArray[i]));
+                    fs.writeSync(fd, JSON.stringify(rxArray[i]));
+                    if (i < (rxArray.length-1)) fs.writeSync(fd, ",");
+                };
+                fs.writeSync(fd, "]");
+
+            });
+
         });
-    });
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -514,7 +542,7 @@ saveRxRows = function () {
 hoverEnter = function (item, e) {
     // Enter
     refid = parseInt(e.currentTarget.cells[5].innerHTML);
-    //console.log(rxArray[refid]);
+    let dt = new Date(rxArray[refid].vscpDateTime);
     let head = rxArray[refid].vscpHead;
     let ipv6 = vscp.isGuidIpv6(head) ? " <strong>ipv6</strong>" : "";
     let dumb = vscp.isDumbNode(head) ? " <strong>d</strong>" : "";
@@ -522,9 +550,8 @@ hoverEnter = function (item, e) {
     let nocrc = vscp.isNoCrc(head) ? " <strong>nc</strong>" : "";
     let tsDiff = (null != selectedRow.vscpEvent) ? (rxArray[refid].vscpTimeStamp -
         selectedRow.vscpEvent.vscpTimeStamp).toString() : '?';
-
     let status = " <strong>id:</strong>" + vscp.getNodeId(rxArray[refid].vscpGuid) +
-        " <strong>dt:</strong>" + rxArray[refid].vscpDateTime.toISOString() +
+        " <strong>dt:</strong>" + dt.toISOString() +
         " <strong>ts:</strong>" + sprintf("0x%08x", rxArray[refid].vscpTimeStamp) +
         " <strong>obid:</strong>" + rxArray[refid].vscpObId +
         " <strong>head:</strong>" + rxArray[refid].vscpHead +
@@ -533,9 +560,7 @@ hoverEnter = function (item, e) {
         ipv6 + dumb + hard + nocrc + ") " +
         " <strong>&Delta;:</strong>" + tsDiff + "&micro;S";
     $("#rowstatus").html(status);
-    //$(item).css("background", "yellow");
     $(item).css("background", "yellow");
-    //e.currentTarget.attr("background", "yellow");
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -548,10 +573,51 @@ hoverLeave = function (item, e) {
 }
 
 rxtblClickHandler = function (item, e) {
-    console.log("click");
     refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
     selectedRow.vscpEvent = rxArray[refid];
     $(item).addClass('bg-info').siblings().removeClass('bg-info');
+
+    // Fill in data in the info window
+    let info = '<div class="ctext"><strong>Received Event</strong></div>';
+    info += '<div><strong>Time: </strong>';
+    info += '<span class="text-monospace" style="color:darkgreen;">';
+    info += rxArray[refid].vscpDateTime;
+    info += '</span>';
+    info += '</div>';
+    info += '<p class="text-monospace">';
+    info += '<div><strong>Class: </strong>';
+    info += '<kbd>class1.measurement</kbd>
+    info += '<div class="text-monospace" style="color:darkgreen;">0x000a, 10</div>
+    info += '</div>
+        <div><strong>Type: </strong><kbd>temperature</kbd>
+            <div class="text-monospace" style="color:darkgreen;">0x0006, 6</div>
+        </div>
+    </p>
+    <p>
+        <div><strong>Data count: </strong>
+            <span class="text-monospace" style="color:darkgreen;">3</span></div>
+        <div class="text-monospace" style="color:darkgreen;">0x01,0x22,0x01</div>
+        <div><strong>Unit: </strong>
+            <span class="text-monospace" style="color:darkgreen;">1</span></div>
+        <div><strong>Sensor: </strong>
+            <span class="text-monospace" style="color:darkgreen;">0</span></div>
+        <div><strong>Coding: </strong>
+            <span class="text-monospace" style="color:darkgreen;">Normalized integer</span></div>
+        <div><strong>Value: </strong>
+            <span class="text-monospace" style="color:darkgreen;">-68.580000 C</span>
+        </div>
+    </p>
+    <p>
+        <div><strong>From GUID: </strong></div>
+        <div class="text-monospace" style="color:darkgreen;">00:00:00:00 00:00:00:00 00:00:00:00
+            00:01:00:03</div>
+    </p>
+    <p>
+        <div><strong>Head: </strong>
+            <span class="text-monospace" style="color:darkgreen;">60</span></div>
+        <div><strong>Timestamp: </strong>
+            <span class="text-monospace" style="color:darkgreen;">AAE77267</span></div>
+    </p>
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -561,8 +627,7 @@ rxtblClickHandler = function (item, e) {
 
 let addRxRow = function (dir, e) {
 
-    // If we are paused save received events in the pause
-    // array
+    // If we are paused save received events in the pause array
     if (bPause) {
         rxArrayPause.push(e);
         $("#cntPause").text(rxArrayPause.length);
@@ -678,6 +743,8 @@ handleConnection = function () {
         $("#btnConnect").html('<strong>Connection OFF </strong><span id="rxCount" class="badge badge-secondary">0</span>');
         closeConnection();
     }
+
+    $("#rxCount").text(rxArray.length);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
