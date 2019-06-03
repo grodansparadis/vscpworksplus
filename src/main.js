@@ -28,7 +28,6 @@ let mainWindow;         // Initial window
 
 console.log('Homefolder: ' + pathHome);
 
-
 console.log("Platform: " + os.platform());
 switch (os.platform()) {
 

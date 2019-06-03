@@ -76,20 +76,29 @@
             margin-right: 10px;
         }
 
+        .statusarea {
+            font-size: 0.8em;
+            white-space: nowrap;
+            color:darkgreen;
+            line-height: 0.5;
+        }
+
         .infoarea {
-            height: 50vh;
+            font-size: 0.8em;
+            white-space: nowrap;
+            height: 55vh;
             padding-left: 4px;
             border-top: 1px solid rgb(10, 13, 161);
             border-left: 1px solid rgb(10, 13, 161);
             border-right: 1px solid rgb(10, 13, 161);
             border-bottom: 1px solid rgb(10, 13, 161);
             background-color: rgb(246, 247, 229);
-            overflow-y: scroll;
+            overflow-y: auto;
+            overflow-x: auto;
         }
 
         .txcmdarea {
             height: 30vh;
-
             border-top: 0px solid rgb(10, 13, 161);
             border-left: 0px solid rgb(10, 13, 161);
             border-right: 0px solid rgb(10, 13, 161);
@@ -146,7 +155,7 @@
         <div class="row">
 
             <div class="col-9">
-                <kbd>Rx</kbd> <span id="rowstatus" class="text-monospace" style="color:darkgreen;"></span>
+                <kbd>Rx</kbd> <span id="rowstatus" class="statusarea text-monospace" ></span>
                 <div id="contain-rx" class="table-responsive">
                     <table id="table-rx" class="table-sm scroll table-bordered table-hover table-striped">
                         <thead class="thead-warning">
@@ -188,7 +197,7 @@
             <!-- Information area -->
             <div class="col-3" style="padding-left: 0px; padding-right: 2px;">
                 <kbd>info</kbd>
-                <div class="infoarea">
+                <div id="infoarea" class="infoarea">
                     <div class="ctext"><strong>Received Event</strong></div>
                     <div><strong>Time: </strong>
                         <span id="infoDateTime" class="text-monospace" style="color:darkgreen;">2021-05-20 17:33:12</span>

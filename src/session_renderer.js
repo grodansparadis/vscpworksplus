@@ -473,12 +473,12 @@ loadRxRows = function () {
                 if (fs.existsSync(fileName[0])) {
                     let rawdata = fs.readFileSync(fileName[0]);
                     newEvents = JSON.parse(rawdata);
-                    newEvents.forEach( ( item ) => {
+                    newEvents.forEach((item) => {
                         addRxRow('load', item);
                     });
                 }
                 else {
-                    console.log("File does not appear to exist." + fileName[0] );
+                    console.log("File does not appear to exist." + fileName[0]);
                 }
             }
             catch (err) {
@@ -523,10 +523,10 @@ saveRxRows = function () {
                 }
 
                 fs.writeSync(fd, "[");
-                for ( let i=0; i<rxArray.length; i++) {
+                for (let i = 0; i < rxArray.length; i++) {
                     //console.log(rxArray[i],JSON.stringify(rxArray[i]));
                     fs.writeSync(fd, JSON.stringify(rxArray[i]));
-                    if (i < (rxArray.length-1)) fs.writeSync(fd, ",");
+                    if (i < (rxArray.length - 1)) fs.writeSync(fd, ",");
                 };
                 fs.writeSync(fd, "]");
 
@@ -572,31 +572,120 @@ hoverLeave = function (item, e) {
     $(item).css("background", "");
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// rxtblClickHandler
+//
+
 rxtblClickHandler = function (item, e) {
+
     refid = parseInt(e.currentTarget.cells[rxFieldRefId].innerHTML);
     selectedRow.vscpEvent = rxArray[refid];
     $(item).addClass('bg-info').siblings().removeClass('bg-info');
 
     // Fill in data in the info window
-    let info = '<div class="ctext"><strong>Received Event</strong></div>';
+    let info = '<div class="ctext"><strong>';
+    if ('rx' === rxArray[refid].dir) {
+        info += 'Received Event';
+    }
+    else if ('tx' === rxArray[refid].dir) {
+        info += 'Transmitted Event';
+    }
+    else if ('load' === rxArray[refid].dir) {
+        info += 'Loaded Event';
+    }
+    else {
+        info += 'Unknown Event';
+    }
+    info += '</strong></div>';
     info += '<div><strong>Time: </strong>';
     info += '<span class="text-monospace" style="color:darkgreen;">';
-    info += rxArray[refid].vscpDateTime;
+    info += rxArray[refid].vscpDateTime.toISOString();
     info += '</span>';
     info += '</div>';
     info += '<p class="text-monospace">';
     info += '<div><strong>Class: </strong>';
-    info += '<kbd>class1.measurement</kbd>
-    info += '<div class="text-monospace" style="color:darkgreen;">0x000a, 10</div>
-    info += '</div>
-        <div><strong>Type: </strong><kbd>temperature</kbd>
-            <div class="text-monospace" style="color:darkgreen;">0x0006, 6</div>
-        </div>
-    </p>
-    <p>
-        <div><strong>Data count: </strong>
-            <span class="text-monospace" style="color:darkgreen;">3</span></div>
-        <div class="text-monospace" style="color:darkgreen;">0x01,0x22,0x01</div>
+    info += '<kbd>' + rxArray[refid].evobj.vscpClass.name.toLowerCase() + '</kbd>';
+    info += '<div class="text-monospace" style="color:darkgreen;">';
+    info += sprintf(" (0x%04x %d)", rxArray[refid].vscpClass, rxArray[refid].vscpClass);
+    info += '</div>';
+    info += '</div>';
+    info += '<div><strong>Type: </strong><kbd>';
+    info += rxArray[refid].evobj.vscpType.name.toLowerCase();
+    info += '</kbd>';
+    info += '<div class="text-monospace" style="color:darkgreen;">'
+    info += sprintf(" (0x%04x %d)", rxArray[refid].vscpType, rxArray[refid].vscpType);
+    info += '</div>';
+    info += '</div>';
+    info += '</p>';
+    info += '<p>';
+    info += '<div><strong>Data count: </strong>';
+    info += '<span class="text-monospace" style="color:darkgreen;">';
+    info += rxArray[refid].vscpData.length;
+    info += '</span></div>';
+    info += '<div class="text-monospace" style="color:darkgreen;">';
+    let pos = 0;
+
+    while (pos < rxArray[refid].vscpData.length) {
+        let row = '<div>';
+        for (let i = 0; i < 8; i++) {
+            row += sprintf("0x%02x", rxArray[refid].vscpData[pos++]);
+            if (i < 7) {
+                row += ',';
+            }
+            if (pos > (rxArray[refid].vscpData.length - 1)) break;
+        }
+        info += row;
+    }
+
+    info += '</div>';
+
+    // If measurement
+    let val = 0;
+    let sensoIndex = -1;
+    let unitIdx = -1;
+    let unit = -1;
+    if (vscp.isMeasurement(rxArray[refid].vscpClass)) {
+        info += '<p>';
+        info += '<div><strong>Measurement: </strong></div>';
+        // Classes with data coding byte
+        if ((vscp_class.VSCP_CLASS1_MEASUREMENT === rxArray[refid].vscpClass) ||
+            (vscp_class.VSCP_CLASS1_DATA === rxArray[refid].vscpClass)) {
+            val = vscp.decodeClass10(rxArray[refid].vscpData);
+            sensorIndex = vscp.getSensorIndexFromDataCoding(rxArray[refid].vscpData[0]);
+            unitIdx = vscp.getUnitFromDataCoding(rxArray[refid].vscpData[0]);
+            unit = vscp.constants.units[rxArray[refid].vscpType][unitId];
+        }
+        // Floating point
+        else if (vscp_class.VSCP_CLASS1_MEASUREMENT64 === rxArray[refid].vscpClass) {
+            val = vscp.decodeClass60Number(rxArray[refid].vscpData);
+            unitIdx = vscp.getUnitFromDataCoding(rxArray[refid].vscpData[0]);
+            unit = vscp.constants.units[rxArray[refid].vscpType][unitId];
+        }
+        // Measurement with zone information
+        else if ((vscp_class.VSCP_CLASS1_MEASUREZONE === rxArray[refid].vscpClass) ||
+            (vscp_class.VSCP_CLASS1_SETVALUEZONE === rxArray[refid].vscpClass)) {
+        }
+        info += '</p>';
+    }
+
+    info += '<p>';
+    info += '<div><strong>From GUID: </strong></div>';
+    info += '<div class="text-monospace" style="color:darkgreen;">';
+    info += rxArray[refid].vscpGuid
+    info += '</div>';
+    info += '</p>';
+    info += '<p>';
+    info += '<div><strong>Head: </strong>';
+    info += '<span class="text-monospace" style="color:darkgreen;">';
+    info += sprintf("0x%04x %d", rxArray[refid].vscpHead, rxArray[refid].vscpHead);
+    info += '</span></div>';
+    info += '<div><strong>Timestamp: </strong>';
+    info += '<span class="text-monospace" style="color:darkgreen;">';
+    info += sprintf("0x%08x", rxArray[refid].vscpTimeStamp);
+    info += '</span></div>';
+    info += '</p>';
+
+    /*
         <div><strong>Unit: </strong>
             <span class="text-monospace" style="color:darkgreen;">1</span></div>
         <div><strong>Sensor: </strong>
@@ -618,6 +707,9 @@ rxtblClickHandler = function (item, e) {
         <div><strong>Timestamp: </strong>
             <span class="text-monospace" style="color:darkgreen;">AAE77267</span></div>
     </p>
+    */
+
+    $(infoarea).html(info);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -634,11 +726,11 @@ let addRxRow = function (dir, e) {
         return;
     }
 
-    let newLength = rxArray.push(e);
-    $("#rxCount").text(rxArray.length);
+    e.dir = dir;        // Add direction to event object
 
     let evobj = ipcRenderer.sendSync('get-vscptype-obj',
         e.vscpClass, e.vscpType);
+    e.evobj = evobj;    // Add info to event object
     //console.log(evobj.vscpClass.token, evobj.vscpType.token);
     // let evobj = {
     //     vscpClass: {
@@ -650,6 +742,9 @@ let addRxRow = function (dir, e) {
     //         token: 'zzzzzz'
     //     },
     // };
+
+    let newLength = rxArray.push(e);
+    $("#rxCount").text(rxArray.length);
 
     let tableRef = document.getElementById("table-rx").getElementsByTagName('tbody')[0];
     let row = document.createElement('tr');
