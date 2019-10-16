@@ -1,22 +1,28 @@
 
 //import * as net from "net";
+// noble / bleno
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
-const expat = require('node-expat');
+//const expat = require('node-expat');
 const { DOMParser } = require('xmldom');
-const xmlToJSON = require('xml2json');
+//const xmlToJSON = require('xml2json');
 const ref = require("ref");
 const ArrayType = require('ref-array')
-const ffi = require("ffi");
+//const ffi = require("ffi");
 var Struct = require('ref-struct');
 const dates = require('./dates.js');
 const classdef = require('./classdef.js');
 
 //const homeDir = os.homedir();
 //readOldConfig(homedir);
+
+const electronVersion = require('electron-version')
+electronVersion(function (err, v) {
+  console.log(err, v) // null 'v0.33.4'
+})
 
 connections = {};   // Defined connections
 classDefs = {};     // All defined classes/types
