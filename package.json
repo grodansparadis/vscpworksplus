@@ -57,7 +57,7 @@
     "jsep": "^0.3.4",
     "jsplumb": "^2.12.0",
     "jwt-simple": "^0.5.6",
-    "knex": "^0.16.5",
+    "knex": "^0.19.5",
     "lite-server": "^2.5.4",
     "markdown-it": "^8.4.2",
     "mime": "^2.4.4",
