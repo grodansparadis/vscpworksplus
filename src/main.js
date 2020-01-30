@@ -7,8 +7,9 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 //const expat = require('node-expat');
+// xml-js
 const { DOMParser } = require('xmldom');
-//const xmlToJSON = require('xml2json');
+//const xmlToJSON = require('p3x-xml2json');
 const ref = require("ref");
 const ArrayType = require('ref-array')
 //const ffi = require("ffi");
