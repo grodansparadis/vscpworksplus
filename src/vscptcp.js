@@ -1,6 +1,6 @@
 // VSCP javascript websocket library
 //
-// Copyright (C) 2012-2019 Ake Hedman, Grodans Paradis AB
+// Copyright © 2012-2020 Ake Hedman, Grodans Paradis AB
 // <akhe@grodansparadis.com>
 // Copyright (c) 2015-2019 Andreas Merkle
 // <vscp@blue-andi.de>

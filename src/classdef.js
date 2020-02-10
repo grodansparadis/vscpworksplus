@@ -1,6 +1,6 @@
 // classdef.js
 //
-// Copyright (C) 2012-2019 Ake Hedman, Grodans Paradis AB
+// Copyright © 2012-2020 Ake Hedman, Grodans Paradis AB
 // <akhe@grodansparadis.com>
 //
 // Licence:

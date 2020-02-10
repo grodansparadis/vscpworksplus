@@ -10,10 +10,10 @@ const axios = require('axios');
 // xml-js
 const { DOMParser } = require('xmldom');
 //const xmlToJSON = require('p3x-xml2json');
-const ref = require("ref");
-const ArrayType = require('ref-array')
+//const ref = require("ref");
+//const ArrayType = require('ref-array')
 //const ffi = require("ffi");
-var Struct = require('ref-struct');
+//var Struct = require('ref-struct');
 const dates = require('./dates.js');
 const classdef = require('./classdef.js');
 
