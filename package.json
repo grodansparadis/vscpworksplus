@@ -81,7 +81,7 @@
     "node-vscp-class": "^1.0.10",
     "node-vscp-tcp": "^1.1.1",
     "node-vscp-type": "^1.0.8",
-    "node.js": "^14.4.0",
+    "node.js": "0.0.1-security",
     "npm": "^6.14.5",
     "octicons": "^8.5.0",
     "p3x-xml2json": "^2020.4.152",
