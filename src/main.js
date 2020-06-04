@@ -140,9 +140,10 @@ function createMainWindow() {
     show: false,
     height: 500,
     width: 800,
-    icon: path.join(__dirname, '/assets/icons/png/logo_64.png'),
+    icon: path.join(__dirname, './assets/icons/png/logo_64.png'),
     webPreferences: {
       nodeIntegration: true,
+      enableRemoteModule: true
     },
   });
 
@@ -180,6 +181,7 @@ function newSessionWindow(connection_name) {
     width: 1150,
     webPreferences: {
       nodeIntegration: true,
+      enableRemoteModule: true
     },
   });
 
@@ -245,6 +247,7 @@ function dialogModal(parent, options, callback) {
     'autoHideMenuBar': true,
     'webPreferences': {
       "nodeIntegration": true,
+      enableRemoteModule: true,
       "sandbox": false
     }
   });
@@ -289,7 +292,7 @@ ipcMain.on("dialog-close", (event, data) => {
 
 ipcMain.on("open-modal-dialog", (event, arg) => {
   dialogModal(arg.win, arg, (data) => {
-    event.returnValue = data
+    event.returnValue = data;
   });
 });
 
@@ -561,7 +564,8 @@ function selectConnetionType() {
     width: 600,
     height: 500,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     },
   });
   child.loadFile(path.join(__dirname, "../dialog_new_connection.html"));
@@ -577,7 +581,8 @@ function ttt() {
     height: 600,
     width: 1024,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     },
   });
   child.loadFile(path.join(__dirname, "../register.html"));

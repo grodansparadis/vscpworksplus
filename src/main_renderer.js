@@ -1,3 +1,4 @@
+
 const { remote, ipcRenderer } = require('electron');
 const { Menu, MenuItem, app, shell,dialog } = remote;
 const is = require('electron-is');

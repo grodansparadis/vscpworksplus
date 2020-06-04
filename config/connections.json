@@ -1,5 +1,5 @@
 {
-    "vscpinterface": [
+    "interface": [
         {
             "type": "canal",
             "name": "Local Socketcan",
@@ -50,7 +50,7 @@
         },
         {
             "type": "rest",
-            "name": "rest remote host",
+            "name": "rest remote host 44",
             "host": "https://192.168.1.44/rest",
             "username": "admin",
             "password": "secret",
