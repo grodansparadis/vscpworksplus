@@ -4,8 +4,8 @@
   * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
   */
 (function (global, factory) {
-  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('jquery'), require('popper.js')) :
-  typeof define === 'function' && define.amd ? define(['exports', 'jquery', 'popper.js'], factory) :
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('jquery'), require('@popperjs/core/dist/cjs/popper.js')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'jquery', '@popperjs/core/dist/cjs/popper.js'], factory) :
   (global = global || self, factory(global.bootstrap = {}, global.jQuery, global.Popper));
 }(this, function (exports, $, Popper) { 'use strict';
 
@@ -1625,16 +1625,16 @@
 
       if (showEvent.isDefaultPrevented()) {
         return;
-      } // Disable totally Popper.js for Dropdown in Navbar
+      } // Disable totally @popperjs/core/dist/cjs/popper.js for Dropdown in Navbar
 
 
       if (!this._inNavbar) {
         /**
          * Check for Popper dependency
-         * Popper - https://popper.js.org
+         * Popper - https://@popperjs/core/dist/cjs/popper.js.org
          */
         if (typeof Popper === 'undefined') {
-          throw new TypeError('Bootstrap\'s dropdowns require Popper.js (https://popper.js.org/)');
+          throw new TypeError('Bootstrap\'s dropdowns require @popperjs/core/dist/cjs/popper.js (https://@popperjs/core/dist/cjs/popper.js.org/)');
         }
 
         var referenceElement = this._element;
@@ -1823,7 +1823,7 @@
           preventOverflow: {
             boundariesElement: this._config.boundary
           }
-        } // Disable Popper.js if we have a static display
+        } // Disable @popperjs/core/dist/cjs/popper.js if we have a static display
 
       };
 
@@ -2830,10 +2830,10 @@
     function Tooltip(element, config) {
       /**
        * Check for Popper dependency
-       * Popper - https://popper.js.org
+       * Popper - https://@popperjs/core/dist/cjs/popper.js.org
        */
       if (typeof Popper === 'undefined') {
-        throw new TypeError('Bootstrap\'s tooltips require Popper.js (https://popper.js.org/)');
+        throw new TypeError('Bootstrap\'s tooltips require @popperjs/core/dist/cjs/popper.js (https://@popperjs/core/dist/cjs/popper.js.org/)');
       } // private
 
 

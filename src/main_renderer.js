@@ -584,71 +584,93 @@ $(document).ready(function ($) {
 // @return answer - Structure or string containing the answer
 //
 
-function addConnection() {
+async function addConnection() {
 
-    // Let user select type
-    var answer = ipcRenderer.sendSync("open-modal-dialog",
-        {
-            title: "Add new connection",
-            width: 600, height: 340,
-            win: remote.getCurrentWindow(),
-            url: '../dialog_new_connection.html'
-        });
+    // Let user select type of connection to add
+    const result = await ipcRenderer.invoke('open-modal-dialog', 
+    {
+        title: "Add new connection",
+        width: 800, height: 340,
+        url: '../dialog_new_connection.html'
+    });
 
-    switch (answer) {
+    var answer;
+
+    switch (result) {
+
         case "canal":
-            var answer = ipcRenderer.sendSync("open-modal-dialog",
-                {
-                    title: "Add CANAL connection",
-                    width: 600, height: 520,
-                    win: remote.getCurrentWindow(),
-                    url: '../dialog_canal_device.html'
-                });
+            answer = await ipcRenderer.invoke('open-modal-dialog', 
+            {
+                title: "Add CANAL connection",
+                width: 600, height: 520,
+                url: '../dialog_canal_device.html'
+            });
+            
             ipcRenderer.send("add-connection", answer);
+            addSavedConnections();
+            selected_name = answer.name;
+            $('#mainTable tr').filter(function () {
+                return $.trim($('td', this).eq(0).text()) == answer.name;
+            }).addClass('bg-info').siblings().removeClass('bg-info');
             break;
 
         case "tcpip":
-            var answer = ipcRenderer.sendSync("open-modal-dialog",
-                {
-                    title: "Add tcp/ip connection",
-                    width: 600, height: 800,
-                    win: remote.getCurrentWindow(),
-                    url: '../dialog_tcpip_device.html',
-                });
+            answer = await ipcRenderer.invoke("open-modal-dialog",
+            {
+                title: "Add tcp/ip connection",
+                width: 600, height: 800,
+                url: '../dialog_tcpip_device.html',
+            });
+                    
             ipcRenderer.send("add-connection", answer);
+
+            addSavedConnections();
+
+            selected_name = answer.name;
+            $('#mainTable tr').filter(function () {
+                return $.trim($('td', this).eq(0).text()) == answer.name;
+            }).addClass('bg-info').siblings().removeClass('bg-info');
             break;
 
         case "websocket":
-            var answer = ipcRenderer.sendSync("open-modal-dialog",
-                {
-                    title: "Add websocket connection",
-                    width: 600, height: 670,
-                    win: remote.getCurrentWindow(),
-                    url: '../dialog_websocket_device.html'
-                });
+            answer = await ipcRenderer.invoke("open-modal-dialog",
+            {
+                title: "Add websocket connection",
+                width: 600, height: 670,
+                url: '../dialog_websocket_device.html'
+            });
+
             ipcRenderer.send("add-connection", answer);
+
+            addSavedConnections();
+
+            selected_name = answer.name;
+            $('#mainTable tr').filter(function () {
+                return $.trim($('td', this).eq(0).text()) == answer.name;
+            }).addClass('bg-info').siblings().removeClass('bg-info');
             break;
 
         case "rest":
-            var answer = ipcRenderer.sendSync("open-modal-dialog",
-                {
-                    title: "Add REST connection",
-                    width: 600, height: 675,
-                    win: remote.getCurrentWindow(),
-                    url: '../dialog_rest_device.html'
-                });
+            answer = await ipcRenderer.invoke("open-modal-dialog",
+            {
+                title: "Add REST connection",
+                width: 600, height: 675,
+                url: '../dialog_rest_device.html'
+            });
             ipcRenderer.send("add-connection", answer);
+
+            addSavedConnections();
+
+            selected_name = answer.name;
+            $('#mainTable tr').filter(function () {
+                return $.trim($('td', this).eq(0).text()) == answer.name;
+            }).addClass('bg-info').siblings().removeClass('bg-info');
             break;
 
         default:
             break;
     }
-
-    addSavedConnections();
-    selected_name = answer.name;
-    $('#mainTable tr').filter(function () {
-        return $.trim($('td', this).eq(0).text()) == answer.name;
-    }).addClass('bg-info').siblings().removeClass('bg-info');
+    
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -658,12 +680,14 @@ function addConnection() {
 //
 // @return answer - Structure or string containing the answer
 
-function editConnection(name) {
+async function editConnection(name) {
 
     answer = null;
 
     // Get connection
-    let conn = ipcRenderer.sendSync('get-named-connection', name);
+    const conn = await ipcRenderer.invoke('get-named-connection',name);
+
+    //let conn = ipcRenderer.sendSync('get-named-connection', name);
     if (null === conn) {
         let options = {
             type: 'error',
@@ -675,44 +699,44 @@ function editConnection(name) {
     }
 
     if ('canal' === conn.type) {
-        answer = ipcRenderer.sendSync("open-modal-dialog",
+        answer = await ipcRenderer.invoke("open-modal-dialog",
             {
                 title: "Edit connection",
                 width: 600, height: 520,
-                win: remote.getCurrentWindow(),
+                //win: remote.getCurrentWindow(),
                 url: '../dialog_canal_device.html',
                 connection: conn
             });
         ipcRenderer.send("edit-connection", answer);
     }
     else if ('tcpip' === conn.type) {
-        answer = ipcRenderer.sendSync("open-modal-dialog",
+        answer = await ipcRenderer.invoke("open-modal-dialog",
             {
                 title: "Edit connection",
                 width: 600, height: 800,
-                win: remote.getCurrentWindow(),
+                //win: remote.getCurrentWindow(),
                 url: '../dialog_tcpip_device.html',
                 connection: conn
             });
         ipcRenderer.send("edit-connection", answer);
     }
     else if ('websocket' === conn.type) {
-        answer = ipcRenderer.sendSync("open-modal-dialog",
+        answer = await ipcRenderer.invoke("open-modal-dialog",
             {
                 title: "Edit connection",
                 width: 600, height: 750,
-                win: remote.getCurrentWindow(),
+                //win: remote.getCurrentWindow(),
                 url: '../dialog_websocket_device.html',
                 connection: conn
             });
         ipcRenderer.send("edit-connection", answer);
     }
     else if ('rest' === conn.type) {
-        answer = ipcRenderer.sendSync("open-modal-dialog",
+        answer = await ipcRenderer.invoke("open-modal-dialog",
             {
                 title: "Edit connection",
                 width: 600, height: 750,
-                win: remote.getCurrentWindow(),
+                //win: remote.getCurrentWindow(),
                 url: '../dialog_rest_device.html',
                 connection: conn
             });

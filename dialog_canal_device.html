@@ -65,14 +65,13 @@
                     </div>
                 </div>
 
-
         </form>
     </div>
 
     <!-- Bootstrap Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- jQuery first, then @popperjs/core/dist/cjs/popper.js, then Bootstrap JS -->
     <script>let $ = jQuery = require('jquery');</script>
-    <script>require('popper.js');</script>
+    <script>require('@popperjs/core/dist/cjs/popper.js');</script>
     <script>require('bootstrap');</script>
 
 </body>
@@ -106,7 +105,7 @@
             $("#errorName").removeClass("d-block");
         }
 
-        // Is name already used
+        // Is name already used?
         if (bAdd) {
             if (null != ipcRenderer.sendSync("get-named-connection", $("#driverName").val().trim())) {
                 console.log('Name is already used: [' + $("#driverName").val().trim() + ']');
@@ -127,6 +126,7 @@
 
         // Check that path exists
         if (!fs.existsSync($("#driverPath").val())) {
+            console.error("Path "+$("#driverPath").val() +" does not exists!");
             $("#errorPath").addClass("d-block");
             rv = false;
         }
@@ -199,30 +199,38 @@
             drvpath = path.join(drvpath, "/drivers/level1");
             console.log(drvpath);
 
-            remote.dialog.showOpenDialog(remote.getCurrentWindow(), {
-                title: "Select CANAL driver",
-                properties: ['openFile'],
-                defaultPath: drvpath,
-                filters: [
-                    { name: 'VSCP CANAL drivers', extensions: ['dll', 'dl', 'so'] },
-                    { name: 'All Files', extensions: ['*'] }
-                ]
-            }, (answer) => {
-                // Read in the filter if it is there
-                if (('undefined' !== typeof answer) &&
-                    (fs.existsSync(answer[0]))) {
-                    $("#driverPath").val(answer[0]);
-                }
-                else {
-                    let options = {
-                        type: 'error',
-                        buttons: ['OK'],
-                        title: 'Select CANAL driver failed',
-                        message: 'Unable to select a CANAL driver.',
+            remote.dialog.showOpenDialog(remote.getCurrentWindow(), 
+                {
+                    title: "Select CANAL driver",
+                    properties: ['openFile'],
+                    defaultPath: drvpath,
+                    filters: [
+                        { name: 'VSCP CANAL drivers', extensions: ['dll', 'dl', 'so'] },
+                        { name: 'All Files', extensions: ['*'] }
+                    ]
+                }, 
+                (answer) => {
+                    remote.dialog.showMessageBox({
+                        buttons: ["Yes","No","Cancel"],
+                        message: "Do you really want to quit?"
+                        });
+                    console.log("answer ",drvpath,answer);
+                    // Read in the filter if it is there
+                    if (('undefined' !== typeof answer) &&
+                        (fs.existsSync(answer[0]))) {
+                        $("#driverPath").val(answer[0]);
                     }
-                    remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
+                    else {
+                        let options = {
+                            type: 'error',
+                            buttons: ['OK'],
+                            title: 'Select CANAL driver failed',
+                            message: 'Unable to select a CANAL driver.',
+                        }
+                        remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
+                    }
                 }
-            });
+            );
 
         });
 

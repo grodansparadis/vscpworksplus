@@ -45,7 +45,7 @@ switch (os.platform()) {
     break;
 
   case "linux":
-    pathVSCP = "/srv/vscp/";
+    pathVSCP = "/var/lib/vscp/";
     break;
 
   case "freebsd":
@@ -239,7 +239,7 @@ function dialogModal(parent, options, callback) {
   dialogWindow = new BrowserWindow({
     'width': options.width,
     'height': options.height,
-    'parent': parent,
+    //'parent': parent,
     'show': false,
     'modal': true,
     'alwaysOnTop': true,
@@ -268,6 +268,73 @@ function dialogModal(parent, options, callback) {
     dialogWindow.setTitle(dialogOptions.title);
     dialogWindow.show();
   });
+
+}
+
+
+function dialogModalex(options) {
+
+  return new Promise(resolve => {
+
+    dialogOptions = options;  // Save options
+
+    dialogWindow = new BrowserWindow({
+      'width': options.width,
+      'height': options.height,
+      'show': false,
+      'modal': true,
+      'alwaysOnTop': true,
+      'title': options.title,
+      'autoHideMenuBar': true,
+      'webPreferences': {
+        "nodeIntegration": true,
+        enableRemoteModule: true,
+        "sandbox": false
+      }
+    });
+  
+    // Open the DevTools.
+    dialogWindow.webContents.openDevTools();
+
+    dialogWindow.on('closed', () => {
+      dialogWindow = null;
+      resolve(dialogAnswer);
+    });
+
+    // Load the HTML dialog box page
+    dialogWindow.loadFile(path.join(__dirname, options.url));
+
+    // Show it when loaded
+    dialogWindow.once('ready-to-show', () => {
+      dialogWindow.setTitle(dialogOptions.title);
+      dialogWindow.show();
+    });
+
+  });
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Get connection object from it's name
+//
+
+function getConnection(name) {
+
+  return new Promise(resolve => {
+  
+    for (let i = 0; i < connections.interface.length; i++) {
+      if ("undefined" === typeof connections.interface[i].name) continue;
+      if (name.toLowerCase() === connections.interface[i].name.toLowerCase()) {
+        // Interface found
+        resolve(connections.interface[i]);
+        break;
+      }
+    };
+
+    // Named interface was not found
+    resolve(null);
+
+  });
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -290,10 +357,9 @@ ipcMain.on("dialog-close", (event, data) => {
 // Called by the application to open the prompt dialog
 //
 
-ipcMain.on("open-modal-dialog", (event, arg) => {
-  dialogModal(arg.win, arg, (data) => {
-    event.returnValue = data;
-  });
+ipcMain.handle("open-modal-dialog", async (event, arg) => {
+  const result = await dialogModalex(arg);
+  return result;
 });
 
 
@@ -314,17 +380,22 @@ ipcMain.on('get-connection-object', (event, arg) => {
 // Called by the application to get a named connection object
 //
 
-ipcMain.on('get-named-connection', (event, name) => {
-  rv = null;
-  for (let i = 0; i < connections.interface.length; i++) {
-    if ("undefined" === typeof connections.interface[i].name) continue;
-    if (name.toLowerCase() === connections.interface[i].name.toLowerCase()) {
-      rv = connections.interface[i];
-      break;
-    }
-  };
-  event.returnValue = rv;
+ipcMain.handle("get-named-connection", async (event, name) => {
+  const result = await getConnection(name);
+  return result;
 });
+
+// ipcMain.on('get-named-connection', (event, name) => {
+//   rv = null;
+//   for (let i = 0; i < connections.interface.length; i++) {
+//     if ("undefined" === typeof connections.interface[i].name) continue;
+//     if (name.toLowerCase() === connections.interface[i].name.toLowerCase()) {
+//       rv = connections.interface[i];
+//       break;
+//     }
+//   };
+//   event.returnValue = rv;
+// });
 
 ///////////////////////////////////////////////////////////////////////////////
 // Called to add a new connection object
@@ -987,7 +1058,7 @@ let canalDataPtr_t = ref.refType(canalData_t);
 let canalDataPtrPtr_t = ref.refType(canalDataPtr_t);
 
 // binding to CANAL functions...
-var libcanal = ffi.Library('/srv/vscp/drivers/level1/vscpl1drv-logger.so', {
+var libcanal = ffi.Library('/var/lib/vscp/drivers/level1/vscpl1drv-logger.so', {
   'CanalOpen': ['long', ['string', 'long']],
   'CanalSend': ['int', ['long', canalEventPtr_t]],
   'CanalClose': ['int', ['long']],
