@@ -297,8 +297,6 @@ closeSession = function () {
 
 $(document).ready(function ($) {
 
-
-
     remote.getCurrentWindow().setMenu(menu_session);
 
     // Prevent default action of right click in chromium. Replace with our menu.
@@ -403,22 +401,14 @@ $(document).ready(function ($) {
         connection = ipcRenderer.sendSync('get-named-connection',
             session_win_obj.connection_name);
         if (null === connection) {
-            let options = {
-                type: 'error',
-                buttons: ['OK'],
-                title: 'System does not recognized this connection. Session window will  be closed',
-            }
-            dialog.showMessageBox(remote.getCurrentWindow(), options);
+            dialog.showErrorBox("Error", 
+                'System does not recognized this connection. Session window will be closed');
             remote.getCurrentWindow().close();
         }
     }
     else {
-        let options = {
-            type: 'error',
-            buttons: ['OK'],
-            title: 'System does not recognized this session window. Session window will be closed',
-        }
-        dialog.showMessageBox(remote.getCurrentWindow(), options);
+        dialog.showErrorBox("Error",
+            'System does not recognized this session window. Session window will be closed');
         remote.getCurrentWindow().close();
     }
 
@@ -461,7 +451,6 @@ loadRxRows = function () {
             ]
         },
         (fileName) => {
-
 
             if (fileName === undefined) {
                 console.log("What!");

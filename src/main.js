@@ -177,8 +177,8 @@ function newSessionWindow(connection_name) {
   // Create the browser window.
   let win = new BrowserWindow({
     show: false,
-    height: 800,
-    width: 1150,
+    height: 850,
+    width: 1200,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true
