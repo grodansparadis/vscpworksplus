@@ -208,17 +208,18 @@
                         { name: 'VSCP CANAL drivers', extensions: ['dll', 'dl', 'so'] },
                         { name: 'All Files', extensions: ['*'] }
                     ]
-                }, 
-                (answer) => {
-                    remote.dialog.showMessageBox({
-                        buttons: ["Yes","No","Cancel"],
-                        message: "Do you really want to quit?"
-                        });
-                    console.log("answer ",drvpath,answer);
+                }).then (result => {
+                    // Check if user cancelled
+                    if ( result.canceled ) {
+                        return;
+                    }
+                    
+                    console.log("result ",drvpath,result.filePaths[0]);
                     // Read in the filter if it is there
-                    if (('undefined' !== typeof answer) &&
-                        (fs.existsSync(answer[0]))) {
-                        $("#driverPath").val(answer[0]);
+                    if (result.filePaths.length && 
+                            ('string' === typeof result.filePaths[0]) &&
+                            (fs.existsSync(result.filePaths[0]))) {
+                        $("#driverPath").val(result.filePaths[0]);
                     }
                     else {
                         let options = {
@@ -229,9 +230,9 @@
                         }
                         remote.dialog.showMessageBox(remote.getCurrentWindow(), options);
                     }
-                }
-            );
-
+                }).catch(err => {
+                    console.log(err)
+                })
         });
 
         // Wizard
