@@ -17,7 +17,7 @@ console.log(remote.getGlobal('pathHome'));
 
 const menu_context = new Menu()
 
-// Build menu one item at a time, unlike
+// Build menu one item at a time
 menu_context.append(new MenuItem({
     label: 'Add...',
     click() {
@@ -101,6 +101,41 @@ menu_context.append(new MenuItem({
 menu_context.append(new MenuItem({ type: 'separator' }))
 menu_context.append(new MenuItem({ label: 'option', type: 'checkbox', checked: true }))
 
+
+///////////////////////////////////////////////////////////////////////////////
+// Menu dblclick
+//
+
+const menu_dblclick = new Menu()
+
+// Build menu one item at a time
+menu_dblclick.append(new MenuItem({
+    label: 'Device session',
+    click() {
+        openSessionWindow();
+    }
+}));
+
+menu_dblclick.append(new MenuItem({
+    label: 'Device Configuration',
+    click() {
+        openDeviceConfigWindow();
+    }
+}));
+
+menu_dblclick.append(new MenuItem({
+    label: 'Device scan',
+    click() {
+        openScanWindow();
+    }
+}));
+
+menu_dblclick.append(new MenuItem({
+    label: 'Device firmware load',
+    click() {
+        openFirmwareLoadWindow();
+    }
+}));
 
 ///////////////////////////////////////////////////////////////////////////////
 // Window menu
@@ -337,12 +372,8 @@ openSessionWindow = function () {
         ipcRenderer.send('open-new-session-window', selected_name );
     }
     else {
-        let options = {
-            type: 'info',
-            buttons: ['OK'],
-            title: 'No connection selected.',
-        }
-        dialog.showMessageBox(remote.getCurrentWindow(), options);
+        dialog.showErrorBox('Unable to do requested operation', 
+                            'A connection must be selected.');
     }
 };
 
@@ -351,7 +382,13 @@ openSessionWindow = function () {
 //
 
 openDeviceConfigWindow = function () {
-
+    if ( selected_name.trim().length ) {
+        //ipcRenderer.send('open-new-session-window', selected_name );
+    }
+    else {
+        dialog.showErrorBox('Unable to do requested operation', 
+                            'A connection must be selected.');
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -359,7 +396,13 @@ openDeviceConfigWindow = function () {
 //
 
 openScanWindow = function () {
-
+    if ( selected_name.trim().length ) {
+        //ipcRenderer.send('open-new-session-window', selected_name );
+    }
+    else {
+        dialog.showErrorBox('Unable to do requested operation', 
+                            'A connection must be selected.');
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -367,7 +410,13 @@ openScanWindow = function () {
 //
 
 openFirmwareLoadWindow = function () {
-
+    if ( selected_name.trim().length ) {
+        //ipcRenderer.send('open-new-session-window', selected_name );
+    }
+    else {
+        dialog.showErrorBox('Unable to do requested operation', 
+                            'A connection must be selected.');
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -375,7 +424,13 @@ openFirmwareLoadWindow = function () {
 //
 
 openRemoteVariableWindow = function () {
-
+    if ( selected_name.trim().length ) {
+        //ipcRenderer.send('open-new-session-window', selected_name );
+    }
+    else {
+        dialog.showErrorBox('Unable to do requested operation', 
+                            'A connection must be selected.');
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -383,7 +438,13 @@ openRemoteVariableWindow = function () {
 //
 
 openRemoteTablesWindow = function () {
-
+    if ( selected_name.trim().length ) {
+        //ipcRenderer.send('open-new-session-window', selected_name );
+    }
+    else {
+        dialog.showErrorBox('Unable to do requested operation', 
+                            'A connection must be selected.');
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -391,11 +452,17 @@ openRemoteTablesWindow = function () {
 //
 
 openMdfEditorWindow = function () {
-
+    if ( selected_name.trim().length ) {
+        //ipcRenderer.send('open-new-session-window', selected_name );
+    }
+    else {
+        dialog.showErrorBox('Unable to do requested operation', 
+                            'A connection must be selected.');
+    }
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// Document ready
+// Page loaded (Document ready)
 //
 
 $(document).ready(function ($) {
@@ -427,14 +494,7 @@ $(document).ready(function ($) {
     $('#mainTable > tbody > tr').on('click', function (e) {
         selected_name = e.currentTarget.cells[0].innerHTML;
         $(this).addClass('bg-info').siblings().removeClass('bg-info');
-    });
-
-    ///////////////////////////////////////////////////////////////////////////////
-    // Open table row
-    //
-
-    $('#mainTable > tbody > tr').on('dblclick', function () {
-        console.log("Row double-click");
+        console.log('Select row');
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -451,6 +511,10 @@ $(document).ready(function ($) {
                 $(this).addClass('bg-info').siblings().removeClass('bg-info');
                 break;
         }
+    });
+
+    $('#mainTable').dblclick(function (e) {
+        menu_dblclick.popup(remote.getCurrentWindow());
     });
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -470,12 +534,8 @@ $(document).ready(function ($) {
             editConnection(selected_name);
         }
         else {
-            let options = {
-                type: 'info',
-                buttons: ['OK'],
-                title: 'No connection selected-',
-            }
-            dialog.showMessageBox(remote.getCurrentWindow(), options);
+            dialog.showErrorBox('Unable to do requested operation', 
+                                'A connection must be selected.');
         }
     });
 
@@ -488,12 +548,8 @@ $(document).ready(function ($) {
             removeConnection();
         }
         else {
-            let options = {
-                type: 'info',
-                buttons: ['OK'],
-                title: 'No connection selected.',
-            }
-            dialog.showMessageBox(remote.getCurrentWindow(), options);
+            dialog.showErrorBox('Unable to do requested operation', 
+                                'A connection must be selected.');
         }
     });
 
@@ -506,12 +562,8 @@ $(document).ready(function ($) {
             cloneConnection();
         }
         else {
-            let options = {
-                type: 'info',
-                buttons: ['OK'],
-                title: 'No connection selected.',
-            }
-            dialog.showMessageBox(remote.getCurrentWindow(), options);
+            dialog.showErrorBox('Unable to do requested operation', 
+                                'A connection must be selected.');
         }
     });
 
@@ -689,12 +741,8 @@ async function editConnection(name) {
 
     //let conn = ipcRenderer.sendSync('get-named-connection', name);
     if (null === conn) {
-        let options = {
-            type: 'error',
-            buttons: ['OK'],
-            title: 'Unable to get connection "' + name + '"',
-        }
-        dialog.showMessageBox(remote.getCurrentWindow(), options);
+        dialog.showErrorBox('Unable to do requested operation', 
+                            'Unable to get connection "' + name + '"');
         return answer;
     }
 
@@ -703,7 +751,6 @@ async function editConnection(name) {
             {
                 title: "Edit connection",
                 width: 600, height: 520,
-                //win: remote.getCurrentWindow(),
                 url: '../dialog_canal_device.html',
                 connection: conn
             });
@@ -714,7 +761,6 @@ async function editConnection(name) {
             {
                 title: "Edit connection",
                 width: 600, height: 800,
-                //win: remote.getCurrentWindow(),
                 url: '../dialog_tcpip_device.html',
                 connection: conn
             });
@@ -725,7 +771,6 @@ async function editConnection(name) {
             {
                 title: "Edit connection",
                 width: 600, height: 750,
-                //win: remote.getCurrentWindow(),
                 url: '../dialog_websocket_device.html',
                 connection: conn
             });
@@ -736,20 +781,14 @@ async function editConnection(name) {
             {
                 title: "Edit connection",
                 width: 600, height: 750,
-                //win: remote.getCurrentWindow(),
                 url: '../dialog_rest_device.html',
                 connection: conn
             });
         ipcRenderer.send("edit-connection", answer);
     }
     else {
-        let options = {
-            type: 'error',
-            buttons: ['OK'],
-            title: 'Unknown connection type',
-            message: 'Only "canal", "tcpip", "websocket" and "rest" connections are recognized.'
-        }
-        dialog.showMessageBox(remote.getCurrentWindow(), options);
+        dialog.showErrorBox('Unknown connection type', 
+                            'Only "canal", "tcpip", "websocket" and "rest" connections are recognized.');
     }
 
     return answer;
