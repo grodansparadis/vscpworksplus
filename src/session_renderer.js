@@ -6,8 +6,8 @@ const fs = require('fs');
 const is = require('electron-is');
 const sprintf = require('sprintf-js').sprintf;
 const vscp = require('node-vscp');
-const vscp_tcp = require('node-vscp-tcp');
-const vscp_tcp_Client = require('../src/vscptcp');
+const vscp_tcp_client = require('node-vscp-tcp');
+//const vscp_tcp_Client = require('../src/vscptcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');
 console.log("Loaded");
@@ -242,16 +242,16 @@ const template = [
             },
             {
                 label: 'VSCP Works documentation',
-                click() { remote.shell.openExternal('https://vscp.org') }
+                click() { remote.shell.openExternal('https://docs.vscp.org/vscpworks/latest') }
             },
             {
                 label: 'VSCP documentation',
-                click() { remote.shell.openExternal('https://www.vscp.org/#documentation') }
+                click() { remote.shell.openExternal('https://docs.vscp.org') }
             }
             ,
             {
                 label: 'About',
-                click() { remote.shell.openExternal('https://www.vscp.org/#sponsors') }
+                click() { remote.shell.openExternal('https://www.vscp.org') }
             }
         ]
     }
@@ -406,7 +406,7 @@ $(document).ready(function ($) {
         const obj = JSON.parse(session_win_obj);                    
         // Get connection
         if (null !== obj) {
-            console.log("Connaection=",obj.connection_name);
+            console.log("Connection=",obj.connection_name);
             ipcRenderer.invoke('get-named-connection',
                                 obj.connection_name).then( conn => {
                 if (null === conn) {
@@ -548,10 +548,10 @@ hoverEnter = function (item, e) {
     refid = parseInt(e.currentTarget.cells[5].innerHTML);
     let dt = new Date(rxArray[refid].vscpDateTime);
     let head = rxArray[refid].vscpHead;
-    let ipv6 = vscp.isGuidIpv6(head) ? " <strong>ipv6</strong>" : "";
+    let ipv6 = vscp.isIPV6Addr(head) ? " <strong>ipv6</strong>" : "";
     let dumb = vscp.isDumbNode(head) ? " <strong>d</strong>" : "";
-    let hard = vscp.isHardCoded(head) ? " <strong>hrd</strong>" : "";
-    let nocrc = vscp.isNoCrc(head) ? " <strong>nc</strong>" : "";
+    let hard = vscp.isHardCodedAddr(head) ? " <strong>hrd</strong>" : "";
+    let nocrc = vscp.isDoNotCalcCRC(head) ? " <strong>nc</strong>" : "";
     let tsDiff = (null != selectedRow.vscpEvent) ? (rxArray[refid].vscpTimeStamp -
         selectedRow.vscpEvent.vscpTimeStamp).toString() : '?';
     let status = " <strong>id:</strong>" + vscp.getNodeId(rxArray[refid].vscpGuid) +
@@ -931,7 +931,7 @@ let openConnection = async function (conn) {
         activeConnection.talker.twoConnectionsAllowed = true;
     }
     else {
-        activeConnection.talker.twoConnectionsAllowed = false;
+        activeConnection.talker.twoConnectionsAllowed = true;
     }
 
     await openTcpipTalkerConnection(conn);
@@ -946,7 +946,7 @@ let openConnection = async function (conn) {
 
     if ('undefined' !== typeof wcyd_fetched) {
         activeConnection.talker.read_wcyd = wcyd_fetched;
-        if (conn.wcyd[7] & vscp.hostCapability.TWO_CONNECTIONS) {
+        if (activeConnection.talker.read_wcyd[7] & vscp.hostCapability.TWO_CONNECTIONS) {
             activeConnection.talker.twoConnectionsAllowed = true;
         }
     }
@@ -1010,7 +1010,7 @@ let openTcpipTalkerConnection = async function (conn) {
         host = conn.host;
     }
 
-    vscp_tcp_client_talker = new vscp_tcp_Client();
+    vscp_tcp_client_talker = new vscp_tcp_client();
 
     const value1 = await vscp_tcp_client_talker.connect(
         {
@@ -1099,13 +1099,13 @@ let openTcpipListnerConnection = async function (conn, chid) {
         host = conn.host;
     }
 
-    vscp_tcp_client_listner = new vscp_tcp_Client();
+    vscp_tcp_client_listner = new vscp_tcp_client();
 
     // Add event handler for received events
     vscp_tcp_client_listner.addEventListener((e) => {
         let evobj = ipcRenderer.sendSync('get-vscptype-obj',
             e.vscpClass, e.vscpType);
-        //console.log(e, evobj.vscpClass.token, evobj.vscpType.token);
+        console.log(e, evobj.vscpClass.token, evobj.vscpType.token);
         addRxRow('rx', e);
     });
 
@@ -1128,7 +1128,7 @@ let openTcpipListnerConnection = async function (conn, chid) {
         });
 
     // Get the channel id
-    activeConnectiob.listner.channelId = 
+    activeConnection.listner.channelId = 
         await vscp_tcp_client_listner.getChannelID();
 
     // Get the channel guid

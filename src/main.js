@@ -576,6 +576,7 @@ ipcMain.on('get-vscpclass-obj', (event, vscpclass) => {
 //
 
 ipcMain.on('get-vscptype-obj', (event, vscpclass, vscptype) => {
+  
   // Find VSCP class
   let foundClass = classDefs.find((element) => element.class === vscpclass);
 
