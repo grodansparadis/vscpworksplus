@@ -5,11 +5,10 @@
   <title>VSCP websocket remote host</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/@popperjs/core/dist/cjs/popper.js/1.14.7/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="./node_modules/@primer/octicons/build/build.css">
+  <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
 </head>
 
 <body class="bg-light">
@@ -103,6 +102,12 @@
       }, false);
     })();
   </script>
+
+  <!-- Bootstrap Optional JavaScript -->
+  <!-- jQuery first, then popper.js, then Bootstrap JS -->
+  <script>let $ = jQuery = require('./node_modules/jquery/dist/jquery.min.js');</script>
+  <script>require('./node_modules/@popperjs/core/dist/cjs/popper.js');</script>
+  <script>require('./node_modules/bootstrap/dist/js/bootstrap.min.js');</script>
 
 </body>
 

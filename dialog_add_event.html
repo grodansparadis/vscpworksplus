@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="./node_modules/octicons/build/build.css">
+    <link rel="stylesheet" href="./node_modules/@primer/octicons/build/build.css">
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="./node_modules/animate.css/animate.min.css">
     <style>
@@ -167,10 +167,10 @@
     </div>
 
     <!-- Bootstrap Optional JavaScript -->
-    <!-- jQuery first, then @popperjs/core/dist/cjs/popper.js, then Bootstrap JS -->
-    <script>let $ = jQuery = require('jquery');</script>
-    <script>require('@popperjs/core/dist/cjs/popper.js');</script>
-    <script>require('bootstrap');</script>
+    <!-- jQuery first, then popper.js, then Bootstrap JS -->
+    <script>let $ = jQuery = require('./node_modules/jquery/dist/jquery.min.js');</script>
+    <script>require('./node_modules/@popperjs/core/dist/cjs/popper.js');</script>
+    <script>require('./node_modules/bootstrap/dist/js/bootstrap.min.js');</script>
 
 </body>
 

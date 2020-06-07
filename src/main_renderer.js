@@ -739,7 +739,6 @@ async function editConnection(name) {
     // Get connection
     const conn = await ipcRenderer.invoke('get-named-connection',name);
 
-    //let conn = ipcRenderer.sendSync('get-named-connection', name);
     if (null === conn) {
         dialog.showErrorBox('Unable to do requested operation', 
                             'Unable to get connection "' + name + '"');

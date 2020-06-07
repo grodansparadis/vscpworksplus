@@ -1,12 +1,16 @@
+
+
 const { remote, ipcRenderer } = require('electron');
 const { Menu, MenuItem, app, dialog } = remote;
 const fs = require('fs');
 const is = require('electron-is');
 const sprintf = require('sprintf-js').sprintf;
 const vscp = require('node-vscp');
+const vscp_tcp = require('node-vscp-tcp');
 const vscp_tcp_Client = require('../src/vscptcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');
+console.log("Loaded");
 
 let bPause = false;         // True of pause is active
 let bFilter = false;        // True if filter is active
@@ -34,7 +38,7 @@ let vscp_tcp_client_talker = null;
 let vscp_tcp_client_listner = null;
 
 let session_win_obj = {};   // Our windows object
-let connection = {};        // Connection we should work on
+let conn = {};              // Connection we should work on
 let activeConnection = {
     talker: {},
     listner: {}
@@ -393,27 +397,38 @@ $(document).ready(function ($) {
     });
 
     // Get data for session connection
-    session_win_obj = ipcRenderer.sendSync('get-named-child-window-record',
-        remote.getCurrentWindow().id);
+    console.log("id=",remote.getCurrentWindow().id);
+    const id = remote.getCurrentWindow().id;
+    ipcRenderer.invoke('get-named-child-window-record',
+                        id).then( session_win_obj => { 
+        
+        console.log("Session obj = ",session_win_obj);                            
+        const obj = JSON.parse(session_win_obj);                    
+        // Get connection
+        if (null !== obj) {
+            console.log("Connaection=",obj.connection_name);
+            ipcRenderer.invoke('get-named-connection',
+                                obj.connection_name).then( conn => {
+                if (null === conn) {
+                    dialog.showErrorBox("Error", 
+                        'System does not recognized this connection. Session window will be closed');
+                    remote.getCurrentWindow().close();
+                }
+                console.log("conn=",conn);
 
-    // Get connection
-    if (null !== session_win_obj) {
-        connection = ipcRenderer.sendSync('get-named-connection',
-            session_win_obj.connection_name);
-        if (null === connection) {
-            dialog.showErrorBox("Error", 
-                'System does not recognized this connection. Session window will be closed');
+                // Open the session connection
+                openConnection(conn);
+            });
+            
+        }    
+        else {
+            dialog.showErrorBox("Error",
+                'System does not recognized this session window. Session window will be closed');
             remote.getCurrentWindow().close();
         }
-    }
-    else {
-        dialog.showErrorBox("Error",
-            'System does not recognized this session window. Session window will be closed');
-        remote.getCurrentWindow().close();
-    }
-
-    openConnection(connection);
-
+    
+    });
+    
 }); // document ready
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -820,7 +835,7 @@ handleConnection = function () {
     if (null === vscp_tcp_client_talker) {
         $("#btnConnect").removeClass('badge-danger').addClass('badge-success');
         $("#btnConnect").html('<strong>Connection ON </strong><span id="rxCount" class="badge badge-secondary">0</span>');
-        openConnection(connection);
+        openConnection(conn);
     }
     else {
         $("#btnConnect").removeClass('badge-success').addClass('badge-danger');
@@ -897,25 +912,29 @@ handleAutoReply = function () {
 // openConnection
 //
 
-let openConnection = async function (connection) {
+let openConnection = async function (conn) {
 
-    if ('undefined' == typeof connection) {
-        console.error('Connection is not defined');
-        // TODO dialog
+    console.log("conn=",conn);
+
+    if ('undefined' == typeof conn) {
+        dialog.showErrorBox('Error', 
+                            'Remote connection is not defined');
+        return;                            
     }
 
     $("body").css("cursor", "progress");
 
-    activeConnection.listner.read_wcyd = connection.wcyd;
+    activeConnection.listner.read_wcyd = conn.wcyd;
+    console.log(conn,conn.wcyd);
 
-    if (connection.wcyd[7] & vscp.hostCapabilities.TWO_CONNECTIONS) {
+    if (conn.wcyd[7] & vscp.hostCapability.TWO_CONNECTIONS) {
         activeConnection.talker.twoConnectionsAllowed = true;
     }
     else {
         activeConnection.talker.twoConnectionsAllowed = false;
     }
 
-    await openTcpipTalkerConnection(connection);
+    await openTcpipTalkerConnection(conn);
 
     // Get capabilities
     //   If more than one channel can be open we open
@@ -927,14 +946,14 @@ let openConnection = async function (connection) {
 
     if ('undefined' !== typeof wcyd_fetched) {
         activeConnection.talker.read_wcyd = wcyd_fetched;
-        if (wcyd[7] & vscp.hostCapabilities.TWO_CONNECTIONS) {
+        if (conn.wcyd[7] & vscp.hostCapability.TWO_CONNECTIONS) {
             activeConnection.talker.twoConnectionsAllowed = true;
         }
     }
 
     if (activeConnection.talker.twoConnectionsAllowed) {
         console.log('Yes, can handle two or more connections');
-        openTcpipListnerConnection(connection, activeConnection.talker.chid);
+        openTcpipListnerConnection(conn, activeConnection.talker.chid);
     }
 
     $("body").css("cursor", "default");
@@ -945,7 +964,7 @@ let openConnection = async function (connection) {
 // closeConnection
 //
 
-let closeConnection = function (connection) {
+let closeConnection = function (conn) {
 
     $("body").css("cursor", "progress");
 
@@ -971,7 +990,7 @@ let closeConnection = function (connection) {
 // a one channel device it is used also to pull for incoming events
 //
 
-let openTcpipTalkerConnection = async function (connection) {
+let openTcpipTalkerConnection = async function (conn) {
 
     let rv = false;
 
@@ -982,13 +1001,13 @@ let openTcpipTalkerConnection = async function (connection) {
     let port = 9598;
 
     // Separate from 'host:port' form
-    let sep = connection.host.split(':');
+    let sep = conn.host.split(':');
     if (sep.length > 1) {
         host = sep[0];
         port = parseInt(sep[1]);
     }
     else {
-        host = connection.host;
+        host = conn.host;
     }
 
     vscp_tcp_client_talker = new vscp_tcp_Client();
@@ -997,26 +1016,26 @@ let openTcpipTalkerConnection = async function (connection) {
         {
             host: host,
             port: port,
-            timeout: connection.connTimeout,
+            timeout: conn.connTimeout,
             onSuccess: null
         });
 
     await vscp_tcp_client_talker.user(
         {
-            username: connection.username
+            username: conn.username
         });
 
     await vscp_tcp_client_talker.password(
         {
-            password: connection.password
+            password: conn.password
         });
 
     // If the connection have an assigned GUID set it
-    let guid = vscp.strToGuid(connection.guid);
+    let guid = vscp.strToGuid(conn.guid);
     if (!isGuidZero(guid)) {
         await setGUID(
             {
-                guid: connection.guid
+                guid: conn.guid
             });
     }
 
@@ -1062,7 +1081,7 @@ let isGuidZero = function (guid) {
 // This is checked with the 'wcyd' command.
 //
 
-let openTcpipListnerConnection = async function (connection, chid) {
+let openTcpipListnerConnection = async function (conn, chid) {
 
     console.log('Open Listner Connection');
 
@@ -1071,13 +1090,13 @@ let openTcpipListnerConnection = async function (connection, chid) {
     let port = 9598;
 
     // Separate from 'host:port' form
-    let sep = connection.host.split(':');
+    let sep = conn.host.split(':');
     if (sep.length > 1) {
         host = sep[0];
         port = parseInt(sep[1]);
     }
     else {
-        host = connection.host;
+        host = conn.host;
     }
 
     vscp_tcp_client_listner = new vscp_tcp_Client();
@@ -1094,25 +1113,27 @@ let openTcpipListnerConnection = async function (connection, chid) {
         {
             host: host,
             port: port,
-            timeout: connection.connTimeout,
+            timeout: conn.connTimeout,
             onSuccess: null
         });
 
     await vscp_tcp_client_listner.user(
         {
-            username: connection.username
+            username: conn.username
         });
 
     await vscp_tcp_client_listner.password(
         {
-            password: connection.password
+            password: conn.password
         });
 
     // Get the channel id
-    activeConnection.listner.channelId = await vscp_tcp_client_listner.getChannelID();
+    activeConnectiob.listner.channelId = 
+        await vscp_tcp_client_listner.getChannelID();
 
     // Get the channel guid
-    activeConnection.listner.channelGuid = await vscp_tcp_client_listner.getGUID();
+    activeConnection.listner.channelGuid = 
+        await vscp_tcp_client_listner.getGUID();
 
     // Set filter/mask
 
@@ -1123,7 +1144,7 @@ let openTcpipListnerConnection = async function (connection, chid) {
 // closeTalkerConnection
 //
 
-let closeTakerConnection = async function (connection) {
+let closeTakerConnection = async function (conn) {
 
     console.log('Close Taker Connection');
 
@@ -1138,7 +1159,7 @@ let closeTakerConnection = async function (connection) {
 // closeListnerConnection
 //
 
-let closeListnerConnection = async function (connection) {
+let closeListnerConnection = async function (conn) {
 
     console.log('Close ListnerConnection');
 

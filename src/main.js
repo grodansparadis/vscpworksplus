@@ -113,10 +113,13 @@ classdef.checkForNewClassDefs(pathEvents, (cdef) => {
 //
 
 function sortConnections(conn) {
+  
   nameArray = [];
+  
   conn.interface.forEach((item) => {
     nameArray.push(item.name.toLowerCase());
   });
+
   nameArray.sort();
 
   newConnections = [];
@@ -187,7 +190,7 @@ function newSessionWindow(connection_name) {
 
   childWindows.push({
     id: win.id,
-    window: win,
+    //window: win,
     type: 'session',
     connection_name: connection_name
   });
@@ -338,6 +341,27 @@ function getConnection(name) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Get childwindow from id
+//
+
+function getChildWindow(id) {
+
+  return new Promise(resolve => {
+
+    for (let i=0; i<childWindows.length;i++ ) {
+      if ( id === childWindows[i].id ) {
+        console.log("--->",JSON.stringify(childWindows[i]));
+        resolve(JSON.stringify(childWindows[i]));
+        break;
+      }
+    }
+
+    resolve(null);
+  });
+  
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Called by the dialog box to get its parameters
 //
 
@@ -384,18 +408,6 @@ ipcMain.handle("get-named-connection", async (event, name) => {
   const result = await getConnection(name);
   return result;
 });
-
-// ipcMain.on('get-named-connection', (event, name) => {
-//   rv = null;
-//   for (let i = 0; i < connections.interface.length; i++) {
-//     if ("undefined" === typeof connections.interface[i].name) continue;
-//     if (name.toLowerCase() === connections.interface[i].name.toLowerCase()) {
-//       rv = connections.interface[i];
-//       break;
-//     }
-//   };
-//   event.returnValue = rv;
-// });
 
 ///////////////////////////////////////////////////////////////////////////////
 // Called to add a new connection object
@@ -583,23 +595,28 @@ ipcMain.on('open-new-session-window', (event, connection_name) => {
 });
 
 ///////////////////////////////////////////////////////////////////////////////
-// Called by the application to get the child window object for a child window
-// with a specific id
+// Called by the application to get the child window object 
+// for a child window with a specific id
 //
 // connection_name - Selected connection
 //
 
-ipcMain.on('get-named-child-window-record', (event, id) => {
-  rv = null;
-  for (let i=0; i<childWindows.length;i++ ) {
-    if ( id === childWindows[i].id ) {
-      rv = childWindows[i];
-      break;
-    }
-  }
-
-  event.returnValue = rv;
+ipcMain.handle("get-named-child-window-record", async (event, id) => {
+  const result = await getChildWindow(id);
+  return result;
 });
+
+// ipcMain.on('get-named-child-window-record', (event, id) => {
+//   rv = null;
+//   for (let i=0; i<childWindows.length;i++ ) {
+//     if ( id === childWindows[i].id ) {
+//       rv = childWindows[i];
+//       break;
+//     }
+//   }
+
+//   event.returnValue = rv;
+// });
 
 
 // ---------
