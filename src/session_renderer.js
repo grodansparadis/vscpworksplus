@@ -7,7 +7,6 @@ const is = require('electron-is');
 const sprintf = require('sprintf-js').sprintf;
 const vscp = require('node-vscp');
 const vscp_tcp_client = require('node-vscp-tcp');
-//const vscp_tcp_Client = require('../src/vscptcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');
 console.log("Loaded");
