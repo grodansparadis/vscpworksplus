@@ -1,5 +1,3 @@
-
-
 const { remote, ipcRenderer } = require('electron');
 const { Menu, MenuItem, app, dialog } = remote;
 const fs = require('fs');
@@ -9,7 +7,6 @@ const vscp = require('node-vscp');
 const vscp_tcp_client = require('node-vscp-tcp');
 const vscp_class = require('node-vscp-class');
 const vscp_type = require('node-vscp-type');
-console.log("Loaded");
 
 let bPause = false;         // True of pause is active
 let bFilter = false;        // True if filter is active
@@ -76,6 +73,18 @@ crxmenu.append(new MenuItem({
         saveRxRows();
     }
 }));
+
+
+const GUTTER_SIZE = 30;
+
+const gutterStyle = dimension => ({
+  'flex-basis': `${GUTTER_SIZE}px`,
+});
+
+const elementStyle = (dimension, size) => ({
+  'flex-basis': `calc(${size}% - ${GUTTER_SIZE}px)`,
+})
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -427,6 +436,30 @@ $(document).ready(function ($) {
         }
     
     });
+
+    // Split(['#upper', '#lower'], {
+    //     direction: 'vertical',
+    //     sizes: [90, 10],
+    //     gutterSize: 20,
+    //     cursor: 'row-resize'
+    // });
+
+    // Split(['#one', '#two'], {
+    //     direction: 'horizontal',
+    //     sizes: [75, 25],
+    //     gutterSize: 20,
+    //     cursor: 'col-resize'
+    // });
+
+    // Split(['#one', '#two'], {
+    //     minSize: 200,
+    //     elementStyle: (dimension, size, gutterSize) => ({
+    //         'flex-basis': `calc(${size}% - ${gutterSize}px)`,
+    //     }),
+    //     gutterStyle: (dimension, gutterSize) => ({
+    //         'flex-basis':  `${gutterSize}px`,
+    //     }),
+    // })
     
 }); // document ready
 
@@ -642,32 +675,115 @@ rxtblClickHandler = function (item, e) {
 
     info += '</div>';
 
-    // If measurement
+    // index/zone/subzone
+    let index   = -1;
+    let zone    = -1;
+    let subzone = -1;
+
+    if ( vscp_class.VSCP_CLASS1_INFORMATION === 
+            rxArray[refid].vscpClass ) {
+        index   = rxArray[refid].vscpData[0];
+        zone    = rxArray[refid].vscpData[1];
+        subzone = rxArray[refid].vscpData[2];
+    }
+    else if ( vscp_class.VSCP_CLASS2_MEASUREMENT_STR === 
+            rxArray[refid].vscpClass ) {
+        index   = rxArray[refid].vscpData[0];
+        zone    = rxArray[refid].vscpData[1];
+        subzone = rxArray[refid].vscpData[2];        
+    }
+    else if ( vscp_class.VSCP_CLASS2_MEASUREMENT_STR === 
+            rxArray[refid].vscpClass ) {
+        index   = rxArray[refid].vscpData[0];
+        zone    = rxArray[refid].vscpData[1];
+        subzone = rxArray[refid].vscpData[2];                
+    }
+
+    if ( (-1 != index) && (-1 != zone) && (-1 != subzone) ) {
+        info += '<p>';
+        info += '<div><strong>Index: </strong></div>';
+        info += '<div><strong>Zone: </strong></div>';
+        info += '<div><strong>Subzone: </strong></div>';
+        info += '</p>';
+    }
+
+
     let val = 0;
-    let sensoIndex = -1;
-    let unitIdx = -1;
-    let unit = -1;
+    let datacoding = 0;
+    let datacodingtxt = '';
+    let sensorIndex = 0;
+    let unitIdx = 0;
+    let unit = 0;
+
+    // Handle measurement
     if (vscp.isMeasurement(rxArray[refid].vscpClass)) {
         info += '<p>';
         info += '<div><strong>Measurement: </strong></div>';
+        
         // Classes with data coding byte
         if ((vscp_class.VSCP_CLASS1_MEASUREMENT === rxArray[refid].vscpClass) ||
             (vscp_class.VSCP_CLASS1_DATA === rxArray[refid].vscpClass)) {
-            val = vscp.decodeClass10(rxArray[refid].vscpData);
-            sensorIndex = vscp.getSensorIndexFromDataCoding(rxArray[refid].vscpData[0]);
-            unitIdx = vscp.getUnitFromDataCoding(rxArray[refid].vscpData[0]);
-            unit = vscp.constants.units[rxArray[refid].vscpType][unitId];
+            val = vscp.decodeMeasurementClass10(rxArray[refid].vscpData);
+            sensorIndex = vscp.getSensorIndex(rxArray[refid].vscpData[0]);
+            unitIdx = vscp.getUnit(rxArray[refid].vscpData[0]);
+            //unit = vscp.constants.units[rxArray[refid].vscpType][unitId];
+            datacoding = vscp.getDataCoding(rxArray[refid].vscpData[0]);
+            switch (datacoding) {
+                case vscp.measurementDataCoding.DATACODING_BIT:
+                    datacodingtxt = "Bits";
+                    break;
+                case vscp.measurementDataCoding.DATACODING_BYTE:
+                    datacodingtxt = "Bytes";
+                    break;
+                case vscp.measurementDataCoding.DATACODING_INTEGER:
+                    datacodingtxt = "Integer";
+                    break;        
+                case vscp.measurementDataCoding.DATACODING_NORMALIZED:
+                    datacodingtxt = "Normalized integer";
+                    break;
+                case vscp.measurementDataCoding.DATACODING_STRING:
+                    datacodingtxt = "String";
+                    break;
+                case vscp.measurementDataCoding.DATACODING_SINGLE:
+                    datacodingtxt = "Floating point (single)";
+                    break;   
+            }
         }
         // Floating point
         else if (vscp_class.VSCP_CLASS1_MEASUREMENT64 === rxArray[refid].vscpClass) {
-            val = vscp.decodeClass60Number(rxArray[refid].vscpData);
-            unitIdx = vscp.getUnitFromDataCoding(rxArray[refid].vscpData[0]);
+            val = vscp.decodeMeasurementClass60(rxArray[refid].vscpData);
+            unitIdx = vscp.getUnit(rxArray[refid].vscpData[0]);
             unit = vscp.constants.units[rxArray[refid].vscpType][unitId];
+            datacosing = 0;
+            datacodingtxt = "Floating point (double)";
         }
         // Measurement with zone information
         else if ((vscp_class.VSCP_CLASS1_MEASUREZONE === rxArray[refid].vscpClass) ||
             (vscp_class.VSCP_CLASS1_SETVALUEZONE === rxArray[refid].vscpClass)) {
         }
+
+        info += '<div><strong>Unit: </strong>';
+        info += '<span class="text-monospace" style="color:darkgreen;">'
+        info += unitIdx.toString();
+        info += '</span></div>';
+        info += '<div><strong>Sensorindex: </strong>';
+        info += '<span class="text-monospace" style="color:darkgreen;">'
+        info += sensorIndex.toString();
+        info += '</span></div>';
+        info += '<div><strong>Coding: </strong>';
+        info += '<span class="text-monospace" style="color:darkgreen;">'
+        info += datacodingtxt;
+        info += ' [';
+        info += datacoding.toString();
+        info += ']';
+        info += '</span></div>';
+        info += '<div><strong>Value: </strong>';
+        info += '<span class="text-monospace" style="color:darkgreen;">';
+        info += val.toString();
+        info += ' ';
+        info += '</span>';
+        info += '</div>';
+
         info += '</p>';
     }
 
@@ -1030,12 +1146,14 @@ let openTcpipTalkerConnection = async function (conn) {
         });
 
     // If the connection have an assigned GUID set it
-    let guid = vscp.strToGuid(conn.guid);
-    if (!isGuidZero(guid)) {
-        await setGUID(
-            {
-                guid: conn.guid
-            });
+    if (conn.guid.trim().length) {
+        let guid = vscp.strToGuid(conn.guid);
+        if (!isGuidZero(guid)) {
+            await setGUID(
+                {
+                    guid: conn.guid
+                });
+        }
     }
 
     // Get host version
@@ -1104,7 +1222,7 @@ let openTcpipListnerConnection = async function (conn, chid) {
     vscp_tcp_client_listner.addEventListener((e) => {
         let evobj = ipcRenderer.sendSync('get-vscptype-obj',
             e.vscpClass, e.vscpType);
-        console.log(e, evobj.vscpClass.token, evobj.vscpType.token);
+        //console.log(e, evobj.vscpClass.token, evobj.vscpType.token);
         addRxRow('rx', e);
     });
 

@@ -77,10 +77,11 @@
         }
 
         .statusarea {
+            margin-left: 30px;
             font-size: 0.8em;
             white-space: nowrap;
-            color:darkgreen;
-            line-height: 0.5;
+            color:rgb(2, 0, 100);
+            line-height: 3;
         }
 
         .infoarea {
@@ -107,6 +108,47 @@
         }
 
         .wait {cursor:wait}​
+
+        .split {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .content {
+            border: 1px solid #C0C0C0;
+            box-shadow: inset 0 1px 2px #e4e4e4;
+            background-color: #fff;
+        }
+        
+        .gutter {
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-position: 50%;
+        }
+
+        .gutter.gutter-horizontal {
+            cursor: col-resize;  
+        }
+ 
+        .gutter.gutter-vertical {
+            cursor: row-resize;
+        }
+ 
+        .split.split-horizontal,
+        .gutter.gutter-horizontal {
+            height: 100%;
+            float: left;
+        }
+
+        .split.split-vertical,
+        .gutter.gutter-vertical {
+            height: 100%;
+            float: left;
+        }
+
     </style>
 
 </head>
@@ -115,12 +157,13 @@
 
     <div class="container-fluid">
 
+        <!-- Button navbar -->
         <div class="row">
 
             <nav class="navbar nav-tabs fixed-top navbar-expand-sm navbar-light" style="background-color: #e3f2fd;">
 
                 <div class=" navbar-header">
-                    <a class="navbar-brand animated bounce delay-2s" href="#">VSCP <span
+                    <a class="navbar-brand animate__animated animate__bounce animate__delay-2s" href="#">VSCP <span
                             class="badge badge-warning rounded-lg">works+</span></a>
                 </div>
                 <ul id="myTab" class="nav nav-tabs">
@@ -152,10 +195,12 @@
 
         </div>
 
-        <div class="row">
+        
+        <div id="upper" class="row">
 
-            <div class="col-9">
-                <kbd>Rx</kbd> <span id="rowstatus" class="statusarea text-monospace" ></span>
+            <!-- RX table  -->
+            <div id="one" class="flex col-9">
+                <kbd>Rx</kbd> 
                 <div id="contain-rx" class="table-responsive">
                     <table id="table-rx" class="table-sm scroll table-bordered table-hover table-striped">
                         <thead class="thead-warning">
@@ -194,8 +239,8 @@
                 </div>
             </div>
 
-            <!-- Information area -->
-            <div class="col-3" style="padding-left: 0px; padding-right: 2px;">
+            <!-- Event information area   -->
+            <div id="two" class="flex col-3" style="padding-left: 0px; padding-right: 2px;">
                 <kbd>info</kbd>
                 <div id="infoarea" class="infoarea">
                     <div class="ctext"><strong>Received Event</strong></div>
@@ -240,7 +285,12 @@
             </div>
         </div>
 
-        <div class="row">
+        <div id="" class="row">
+            <span id="rowstatus" class="statusarea text-monospace" ></span>
+        </div>
+
+        <!-- tx area -->
+        <div id="lower" class="row">
 
             <div class="col-11">
                 <kbd>Tx</kbd>
@@ -279,6 +329,7 @@
                 </div>
             </div>
 
+            <!-- tx buttons -->
             <div class="col-1" style="padding-left: 0px; padding-right: 2px;">
                 <div></div>
                 <div class="txcmdarea" style="padding-left: 10px; padding-top: 15px;">
@@ -314,7 +365,8 @@
     <script>let $ = jQuery = require('./node_modules/jquery/dist/jquery.min.js');</script>
     <script>require('./node_modules/@popperjs/core/dist/cjs/popper.js');</script>
     <script>require('./node_modules/bootstrap/dist/js/bootstrap.min.js');</script>
-
+    <!-- Resizable areas-->
+    <script>Split = require('./node_modules/split.js/dist/split.min.js');</script>
 </body>
 
 <script>

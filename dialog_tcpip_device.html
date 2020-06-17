@@ -210,7 +210,7 @@
     // Is name already used
     if (bAdd) {
       ipcRenderer.invoke('get-named-connection',
-                          $("#connectionName").val().trim()),then( conn => {
+                          $("#connectionName").val().trim()).then( conn => {
         if (null != conn) {
           console.log('Name is already used: [' + $("#connectionName").val().trim() + ']');
           $("#errorName").html("Name must be unique and this name is already used.");
