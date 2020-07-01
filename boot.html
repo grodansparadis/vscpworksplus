@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>VSCP Bootloader</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="./node_modules/@primer/octicons/build/build.css">
+  <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.min.css" />  
+  <link rel="stylesheet" href="./src/multisteps-form-master/dist/style.css">
+  <style>
+    .fixed-panel {
+      min-height: 100px;
+      max-height: 100px;
+      overflow-y: scroll;
+    }
+  </style>
+</head>
+<body>
+<!-- partial:index.partial.html -->
+
+<!--PEN HEADER-->
+<header class="header">
+  <h1 class="header__title">VSCP Bootloader Wizard</h1>
+</header>
+<!--PEN CONTENT     -->
+<div class="content">
+  <!--content inner-->
+  <div class="content__inner">
+    <div class="container">
+      <!--content title-->
+      <h2 class="content__title">Click on steps or 'Prev' and 'Next' buttons</h2>
+
+    </div>
+    <div class="container overflow-hidden">
+      <!--multisteps-form-->
+      <div class="multisteps-form">
+        <!--progress bar-->
+        <div class="row">
+          <div class="col-12 col-lg-8 ml-auto mr-auto mb-4 mt-1">
+            <div class="multisteps-form__progress">
+              <button class="multisteps-form__progress-btn js-active" type="button" title="Info">Info</button>
+              <button class="multisteps-form__progress-btn" type="button" title="Remote">Remote node</button>
+              <button class="multisteps-form__progress-btn" type="button" title="Algorithm">Algorithm</button>
+              <button class="multisteps-form__progress-btn" type="button" title="Firmware">Firmware</button>
+              <button class="multisteps-form__progress-btn" type="button" title="Load">Load</button>
+            </div>
+          </div>
+        </div>
+
+        <!--form panels-->
+        <div class="row">
+          
+          <div class="col-12 col-lg-8 m-auto">
+
+            <form class="multisteps-form__form">
+
+              <!-- info - panel -->
+              <div class="multisteps-form__panel shadow p-4 rounded bg-white js-active" data-animation="scaleIn">
+                <h3 class="multisteps-form__title">Info</h3>
+                <div class="multisteps-form__content">
+                  
+                  <div class="form-row mt-4">
+                    <div class="col-12 col-sm-12">
+                        <p>
+                            VSCP Bootloader wizard will now walk you through the steps needed to update the firmware of your 
+                            remote device
+                        </p>
+                        <p>
+                            The node to update can be located on a VSCP bus connected to a server on a remote 
+                            node or be connected to an interface on your local computer.
+                        </p>
+                        <p>
+                            Please don't turn off or power off the remote node until the firmware update process is 
+                            completed.
+                        </p>
+                    </div>
+                  </div>       
+                  
+                  <div><hr></div>
+
+                  <div class="button-row d-flex mt-4">
+                    <button class="btn btn-primary ml-auto js-btn-next" type="button" title="Next">Next</button>
+                  </div>
+                  
+                </div>
+              </div>
+
+              <!-- Interface - panel -->
+              <div class="multisteps-form__panel shadow p-4 rounded bg-white" data-animation="scaleIn">
+                <h3 class="multisteps-form__title">Remote Node</h3>
+                <div class="multisteps-form__content">
+                  <div class="form-row mt-4">
+                    <div class="col-12 col-sm-12">
+                        <p>
+                            Select device to load firmware to. Enter the nickname or the full GUID for 
+                            the device you want to work with.   
+                        </p>
+                        <p>                             
+                            A node that is newly loaded with a boot loader is usually at nickname 0xfe, 
+                            in most other cases a node stay at the same id (use scan if unsure of which 
+                            id your node is at).
+                        </p>
+
+                        <div>
+                          <label for="remote">Select a remote node:</label>
+                          <select name="remote" id="remote">
+                            <option value="volvo">Volvo</option>
+                            <option value="saab">Saab</option>
+                            <option value="qqqq">Supernoden kalle mero plus</option>
+                            <option value="audi">Audi</option>
+                          </select>
+
+                          <button class="btn btn-warning  " type="button" title="Load">Test</button>
+                        </div>
+ 
+                        
+
+                    </div>
+
+                    <div>
+                      
+                    </div>
+                  
+                  </div>
+                  
+                  <div><hr></div>
+
+                  <div class="button-row d-flex mt-2">
+                    <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
+                    <button class="btn btn-primary ml-auto js-btn-next" type="button" title="Next">Next</button>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Algorithm - panel -->
+              <div class="multisteps-form__panel shadow p-4 rounded bg-white" data-animation="scaleIn">
+                <h3 class="multisteps-form__title">Algorithm</h3>
+                <div class="multisteps-form__content">
+                  <div class="row mt-4">
+                      
+                    <div class="col-12 col-sm-12 ">
+                        <p>
+                            Select the boot loader algorithm to use.
+                        </p>
+                        <p>
+                            If you load boot loader info from the MDF the algorithm will be automatically set for you.
+                        </p>
+                        
+                        <div>
+                          <label for="remote">Select algorithm:</label>
+                          <select name="algorithm" id="algorithm">
+                            <option  value="vscp" selected>VSCP standard algorithm</option>
+                            <option  value="microchip1">Microchip pic algorithm 1</option>
+                            <option value="avr1">AVR algorithm 1</option>
+                            <option value="arm1">ARM algorithm 1</option>
+                          </select>
+
+                          <button class="btn btn-warning " type="button" title="Load">Get algorithm from MDF</button>
+                        </div>
+
+                    </div>
+                  </div>
+
+                  <div><hr></div>
+
+                  <div class="row">
+                    <div class="button-row d-flex mt-4 col-12">
+                      <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
+                      <button class="btn btn-primary ml-auto js-btn-next" type="button" title="Next">Next</button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Firmware - panel -->
+              <div class="multisteps-form__panel shadow p-4 rounded bg-white" data-animation="scaleIn">
+                <h3 class="multisteps-form__title">Firmware</h3>
+                <div class="multisteps-form__content">
+                  <p>
+                    Select the firmware file to load the remote node with.
+                  </p>
+ 
+                  <p>
+                    You can fetch firmware files which are specified by the MDF or you can 
+                    load a firmware file from local storage. When loading a local file you must make 
+                    certain that the file is intended for the remote node. If it isn't and you load 
+                    it to the remote node it may stop working and if so need manual at location 
+                    service.
+                  </p>
+
+                  <div class="button-row d-flex mt-4">
+                    <button class="btn btn-warning rounded" type="button" title="Load from MDF">Get firmware from MDF</button>
+                    <button class="btn btn-warning rounded ml-4" type="button" title="Use local">Use a local firmware file</button>
+                    <button class="btn btn-secondary rounded ml-4" type="button" title="Info">Info</button>
+                  </div>
+
+                  <div class="panel panel-primary mt-3">
+                    <div class="panel-heading">
+                      <Header class="text-secondary">File information</Header>
+                    </div>
+                    <div class="panel-body border border-success fixed-panel " >
+                      <div class="ml-2 mt-2 mb-4">
+                      <span class="text-white bg-dark">Flash Memory</span><br>
+                      <span class="text-primary">Start :</span> 0x00000800 <span class="text-primary">End :</span> 0x000048FD<br>
+                      <span class="text-success">Will be programmed</span><br>
+                      <br>
+                      <span class="text-white bg-dark">EEPROM Memory</span><br>
+                      <span class="text-primary">Start :</span> 0x00000800 <span class="text-primary">End :</span> 0x000048FD<br>
+                      <span class="text-success">Will be programmed</span><br>
+                      <br>
+                      <span class="text-white bg-dark">Config Memory</span><br>
+                      <span class="text-primary">Start :</span> 0x00000800 <span class="text-primary">End :</span> 0x000048FD<br>
+                      <span class="text-success">Will be programmed</span><br>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div><hr></div>
+
+                  <div class="button-row d-flex mt-4">
+                    <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
+                    <button class="btn btn-primary ml-auto js-btn-next" type="button" title="Next">Next</button>                    
+                  </div>
+
+                </div>
+              </div>
+
+              <!-- Load - panel -->
+              <div class="multisteps-form__panel shadow p-4 rounded bg-white" data-animation="scaleIn">
+                <h3 class="multisteps-form__title">Load firmware into remote node</h3>
+                <div class="multisteps-form__content">
+                  <div class="form-row mt-4">
+                    <div class="col-12 col-sm-12">
+                        <p>
+                            Now It's time to do the actual loading of firmware into the remote
+                            node. This operation may take some time...
+                        </p>
+ 
+                    </div>
+
+                    <div>
+                      <button class="btn btn-warning mt-1 mb-4" type="button" title="Load">Load firmware</button>
+                    </div>
+                  
+                  </div>
+                  
+                  <div><hr></div>
+
+                  <div class="button-row d-flex mt-2">
+                    <button class="btn btn-primary js-btn-prev" type="button" title="Prev">Prev</button>
+                    <button class="btn btn-success ml-auto" type="button" title="Send">Done</button>                    
+                  </div>
+
+                </div>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+  <!-- Bootstrap Optional JavaScript -->
+  <!-- jQuery first, then popper.js, then Bootstrap JS -->
+  <script>let $ = jQuery = require('./node_modules/jquery/dist/jquery.min.js');</script>
+  <script>require('./node_modules/@popperjs/core/dist/cjs/popper.js');</script>
+  <script>require('./node_modules/bootstrap/dist/js/bootstrap.min.js');</script>
+  <script  src="src/multisteps-form-master/dist/script.js"></script>
+
+</body>
+</html>
