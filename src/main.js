@@ -17,6 +17,10 @@ const { DOMParser } = require('xmldom');
 const dates = require('./dates.js');
 const classdef = require('./classdef.js');
 
+try {
+	require('electron-reloader')(module);
+} catch (_) {}
+
 //const homeDir = os.homedir();
 //readOldConfig(homedir);
 
@@ -30,6 +34,7 @@ classDefs = {};     // All defined classes/types
 childWindows = [];  // All child windows
 pathHome = path.join(app.getPath('home'), ".vscpworks");
 pathVSCP = '';
+
 
 let mainWindow;         // Initial window
 
