@@ -1,0 +1,10 @@
+"@types/xml2js": "^0.4.11",
+    "electron": "^19.0.3",
+    "electron-packager": "^15.5.1",
+    "electron-rebuild": "^3.2.7",
+    "electron-reload": "^1.5.0",
+    "electron-reloader": "^1.2.3",
+    "lite-server": "^2.6.1",
+    "mocha": "^10.0.0",
+    "ncu": "^0.2.1",
+    "npm-check-updates": "^13.1.1"
