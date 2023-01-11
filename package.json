@@ -64,7 +64,7 @@
     "jsonata": "^1.8.6",
     "jsplumb": "^2.15.6",
     "jwt-simple": "^0.5.6",
-    "knex": "^2.1.0",
+    "knex": "^2.4.0",
     "markdown-it": "^13.0.1",
     "mathjs": "^10.6.1",
     "mime": "^3.0.0",
